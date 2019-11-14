@@ -174,63 +174,27 @@ Protobuf? Probobaly
 
 ---
 
-![inline](FIX Architecture.png)
-
-Typical architecture of FIX systems used in the market
-
----
-
-![40%, original](FIX%20System%20Connectivity%20Diagram.png)
-
-### How FIX messaging looks between systems
-
----
-
-![80%](tpForwardDeal_Platform.png)
-
----
-
-# FIX Encodings
+# Variant of FIX
 - tagvalue (classic FIX)
 - FAST - FIX Adapted for Streaming
     - Binary encoding for reduced bandwidth use and low latency 
 - FIXML - XML
-- Extension
-  - Public extentions (5000 <= tag number < 9999)
-  - External user defined fields have a  and < 9999.
-  - Internal customised (tag number >= 10000)
-    
----
-
-# Session & application layers
-- Session layer/protocol
-    - Make & terminate connections
-    - Deliver messages in sequence w/ data integrity
-- Application layer
-    - Business level messages
-- Session & application layers decoupled from FIX 5.0 onwards. Tightly coupled prior to that.
 
 ---
 
-# Session Level Messages
-- Logon
-- Heartbeat
-- Test Request
-- Resend Request
-- Reject
-- Sequence Reset
-- Logout
+![inline](FIX Architecture.png)
+
+Typical FIX system architecture
 
 ---
 
-# Application Messages
+![35%, inline](FIX%20System%20Connectivity%20Diagram.png)
 
-- Pre-trade messages
-     – Market Data, Security Info etc
-- Trade Messages
-    – Single Orders, Basket/List Orders, Multi-leg orders, Executions, Order Cancel, Cancel/Replace, Status etc
-- Post-Trade Messages
-    – Allocations, Settlement Instructions, Positions Management etc
+Typical FIX system connectivity
+
+---
+
+![75%, inline](tpForwardDeal_Platform.png)
 
 ---
 
@@ -241,11 +205,17 @@ Typical architecture of FIX systems used in the market
 
 ---
 
-- FIX Dictionary
-     - [https://btobits.com/fixopaedia/index.html](https://btobits.com/fixopaedia/index.html)
-     - [https://www.onixs.biz/fix-dictionary.html](https://www.onixs.biz/fix-dictionary.html)
-- FIX Parser
-     - [http://fix.aprics.net/](http://fix.aprics.net/)
+# FIX Versioning
+
+FIX currently supports three versions of the application messages that serve as the basis for standardization:
+
+1. Version 5.0 Service Pack 2
+    **_FIX.5.0SP2_** is the most current version of FIX that supports multiple asset classes and a wide range of trading life cycle business processes. 
+    The FIX session protocol was separated from the application with the introduction of FIX.5.0
+1. Version 4.4
+    **_FIX.4.4_** is one of the most widely adopted versions oF FIX. FIX.4.4 covers multiple asset classes including fixed income instruments. As of 2010, it is considered compliant to use fields, messages, and components as of the latest extension pack of FIX with FIX.4.4.
+1. Version 4.2
+    **_FIX.4.2_** is widely used for equities, FX, and listed derivatives trading.
 
 ---
 
@@ -260,21 +230,71 @@ Typical architecture of FIX systems used in the market
 ---
 
 # Message fields
-- For each field the specification defines:
+- For each field `<Tag>=<Value><Delimiter>` the specification defines:
     - Tag – A unique number.
     - Field Name – Field name with no spaces.
     - Required - Mandatory/optional
     - Description – Definition of data, data type, etc.
+- `<Delimiter>` is ASCII SOH character
 
---- 
+---
 
-# Tag=Value syntax
-- 4 components to each field `<Tag>=<Value><Delimiter>`
-    - `<Tag>` is the tag number of the field
-    - `=`
-    - `<Value>` is the value of the field
-    - `<Delimiter>` is ASCII SOH character
+# FIX tag number space
+
+- Public fields (tagNum < 5000)
+    - Reserved for standard specifications or extentions
+- User defined fields (5000 <= tagNum < 9999)
+    - Publicly registered, fully allocated 
+    - [User Defined Fields](https://www.fixtrading.org/standards/user-defined-fields/)
+- User defined fields (10,000 <= tagNum <= 39999)
+    - For bilateral user between parties, do not need to be registered
     
+---
+
+# Session & application layers
+- Session layer/protocol
+    - Make & terminate connections
+    - Deliver messages in sequence w/ data integrity
+- Application layer
+    - Business level messages
+- Session & application layers are coupled prior FIX 5.0.
+
+---
+
+# Session Level Messages
+1. Logon
+1. Heartbeat
+1. Test Request
+1. Resend Request
+1. Reject
+1. Sequence Reset
+1. Logout
+
+---
+
+# Application Messages
+
+* Pre-trade messages
+    * Market Data
+    * Security Info etc
+* Trade messages
+    * Single Orders / Basket/List Orders / Multi-leg orders
+    * Execution Reports
+    * Order Cancel/Replace
+    * Status etc
+* Post-Trade messages
+    * Allocations
+    * Settlement Instructions
+    * Positions Management etc
+
+---
+
+- FIX Dictionary
+     - [https://btobits.com/fixopaedia/index.html](https://btobits.com/fixopaedia/index.html)
+     - [https://www.onixs.biz/fix-dictionary.html](https://www.onixs.biz/fix-dictionary.html)
+- FIX Parser
+     - [http://fix.aprics.net/](http://fix.aprics.net/)
+
 ---
 
 # QuickFIX Family
@@ -313,4 +333,4 @@ void sendOrderCancelRequest() throws SessionNotFound
 
 ---
 
-# [fit] ⌘+C ⌘+V = :v:
+# [fit] Thank you! :heart:
