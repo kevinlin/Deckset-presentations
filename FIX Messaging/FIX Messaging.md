@@ -7,10 +7,10 @@ slidenumbers: true
 
 ---
 
-# What I want to talk about FIX?
+# ![inline, 100%](kevin-portrait.jpg) What I will talk about
 
-This tech talk is for engineers with little or no prior knowledge on FIX. 
-It aims to provide a basic understanding of FIX message structure, type of message, message flow and the programming model.
+* This tech talk is for engineers with little or no prior knowledge on FIX. 
+* To provide a basic understanding of FIX messaging standard, structure, system architecture and the programming model. 
 
 ---
 
@@ -19,7 +19,9 @@ It aims to provide a basic understanding of FIX message structure, type of messa
 ---
 
 ![left, fit](the_fix.png)
-![right](fix_it_felix.png)
+![right, fit](we-can-fix-it!.gif)
+
+^ This is what you will find when your google: FIX It
 
 ---
 
@@ -99,14 +101,13 @@ Protobuf? Probobaly
 | Header fields | Body fields | Trailer Fields
 | --- | --- | --- |
 | 8=BeginString (indicates FIX 4.2) | 11=ClOrderID (client order id) | 10=Checksum |
-| 9=BodyLength | 21=HandleInst (automated exec) | |
+| 9=BodyLength (251) | 21=HandleInst (automated exec) | |
 | 35=MsgType (new order) | 55=Symbol (IBM) | |
 | 49=SenderCompID (AFUNDMGR) | 54=Side (buy) | |
-| 56=TargetCompID (ABROKER) | 56=TransactTime | |
+| 56=TargetCompID (ABROKER) | 60=TransactTime (2003061501:14:4952) | |
 | 34=MsgSeqNum (2) | 38=OrderQty (5000) | |
-| 52=SendTime | 40=OrdType (Limit) | |
+| 52=SendTime (20030615-01:14:49) | 40=OrdType (Limit) | |
 | | 44=Price (110.75) | |
-| | 52=SendTime | |
 
 ---
 
@@ -117,14 +118,33 @@ Protobuf? Probobaly
 | Header fields | Body fields | Trailer Fields
 | --- | --- | --- |
 | 8=BeginString (indicates FIX 4.2) | 11=ClOrderID (client order id) | 10=Checksum |
-| 9=BodyLength | 21=HandleInst (automated exec) | |
+| 9=BodyLength (251) | 21=HandleInst (automated exec) | |
 | 35=MsgType (new order) | **_55=Symbol (IBM)_** | |
 | 49=SenderCompID (AFUNDMGR) | **_54=Side (buy)_** | |
-| 56=TargetCompID (ABROKER) | 56=TransactTime | |
+| 56=TargetCompID (ABROKER) | 60=TransactTime (2003061501:14:4952) | |
 | 34=MsgSeqNum (2) | **_38=OrderQty (5000)_** | |
-| 52=SendTime | 40=OrdType (Limit) | |
+| 52=SendTime (20030615-01:14:49) | 40=OrdType (Limit) | |
 | | **_44=Price (110.75)_** | |
-| | 52=SendTime | |
+
+---
+
+# FIX message structure
+- Header fields
+    - message type, length, sequence number, sender/target, encoding, etc.
+- Body fields
+    - session & application data
+- Trailer fields
+    - Signature, checksum
+
+---
+
+# Message fields
+- For each field `<Tag>=<Value><Delimiter>` the specification defines:
+    - Tag – A unique number.
+    - Field Name – Field name with no spaces.
+    - Required - Mandatory/optional
+    - Description – Definition of data, data type, etc.
+- `<Delimiter>` is ASCII SOH character
 
 ---
 
@@ -162,7 +182,18 @@ Protobuf? Probobaly
     - FX
     - Derivatives (Options, Futures, IR Swaps etc)
 - Used worldwide
-    - Except mainland China :cn:
+    - 
+
+---
+
+# What/where is it used?
+- Financial Products Supported
+    - Equities
+    - Fixed Income
+    - FX
+    - Derivatives (Options, Futures, IR Swaps etc)
+- Used worldwide
+    - Except mainland China :cn: :sin:"
 
 ---
 
@@ -216,26 +247,6 @@ FIX currently supports three versions of the application messages that serve as 
     **_FIX.4.4_** is one of the most widely adopted versions oF FIX. FIX.4.4 covers multiple asset classes including fixed income instruments. As of 2010, it is considered compliant to use fields, messages, and components as of the latest extension pack of FIX with FIX.4.4.
 1. Version 4.2
     **_FIX.4.2_** is widely used for equities, FX, and listed derivatives trading.
-
----
-
-# FIX message structure
-- Header fields
-    - message type, length, sequence number, sender/target, encoding, etc.
-- Body fields
-    - session & application data
-- Trailer fields
-    - Signature, checksum
-
----
-
-# Message fields
-- For each field `<Tag>=<Value><Delimiter>` the specification defines:
-    - Tag – A unique number.
-    - Field Name – Field name with no spaces.
-    - Required - Mandatory/optional
-    - Description – Definition of data, data type, etc.
-- `<Delimiter>` is ASCII SOH character
 
 ---
 
@@ -327,10 +338,12 @@ void sendOrderCancelRequest() throws SessionNotFound
 ---
 
 # Key things to take note working on FIX systems
-1. FIX systems generally are high-throughput, low-latency systems, design ahead 
+1. FIX systems are generally high-throughput, low-latency systems, design ahead
 1. High availability, i.e. failover, auto-recovery are usually hard requirement
+1. To protective in coding to handle unexpected message scenarios
 1. Message logs are the source of truth when there is a problem
 
 ---
 
 # [fit] Thank you! :heart:
+![inline, original](Fix-It%20Felix%20Jr.png)
