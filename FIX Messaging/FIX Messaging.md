@@ -3,7 +3,7 @@ footer: Zuhlke Engineering Singapore
 slidenumbers: true
 
 # [fit] FIX Messaging
-# [fit] by **_Kevin Lin_**
+# by **_Kevin Lin_**
 
 ---
 
@@ -347,3 +347,13 @@ void sendOrderCancelRequest() throws SessionNotFound
 
 # [fit] Thank you! :heart:
 ![inline, original](Fix-It%20Felix%20Jr.png)
+
+---
+
+# Resources
+
+* [This presentation](https://github.com/kevinlin/Deckset-presentations/tree/master/FIX%20Messaging)
+* [FIX Trading Community](https://www.fixtrading.org/)
+* [Investopedia - Financial Information Exchange (FIX)](https://www.investopedia.com/terms/f/financial-information-exchange.asp)
+
+![](wreck-it-ralph-clipart.jpg)
