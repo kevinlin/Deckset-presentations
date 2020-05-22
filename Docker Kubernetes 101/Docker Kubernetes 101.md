@@ -12,6 +12,11 @@ slidenumbers: true
 
 ![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
 
+^ Today I'm going to talk about xxx. I plan this as a series of sessions. 
+This is not a training course, actually you probably won't know how to setup a Kubernetes cluster
+For beginners, raise interest
+For people with expereinces, different angel
+
 ---
 
 # Exciting Age for Containerisation
@@ -160,36 +165,57 @@ docker image inspect ubuntu:latest
 
 ---
 
-# Year 2014
-- Docker was the leader in container technology
+# Docker & Kubernetes 101 - Part II
+# |
+# |
+# [fit] War on Container Orchestration
+# |
+# |
+- by _**Kevin Lin**_
+
+![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
+
+---
+
+# The Competition quickly turn to Container Orchestration
+1. Docker - Open Container Initiative (OCI)
+1. Mesos - Apache
+1. Kubernetes - Cloud Native Computing Foundation (CNCF)
+
+---
+
+# Docker
+- Year 2014 - Docker was the leader in container technology
     - Docker Compose - Orchestration on multiple containers with dependencies
     - Docker Swarm - Container cluster manager
     - The company behind Docker dotCloud changed its name to Docker
-- It appeared that Docker is going to be the winner of **Container-as-a-Service** market
+- Year 2016
+    - Docker embedded Swarm directly inside Docker Engine
+    - Docker refused a bid from Microsoft to buy it for $4 billion
 
 ![original](docker-on-fire.jpg)
 
 ---
 
-# Year 2015
-- Kubernetes 1.0 released by Google
+# Kubernetes - Cloud Native Computing Foundation (CNCF)
+- Year 2015 - Kubernetes 1.0 released by Google
+    - Contributed to the Linux Foundation as a seed technology
 - Cloud Native Computing Foundation (CNCF) was founded by Google, CoreOS, Mesosphere, Red Hat and others
     - CNCF attracts a fast growing container community around Kubernetes
     - CNCF incubate many popular open source projects like: Prometheus, Fluentd, OpenTracing, CNI, Istio
+
+![](kubernetes.png)
 
 ---
 
 # And the rest is history
 - 2015
     - Kubernetes surpass Docker quickly, and never looked back
-- 2016
-    - Docker embedded Swarm directly inside Docker Engine
-    - Docker refused a bid from Microsoft to buy it for $4 billion
 - 2017
     - **Docker** (open source project) renamed to **Moby** 
     - Docker embedded Kubernetes in its own product
 - Current
-    - The container ecosystem is build around Kubernets
+    - The container ecosystem is build around Kubernetes
 
 ![](docker-vs-kubernetes.png)
 
