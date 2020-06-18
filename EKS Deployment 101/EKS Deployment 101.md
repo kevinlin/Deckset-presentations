@@ -25,11 +25,11 @@ slidenumbers: true
 
 ---
 
-![fit](kubernetes-objects.png)
+![fit](kubernetes-architecture.jpg)
 
 ---
 
-![fit](kubernetes-architecture.jpg)
+![fit](kubernetes-objects.png)
 
 ---
 
