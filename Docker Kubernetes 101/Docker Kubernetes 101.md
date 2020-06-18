@@ -5,7 +5,7 @@ slidenumbers: true
 # Docker & Kubernetes 101 - Part I
 # |
 # |
-# [fit] Rise and Fall of a Little Whale
+# [fit] Rise of a Little Whale
 # |
 # |
 - by _**Kevin Lin**_
@@ -262,6 +262,10 @@ docker image inspect ubuntu:latest
     - Docker is always a single process
 - Let user define pods, and the complex associations between them
     - And manage the state and associations 
+
+---
+
+![fit](kubernetes-objects.png)
 
 ---
 
