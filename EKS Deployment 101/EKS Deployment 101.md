@@ -88,8 +88,8 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
   labels:
-    app: wealth-api
-  name: wealth-api
+    app: wealth-api-svc
+  name: wealth-api-svc
   namespace: application
 spec:
   ports:
@@ -160,6 +160,8 @@ kubectl -n application delete service <svc name>
 ---
 
 # [fit] To be continued
+# [fit] |
+# [fit] Deployemnt using Helm
 
 ---
 
