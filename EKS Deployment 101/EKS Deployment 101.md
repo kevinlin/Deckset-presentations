@@ -120,6 +120,16 @@ kubectl -n application delete -f <file path>
 
 ---
 
+# Controller Pattern
+- In Kubernetes, controllers are control loops that watch the state of your cluster, then make or request changes where needed.
+- Each controller tries to move the current cluster state closer to the desired state.
+
+---
+
+![fit](controller-workflow.png)
+
+---
+
 # Deployment Commands - Check Status
 ```yaml
 kubectl -n application get deployments
@@ -156,6 +166,11 @@ kubectl -n application describe service <svc name>
 ```yaml
 kubectl -n application delete service <svc name>
 ```
+
+---
+
+# [fit] Code Walkthrough
+# by **_Niro_**
 
 ---
 
