@@ -10,7 +10,7 @@ slidenumbers: true
 # |
 - by _**Kevin Lin**_
 
-![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
+![autoplay, loop](sunset-moon-beach-hollow-waves-6051.mp4)
 
 ^ Today I'm going to talk about xxx. I plan this as a series of sessions. 
 This is not a training course, actually you probably won't know how to setup a Kubernetes cluster
@@ -35,7 +35,9 @@ For people with expereinces, different angel
 
 ---
 
-# What happened in year 2013 that start this ...
+# It all started, back in year 2013 ...
+
+![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
 
 ^ Let's wind back time a bit, and look at what happened in year 2013 that start the whole evolution.
 
@@ -46,7 +48,7 @@ For people with expereinces, different angel
 - Big players have gone through the conceptualization and user education part
 - Cloud Foundry, Pivotal, Red Hat, Heroku...
 
-![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
+![autoplay, loop](sunrise-landscape.mp4)
 
 ___
 
@@ -148,7 +150,7 @@ memory  on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,me
 ---
 
 # Simulation - rootfs
-## Make the container process behave like an isolated OS
+## Build the container image to make it behave like an isolated OS
 ## Note: The Linux kernel of the host never change
 1. Mount root folders: `/bin`，`/etc`，`/proc`
 1. Sometimes, mount the full OS filesystem, i.e. Ubuntu16.04 ISO
@@ -165,6 +167,27 @@ docker image inspect ubuntu:latest
 
 ---
 
+# Docker Compose
+- Allows you to define multi-container applications - or “stacks”
+    - as groups of interconnected services that share software dependencies
+    - define them in a central file `docker-compose.yml`
+- And run them and manage the entire lifecycle of your applications.
+
+![right, fit](docker-compose.jpg)
+
+---
+
+# Docker Swarm
+- Enables central cluster management as well as the orchestration of containers
+- Master-slave architecture 
+    - At least one manager node and any number of worker nodes
+    - Swarm manager is responsible for the management of clusters and the delegation of tasks
+    - Swarm workers take over for the execution
+ 
+![left, fit](docker-swarm.png)
+
+---
+
 # Docker & Kubernetes 101 - Part II
 # |
 # |
@@ -173,7 +196,7 @@ docker image inspect ubuntu:latest
 # |
 - by _**Kevin Lin**_
 
-![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
+![autoplay, loop](clouds-covering-the-mountains.mp4)
 
 ---
 
@@ -251,17 +274,33 @@ docker image inspect ubuntu:latest
 
 ---
 
-# Think Kubernetes as an OS of a cluster of hosts
-- Everything in Kubernetes are defined as API objects
+# Docker & Kubernetes 101 - Part III
+# |
+# |
+# [fit] Kubernetes - OS for the Cloud
+# |
+# |
+- by _**Kevin Lin**_
+
+![autoplay, loop](horizon-in-the-sea-sailboat.mp4)
+
+^ 
+
+---
+
+# Kubernetes Recap
+- Everything in Kubernetes are API objects
+    - Master
+    - Node
     - Pod
-    - Service
     - Deployment
-    - Every component are configurable
-- Pod is the most basic unit
-    - Group of containers closely associated
-    - Docker is always a single process
-- Let user define pods, and the complex associations between them
-    - And manage the state and associations 
+    - Service
+    - Secret
+    - ...
+
+---
+
+![fit](kubernetes-architecture.jpg)
 
 ---
 
@@ -269,7 +308,75 @@ docker image inspect ubuntu:latest
 
 ---
 
-# [fit] To be continued
+# Prerequisite
+- Working Dev EKS setup and kubectl cli is required.
+- Refer to [https://confluence.global.standardchartered.com/display/Frog/Setting+up+Development+Environment+for+EKS+on+Windows]().
+
+---
+
+# Deployment with Config Files
+## Generate Deployment Config File
+Kubectl commands can be used to generate yaml files easily.
+
+```shell
+kubectl create deployment ... --dry-run=client -o yaml
+kubectl expose deployment ... --dry-run=client -o yaml
+```
+
+---
+
+# Kube Config Example - Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: wealth-api
+  name: wealth-api
+  namespace: application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wealth-api
+  template:
+    metadata:
+      labels:
+        app: wealth-api
+    spec:
+      containers:
+      - image: artifactory.global.standardchartered.com/frog/frog-wealth-sg:latest
+        imagePullPolicy: Always
+        name: frog-wealth-sg
+        ports:
+        - containerPort: 8080
+```
+
+---
+
+# Kube Config Example - Service
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+  labels:
+    app: wealth-api-svc
+  name: wealth-api-svc
+  namespace: application
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: wealth-api
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - "10.0.0.0/8"
+```
 
 ---
 
