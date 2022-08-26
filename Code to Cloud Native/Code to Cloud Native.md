@@ -4,7 +4,7 @@ slidenumbers: true
 
 # _From_ Code _to_ **_Cloud Native_**
 
-### How DevOps works in a enterprise project
+### How DevOps works in a Enterprise Project
 
 #### by _**Kevin Lin**_, _**Kin Yung Cheung**_
 
@@ -13,48 +13,88 @@ slidenumbers: true
 ^ Today Kin and I are  going to talk about xxx. 
 As a project team, every engineer should know the basics of docker/kubernetes
 Raise interest to inspire some of you to take up trainings
-For the sceenshots, we are going to use whatever is avaialbe 
+For the sceenshots, we are going to show whatever is used in Prodia project 
 
 ---
 
 # [fit] Containerization
 
----
-
-# Why is Docker the De facto?
-- Docker image
-  - Build once, Run everywhere
-  - An application archive including base OS and software dependencies
-  - Perfect solution for application packaging
-- Developer friendly
-  - Every developer can do DevOps now
-
-![](docker-logo.png)
-  
----
-
-#[fit]  Sample dockerfile
+^ Kevin act as Java dveloper and asking the question: 
+Kin: 
 
 ---
 
-# What happens when Docker get busy?
+# Typical dockerfile for a SpringBoot microservice
+```yaml
+--
+FROM amazoncorretto:18-alpine-jdk
 
-![](docker-swarm.png)
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java","-jar","/app.jar"]
+--
+```
 
 ---
 
-#[fit] What is _**Kubernetes**_ for?
+# What need to done for Docker that is deployable
+1. Build the docker image
+1. Run security scan on the image for CVE
+1. Publish to a docker registry
+  - Dockerhub
+  - AWS ECR
+  - etc
 
 ---
 
-# Kubernetes - Cloud Native Computing Foundation (CNCF)
-- Year 2015 - Kubernetes 1.0 released by Google
-  - Contributed to the Linux Foundation as a seed technology
-- Cloud Native Computing Foundation (CNCF) was founded by Google, CoreOS, Mesosphere, Red Hat and others
-  - CNCF attracts a fast growing container community around Kubernetes
-  - CNCF incubate many popular open source projects like: Prometheus, Fluentd, OpenTracing, CNI, Istio
+# Where a Continuous Integration (CI) platform comes in
+- Jenkins / CloudBees (for on-prem environment, most)
+- GitHub Actions
+- Bitbucket Pipeline
+- CircleCI
 
-![](kubernetes.png)
+---
+
+# Bitbucket Pipeline
+
+- Comes bundled with Bitbucket
+
+![right, fit](bitbucket-pipeline-screenshot.png)
+
+---
+
+# CI Flow
+
+![Inline, 120%](CI%20Flow.png)
+
+---
+
+# [fit] How do we deploy the docker image?
+1. Host it on a server
+  - AWS EC2
+  - GCP Compute Instance Cloud
+  - Is it a good idea?
+
+^ Kin to explain why we need a container orchestration system like K8s
+
+---
+
+## How do you make sure the docker is running properly?
+### What if it crashes?
+### What if we want to have multiple instances to scale it up? Would it be cool to auto-scale?
+### What happens when one of our service went down?
+## What if we want to have many services running together in the target environment?
+
+![inline](docker-swarm.png)
+
+---
+
+#[fit] What is _**Kubernetes**_?
+* Orchestration system for automating container deployment, scaling, and management
+* Original introduced by Google, mow maintained by CNCF
 
 ---
 
@@ -74,7 +114,23 @@ For the sceenshots, we are going to use whatever is avaialbe
 
 ---
 
-#[fit]  Bitbucket pipeline
+# [fit] Live Demo of _**Kubernetes**_
+
+^ Different flavors of K9s:
+- Local - minikube/e3s
+- Self-managed K8s: master node
+- On-prem/Private Cloud: OpenShift
+- Managed K8s service from Cloud: EKS, GKE, AKS
+
+---
+
+# How do I deploy to Kubernetes Cluster?
+1. Manually via `kubectl`
+1. Via a Continuous Deployment (CD) platform
+  - ArgoCD
+  - Flux CD
+  - Octopus Deploy
+  - Spinnaker
 
 ---
 
