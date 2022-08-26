@@ -13,9 +13,13 @@ slidenumbers: true
 ![autoplay, loop](sunset-moon-beach-hollow-waves-6051.mp4)
 
 ^ Today I'm going to talk about xxx. I plan this as a series of sessions. 
-This is not a training course, actually you probably won't know how to setup a Kubernetes cluster
-For beginners, raise interest
-For people with expereinces, different angel
+This is not a training course, actually you probably won't know how to setup a local Kubernetes cluster
+Just to share a bit of my own background, 10+ years in Java development, enterprise applicatin development
+    Move to modern JavaScript development 5 years ago. 
+    Doesn't know docker/kubernetes at all 1.5 years ago.
+As a project team, every engineer should know the basics of docker/kubernetes
+Raise interest to inspire some of you to take up trainings
+Tell the story from a different angle, start with looking back in history first, looking at some core concepts in ...
 
 ---
 
@@ -60,6 +64,7 @@ ___
 ![right](docker-logo.png)
 
 ^ Docker was released as a open source project by a small start-up called dotCloud from San Francisco back then
+In a chinese saying, this is a strike from a higher dimension
 
 ---
 
@@ -68,10 +73,10 @@ ___
     - Build once, Run everywhere
     - An application archive including base OS and software dependencies
     - Perfect solution for application packaging
-- Docker Hub
-    - npm repo for Docker images
 - Developer friendly
     - Every developer can do DevOps now
+- Docker Hub
+    - npm repo for Docker images
 
 ---
 
