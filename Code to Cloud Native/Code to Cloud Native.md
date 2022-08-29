@@ -17,10 +17,22 @@ For the sceenshots, we are going to show whatever is used in Prodia project
 
 ---
 
-# [fit] Containerization
+# I have written a Java API Service
+# What's next?
 
-^ Kevin act as Java dveloper and asking the question: 
+^ Kevin act as Java developer and asking the question: what does it take to deploy to the Cloud? 
+We want to make it public accessible?
 Kin: 
+
+---
+
+# [fit]Put it in a _**Container**_
+# [fit]or simply a _**Docker**_
+
+^ An application archive including base OS and software dependencies
+1. Isolation (namespace)
+1. Limitation (cgroups)
+1. Simulation (fsroot)
 
 ---
 
@@ -41,16 +53,18 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 ---
 
 # What need to done for Docker that is deployable
-1. Build the docker image
-1. Run security scan on the image for CVE
-1. Publish to a docker registry
+1. Run the Docker command to build the image
+1. Security scan on the image for CVE
+1. Publish to a docker registry, i.e.
   - Dockerhub
   - AWS ECR
   - etc
 
+^ Kevin: How do I make sure these steps are run every time correctly?
+
 ---
 
-# Where a Continuous Integration (CI) platform comes in
+# Continuous Integration (CI) platform comes to rescue
 - Jenkins / CloudBees (for on-prem environment, most)
 - GitHub Actions
 - Bitbucket Pipeline
@@ -72,59 +86,113 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 
 ---
 
-# [fit] How do we deploy the docker image?
-1. Host it on a server
+# Sample Bitbucket Pipeline for Java API Service (Partial)
+
+```yaml
+definitions:
+  steps:
+    - parallel: &unit-Test
+        - step:
+            name: Build and Test
+        - step:
+            name: Security Scan
+
+    - step: &build-artifact-and-deploy
+        name: Build Image and Update Helm Chart
+
+    - step: &promote-to-env
+
+pipelines:
+  default:
+    - parallel: *unit-Test
+  branches:
+    sit:
+      - parallel: *unit-Test
+      - step:
+          <<: *build-artifact-and-deploy
+          deployment: sit
+      - step:
+          <<: *promote-to-env
+          name: Promote to UAT
+          trigger: manual
+          deployment: uat
+```
+
+---
+
+# Where do we deploy the docker image?
+# And how do we do that?
+1. Host it on a single server
   - AWS EC2
-  - GCP Compute Instance Cloud
-  - Is it a good idea?
+  - GCP Compute Instance Cloud 
+
+Is it good enough for you?
 
 ^ Kin to explain why we need a container orchestration system like K8s
 
 ---
 
 ## How do you make sure the docker is running properly?
-### What if it crashes?
-### What if we want to have multiple instances to scale it up? Would it be cool to auto-scale?
-### What happens when one of our service went down?
+### - What happens when it crashes?
+## What if we want to have multiple instances to scale it up?
+### - What happens when one of our service went down?
 ## What if we want to have many services running together in the target environment?
+### - Would it be cool to auto-scale when the service is under load?
 
 ![inline](docker-swarm.png)
 
 ---
 
-#[fit] What is _**Kubernetes**_?
+#[fit] Let's talk about _**Kubernetes**_
 * Orchestration system for automating container deployment, scaling, and management
-* Original introduced by Google, mow maintained by CNCF
+* Original introduced by Google, now maintained by CNCF
+* De-factor standard to deploy and operate containerized applications
+
+^ Kevin: I have heard of Kubernetes. What's the difference between Docker and Kubernetes? Is k8s an evolutaion of Docker?
+
+---
+## Control Plane vs Work Nodes 
+
+![inline, 68%](kubernetes-architecture.jpg)
 
 ---
 
 # Kubernetes in Summary
-- Everything in Kubernetes are API objects
-  - Master
-  - Node
+- Everything run in Kubernetes are resource objects
   - Pod
   - Deployment
   - Service
+  - Ingress
+  - ConfigMap
   - Secret
   - ...
 
----
-
-![fit](kubernetes-objects.png)
+^ Kevin: What exact is a Pod? Is it another name for a container?
 
 ---
 
-# [fit] Live Demo of _**Kubernetes**_
+![inline](kubernetes-objects.png)
 
-^ Different flavors of K9s:
-- Local - minikube/e3s
-- Self-managed K8s: master node
+---
+
+# Different flavors of _**Kubernetes**_:
+- Local: Minikube, e3s
+- Self-managed Kubernetes
 - On-prem/Private Cloud: OpenShift
-- Managed K8s service from Cloud: EKS, GKE, AKS
+- Managed Kubernetes service from Cloud: EKS, GKE, AKS, DigitalOcean etc
 
 ---
 
-# How do I deploy to Kubernetes Cluster?
+# [fit] Live Demo of 
+# [fit]_**Kubernetes**_
+
+^ Demo Rancher: node -> namepace -> workload -> deployment -> pod
+Pause for questions
+Explain Rancher, demo again using K9s 
+
+---
+
+# How exactly do I deploy to _**Kubernetes**_ Cluster?
 1. Manually via `kubectl`
 1. Via a Continuous Deployment (CD) platform
   - ArgoCD
@@ -147,31 +215,25 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 
 ---
 
-# [fit] GitOps Repo Pattern
-# Why? How?
-
----
-
 # [fit] ArgoCD
 ## Why? How?
 
 ---
 
-# ArgoCD Live showcase
+# [fit] GitOps Repo Pattern
+# Why? How?
+
+---
+
+# [fit] ArgoCD Live Demo
 
 ---
 
 # Advanced topics
-
----
-
-# Configuration management
-- ConfigMap vs config service vs env vars
-
----
-
-# Secret management
-- Sealed Secret
+- Configuration management
+  - ConfigMap vs config service vs env vars
+- Secret management
+  - Sealed Secret
 
 ---
 
@@ -188,26 +250,3 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 
 # [fit] Why Rancher?
 - Rancher vs K9s
-
----
-
-# [fit] What exactly is **_Kubernetes_**?
-
----
-
-# Kubernetes is not a better version of Docker
-- Container runtime agnostic
-    - It uses Docker by default
-- Provide container orchestration like Docker Compose + Swarm
-    - And much, much more
-
----
-
-## Control the playback by using:
-
-* `[autoplay]` to start playing the video straight away
-* `[loop]` to loop the video
-* `[mute]` to mute the video
-
-
-![right](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
