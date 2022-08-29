@@ -8,7 +8,7 @@ slidenumbers: true
 
 #### by _**Kevin Lin**_, _**Kin Yung Cheung**_
 
-![autoplay, loop](http://deckset-assets.s3-website-us-east-1.amazonaws.com/water.mov)
+![autoplay, loop](https://cdn.videvo.net/videvo_files/video/free/2020-05/large_watermarked/3d_ocean_1590675653_preview.mp4)
 
 ^ Today Kin and I are  going to talk about xxx. 
 As a project team, every engineer should know the basics of docker/kubernetes
@@ -140,6 +140,12 @@ Is it good enough for you?
 ### - Would it be cool to auto-scale when the service is under load?
 
 ![inline](docker-swarm.png)
+
+---
+
+# How containers work in real world
+
+![autoplay, loop](https://cdn.videvo.net/videvo_files/video/premium/getty_10/large_watermarked/istock-621325890_preview.mp4)
 
 ---
 
