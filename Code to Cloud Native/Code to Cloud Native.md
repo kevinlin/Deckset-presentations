@@ -221,8 +221,13 @@ Explain Rancher, demo again using K9s
 
 ---
 
-# [fit] ArgoCD
-## Why? How?
+# ArgoCD
+### Continuous deployment made easy
+1. Declarative approach
+   - I want 2 replicas, 1 ingress controller and 1 config map for service A
+   - 3 replicas, 1 secret and 1 persistent storage for service B
+2. Keep the deployement exactly as I declared in Git (I change, you change)
+3. If anyone has manually changed the deployment, rollback to as I declared 
 
 ---
 
@@ -256,3 +261,9 @@ Explain Rancher, demo again using K9s
 
 # [fit] Why Rancher?
 - Rancher vs K9s
+- Rancher is great but 
+  - I have to install it in my cluster and it is a pain to install
+  - it takes up pod space in my cluster
+  - it has tons of features but I just want to know what's running in my clusters
+  - I like commmand line
+
