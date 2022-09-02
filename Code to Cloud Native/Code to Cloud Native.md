@@ -222,12 +222,12 @@ Explain Rancher, demo again using K9s
 ---
 
 # ArgoCD
-### Continuous deployment made easy
+### Continuous deployment to kubernetes made easy
 1. Declarative approach
    - I want 2 replicas, 1 ingress controller and 1 config map for service A
    - 3 replicas, 1 secret and 1 persistent storage for service B
-2. Keep the deployement exactly as I declared in Git (I change, you change)
-3. If anyone has manually changed the deployment, rollback to as I declared 
+2. Keep the deployement exactly as I describe the target state in git
+3. If anyone has manually changed the deployment, rollback to the state described in git 
 
 ---
 
