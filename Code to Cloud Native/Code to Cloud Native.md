@@ -238,16 +238,31 @@ Kevin: Okay
 ![inline, 68%](kubernetes-architecture.jpg)
 
 ^ Kevin: Wow, what is this? my head hurts.
-Kin: haha, Kubernetes is quite a beast and it is ~complex~ but lucklily we don't need to manage everything ourselves nowadays
+Kin: 
+   - haha, Kubernetes is quite a beast and it is ~complex~ but lucklily we don't need to manage everything ourselves nowadays
+   - Kubernetes has two parts. The control plane and worker nodes. 
+   - Unless you are extremely lucky and have to create kubernetes form scratch, you don't need to worry much about the control plane because there are plenty of managed services out there that can manage the control plan for you. They will make sure it 
+   - Mostly likely as a developer, you will only need to worry about worker nodes because it is where your applications are running on
+   - As you can see that pods are running on nodes and we can think of nodes as VMs on different phyical servers
+   - In cloud environments, a kubernetes 
+Kevin: Do I always have to pay to even use Kubernetes? Even when I just want to try it on my local machine? 
 
 ---
 
 # Different flavors of _**Kubernetes**_:
 
-- Local: Minikube, e3s
-- Self-managed Kubernetes
-- On-prem/Private Cloud: OpenShift
-- Managed Kubernetes service from Cloud: EKS, GKE, AKS, DigitalOcean etc
+- Local: 
+  - Minikube (single-node), K3s (light-weight & production-grade)
+- Self-managed Kubernetes (control plane & worker nodes)
+- On-prem/Private Cloud: 
+  - OpenShift (Redhat & enterprise support)
+- Managed Kubernetes services: 
+  - EKS (AWS), GKE (GCP), AKS (Azure), DigitalOcean etc
+
+^
+Kin: (slide)
+Kevin: Is that all we need to know about Kubernetes?
+Kin: hmm... not quite
 
 ---
 
@@ -267,6 +282,11 @@ Kin: haha, Kubernetes is quite a beast and it is ~complex~ but lucklily we don't
 ---
 
 ![inline](kubernetes-objects.png)
+
+^ Kin: 
+ - Pod is the smallest unit in kubernetes but it is still larger than a container
+ - (continue onto 'container', 'deployment', 'service', and others)
+
 
 ---
 
