@@ -244,7 +244,7 @@ Kin:
    - Unless you are extremely lucky and have to create kubernetes form scratch, you don't need to worry much about the control plane because there are plenty of managed services out there that can manage the control plan for you. They will make sure it 
    - Mostly likely as a developer, you will only need to worry about worker nodes because it is where your applications are running on
    - As you can see that pods are running on nodes and we can think of nodes as VMs on different phyical servers
-   - In cloud environments, a kubernetes 
+   - In cloud environments, a kubernetes cluster is made up of multiple nodes that are phyiscally located in different availability zones.
 Kevin: Do I always have to pay to even use Kubernetes? Even when I just want to try it on my local machine? 
 
 ---
@@ -300,9 +300,23 @@ Explain Rancher, demo again using K9s
 
 ---
 
+# Demo summary
+
+1. Resources can be created & destroyed using YAML files
+2. Auto recovery is supported out of the box
+3. Pods can be accessed through port-forward or LB, BUT...
+4. ** Should use an ingress controller instead because you don't want to create one LB for every service. It is _expensive_!
+
+^
+Kevin: do we have to create resources manually?
+
+---
+
 # How exactly do I deploy to _**Kubernetes**_ Cluster?
 
-1. Manually via `kubectl`
+1. Manually via 
+ - `kubectl apply -f deployment.yaml`
+
 1. Via a Continuous Deployment (CD) platform
 
 - ArgoCD
@@ -310,20 +324,21 @@ Explain Rancher, demo again using K9s
 - Octopus Deploy
 - Spinnaker
 
+
 ---
 
 # Helm Chart
 
-![inline](helm-chart.png)
+![right, 100%](helm-chart.png)
+
+- For a typical microservice with minimum resources:
+    1. deployment.yaml
+    2. service.yaml
+    3. ingress.yaml
+- Managing YAML files for many similar services will introduce a huge maintenance overhead
+- Using templates and variable overrides can help
 
 ^ - Deploy multiple services with similar deployment YAML
-
-- You need a number of YAML files, below is the minimum for a typical microservice
-    1. deployment
-    2. service
-    3. ingress
-- Managing the files for many similars service introduce a huge maintenance overhead
-- Intorducting templating and variable replacement
 
 ---
 
@@ -332,15 +347,16 @@ Explain Rancher, demo again using K9s
 **_Helm3_** is an **imperative templating** tool for managing Kubernetes packages called charts.
 
 - Charts are a templated version of your yaml manifests with a subset of Go Templating mixed throughout.
-- Chart is also a package manager for kubernetes that can package, configure, and deploy/apply the helm charts onto kubernetes clusters.
+- Chart is also a __package manager__ for kubernetes that can package, configure, and deploy/apply the helm charts onto kubernetes clusters.
 
 **_Kustomize_**: is a **declarative tool**, which works with yaml directly and works as a stream editor like sed.
 
 ^ Kustomize traverses a Kubernetes manifest to add, remove or update configuration options without forking.
 
-- It is a very K.I.S.S. approach and doesn’t add additional abstraction layer at all. It permits you to add logic into YAML, that’s all.
+- `kubectl apply -k environment/sit`
+- It __doesn’t add additional abstraction layer__ at all. It permits you to __add logic into YAML__, that’s all.
 - It is a purely declarative approach to configuration customization.
-- It runs as a standalone binary, as a stream editor like sed, which makes it perfect for CI/CD pipelines.
+- It runs as a standalone binary, which makes it perfect for CI/CD pipelines.
 
 ---
 
@@ -370,18 +386,29 @@ spec:
     {{- end -}}
 ```
 
+^
+Kin: 
+ - this is a helm template for a service YAML file, which looks a little different from a regular YAML file. 
+ - it does take a bit of learning curve to get used to and it is relatively difficult to debug due to indentations and brackets
+ - (placeholders, default values, piping, variables and function calls)
+
 ---
 
 # `values-sit.yaml`
 
 ```yaml
+# deployment.yaml
 image:
   tag: "hello-world-api-poc-ee2a450c"
 
+# service.yaml
 service:
   path: sample-api
 
+# deployment.yaml
 replicas: 1
+
+# configmap.yaml
 config:
   application.yml: |-
     greeting:
@@ -392,16 +419,32 @@ config:
 
 ---
 
+# [fit] Kustomize
+
+- base
+  - deployment.yaml
+  - service.yaml
+  - etc.
+- patches (overlays)
+  - environment/sit
+  - environment/uat
+  - etc.
+
+![right](https://kustomize.io/images/header_templates.png)
+
+
+---
+
 # [fit] GitOps
 
 **What is GitOps?**
-GitOps is an **operational framework** that takes DevOps best practices used for application development and applies them to infrastructure automation.
+ - Takes DevOps best practices used for application development and applies them to infrastructure automation, including __version control__ for tracking changes
 
 **What is GitOps used for?**
-GitOps is used to automate the process of provisioning infrastructure. DevOps teams that adopt GitOps use configuration files stored as code (infrastructure as code).
+ - Automate the process of __provisioning infrastructure__ by storing configuration files as code (infrastructure as code).
 
 **How does GitOps work?**
-GitOps configuration files generate the same infrastructure environment every time it’s deployed, just as application source code generates the same application binaries every time it’s built.
+ - GitOps configuration files __generate the same infrastructure environment every time it’s deployed__, just as application source code generates the same application binaries every time it’s built.
 
 ---
 
@@ -409,9 +452,9 @@ GitOps configuration files generate the same infrastructure environment every ti
 ### Continuous deployment to kubernetes made easy
 1. Declarative approach
    - I want 2 replicas, 1 ingress controller and 1 config map for service A
-   - 3 replicas, 1 secret and 1 persistent storage for service B
-2. Keep the deployement exactly as I describe the target state in git
-3. If anyone has manually changed the deployment, rollback to the state described in git 
+   - I wast 3 replicas, 1 secret and 1 persistent storage for service B
+2. Based on the desired target state in git, ArgoCD keeps the environment in-sync
+3. If someone has accidentally changed the environment, ArgoCD will revert the change back the target state
 
 ---
 
