@@ -4,7 +4,7 @@ slidenumbers: true
 
 # _From_ Code _to_ **_Cloud Native_**
 
-### How DevOps works in a Enterprise Project
+### How DevOps works in Enterprise Projects
 
 #### by _**Kevin Lin**_, _**Kin Yung Cheung**_
 
@@ -21,21 +21,35 @@ For the sceenshots, we are going to show whatever is used in Prodia project
 
 # What's next?
 
-^ Kevin act as Java developer and asking the question: what does it take to deploy to the Cloud?
-We want to make it public accessible?
-Kin:
+^ Kevin act as Java developer and asking the question:
+Kevin: what does it take to deploy to the Cloud?
+Kin: so you want the service to be accessible by others?
+Kevin: Yes...
+Kin: wouldn't it be nice if you don't need to worrying about dependencies...?
+Kevin: Sure, how can I do that?
+Kin: Put it in a container
 
 ---
 
 # [fit]Put it in a _**Container**_
 
-# [fit]or simply a _**Docker**_
-
-^ An application archive including base OS and software dependencies
+# [fit]or simply a _**Docker container**_
 
 1. Isolation (namespace)
 1. Limitation (cgroups)
 1. Simulation (fsroot)
+
+^ 
+Kevin: What is a container?
+Kin: Containerisation or dockerization ... is a form of virtualisation which is much lighter weight than VMs
+Kevin: okay...
+Kin: 
+  1. In a container, your application operates in an isolated environement ... and 
+  2. you can decide what OS and dependeceies are available in the environment.
+  3. Since containers run on top of a host and it is the job of the host to make sure that you have the CPU/memory resources that your container needs. 
+  4. The way that a host manages resources is like airlines overbooking seats on flight so that it can maximise the utilisation of hardware resources it has
+  5. Ultimately, you can run more applications with given hardware resources that a server has. Pretty cool ah?
+Kevin: yeah, but how do I have a container?
 
 ---
 
@@ -54,42 +68,68 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 --
 ```
 
+^ 
+Kin: 
+  1. to create a docker container, you need to create a docker image first and you need a dockerfile to do that
+  2. a dockerfile can be as simple as a few lines but it can get large too if your applicaiton has many dependencies  
+  3. each line is basically an "instruction". each instruction will result an extra layer in a docker image. 
+  4. the more instructions you have, the more layers will result and the bigger a docker image will become
+Kevin: Okay, so it is better to keep it small then
+Kin: (explain about the file)
+Kevin: then what's next?
+
 ---
 
 # What need to done for Docker that is deployable
 
 1. Run the Docker command to build the image
-1. Security scan on the image for CVE
+1. Security scan on the image for CVE (expliots)
 1. Publish to a docker registry, i.e.
 
 - Dockerhub
 - AWS ECR
 - etc
 
-^ Kevin: How do I make sure these steps are run every time correctly?
+^
+Kin: (read slide)
+Kevin: Do I need to do this every I want to build a docker image? How do I make sure these steps are run every time correctly?
+Kin: If you want to automate this step, we need a CI platform
 
 ---
 
 # Continuous Integration (CI) platform comes to rescue
 
-- Jenkins / CloudBees (for on-prem environment, most)
+- Jenkins / CloudBees (for on-prem environments, mostly)
 - GitHub Actions
 - Bitbucket Pipeline
 - CircleCI
+
+^ Kin: since nowadays git repositories like Github and Bitbucket also have their own CI platforms, it is getting less common to use dedicated CI platforms like Jenkins and CircleCI
+Kevin: Okay, can you show me what a CI platform looks like?
+Kin: sure
 
 ---
 
 # Bitbucket Pipeline
 
-- Comes bundled with Bitbucket
+![Inline, fit](bitbucket-pipeline-screenshot.png)
 
-![right, fit](bitbucket-pipeline-screenshot.png)
+^ Kin:
+1) a CI pipeline has a few common steps, such as test, build, scan, package, and the last step might involve deployment
+2) a pipeline is normally triggered by a code commit and it should be done automatically
+3) any unsuccessful builds or tests should be reported by the CI platform immediately
+4) since every operation is recorded, we are able to know who is responsible for each build
+Kevin: Wow, that's pretty cool. You can see each step very clearly and even logs as well.
+Kin: Yep
 
 ---
 
 # CI Flow
 
 ![Inline, 120%](CI%20Flow.png)
+
+^ Kin: here is an example that you can have multiple pipelines and each can be triggered under different conditions, such as by branch, by event, etc.
+Kevin: Is it hard to setup a CI pipeline? how to create one?
 
 ---
 
@@ -125,11 +165,19 @@ pipelines:
           deployment: uat
 ```
 
+^ Kin: 
+ - it depends on... setting up a CI pipeline can be complex and it also can quite simple.
+ - some CI platforms support more features, such as folder-level code change detections so that you can build only whats been changed. that's great for monorepos.
+ - but most pipeline scripts consist of two big sections, a pipelines section and a steps section.
+ - the pipelines section .....
+ - the steps section ...
+ - after you have created a CI script like this, you simple put it together with the source code that you want to build. The CI platform will read the script and run it accrodingly.
+Kevin: so after a CI pipeline is done, where is my application? has it been deployed to the cloud yet?
+
 ---
 
-# Where do we deploy the docker image?
-
-# And how do we do that?
+# Where do we deploy a docker image to?
+## and how do we do that?
 
 1. Host it on a single server
 
@@ -138,27 +186,36 @@ pipelines:
 
 Is it good enough for you?
 
-^ Kin to explain why we need a container orchestration system like K8s
+^ Kin: 
+  - No, not yet. we are just half way there. Up to this point, your docker image is stored in a docker registry.
+  - what comes next depends on what you need for your applications. Things like availability, scalability, security, etc..
+  - is hosting on a single server enough for you?
+Kevin: No... this API service is mission critical and we need it to be running 24x7 and scale accordingly
+Kin: Okay, it sounds important and we need something more...
 
 ---
 
+# Things to consider:
+
 ## How do you make sure the docker is running properly?
 
-### - What happens when it crashes?
+### - What happens when it __crashes__?
 
-## What if we want to have multiple instances to scale it up?
+## What if we want to have multiple instances to form a cluster?
 
-### - What happens when one of our service went down?
+### - What happens when one of the __instances__ went down?
 
-## What if we want to have many services running together in the target environment?
+## What if we want to have 10s or 100s of services running together in a target environment?
 
-### - Would it be cool to auto-scale when the service is under load?
+### - Would it be cool if a service can __auto-scale__ when it is under heavy load?
 
 ![inline](docker-swarm.png)
 
 ---
 
-# How containers work in real world
+# How containers work at scale
+#
+#
 
 ![autoplay, loop](https://cdn.videvo.net/videvo_files/video/premium/getty_10/large_watermarked/istock-621325890_preview.mp4)
 
@@ -171,12 +228,17 @@ Is it good enough for you?
 * De-factor standard to deploy and operate containerized applications
 
 ^ Kevin: I have heard of Kubernetes. What's the difference between Docker and Kubernetes? Is k8s an evolutaion of Docker?
+Kin: (slide)
+Kevin: Okay
 
 ---
 
 ## Control Plane vs Work Nodes
 
 ![inline, 68%](kubernetes-architecture.jpg)
+
+^ Kevin: Wow, what is this? my head hurts.
+Kin: haha, Kubernetes is quite a beast and it is ~complex~ but lucklily we don't need to manage everything ourselves nowadays
 
 ---
 
