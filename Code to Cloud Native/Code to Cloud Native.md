@@ -180,6 +180,15 @@ Is it good enough for you?
 
 ---
 
+# Different flavors of _**Kubernetes**_:
+
+- Local: Minikube, e3s
+- Self-managed Kubernetes
+- On-prem/Private Cloud: OpenShift
+- Managed Kubernetes service from Cloud: EKS, GKE, AKS, DigitalOcean etc
+
+---
+
 # Kubernetes in Summary
 
 - Everything run in Kubernetes are resource objects
@@ -196,15 +205,6 @@ Is it good enough for you?
 ---
 
 ![inline](kubernetes-objects.png)
-
----
-
-# Different flavors of _**Kubernetes**_:
-
-- Local: Minikube, e3s
-- Self-managed Kubernetes
-- On-prem/Private Cloud: OpenShift
-- Managed Kubernetes service from Cloud: EKS, GKE, AKS, DigitalOcean etc
 
 ---
 
@@ -337,7 +337,7 @@ GitOps configuration files generate the same infrastructure environment every ti
 
 ---
 
-# [fit] Why Rancher?
+# [fit] K9s
 
 - Rancher is great but 
   - I have to install it in my cluster and it is a pain to install
@@ -347,23 +347,18 @@ GitOps configuration files generate the same infrastructure environment every ti
 
 ---
 
+# [fit] What's Next?
+
+---
 # Advanced topics
 
 - Configuration management
     - ConfigMap vs config service vs env vars
 - Secret management
     - Sealed Secret
-
----
-
-# [fit] What's Next?
-
----
-
 - Operation dashboard
 - Logging: Fluent Bit + CloudWatch
 - App Performance Monitoring: Prometheus + Grafana
-- Distributed tracing: Zipkin, xxx
 
 ---
 
