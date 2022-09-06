@@ -112,7 +112,11 @@ Kin: sure
 
 # Bitbucket Pipeline
 
-![Inline, fit](bitbucket-pipeline-screenshot.png)
+- Comes bundled with Bitbucket
+- Integrate well with JIRA/Confluence
+- Easy-to-use, developer-friendly UI
+
+![right, fit](bitbucket-pipeline-screenshot.png)
 
 ^ Kin:
 1) a CI pipeline has a few common steps, such as test, build, scan, package, and the last step might involve deployment
@@ -455,6 +459,12 @@ config:
    - I wast 3 replicas, 1 secret and 1 persistent storage for service B
 2. Based on the desired target state in git, ArgoCD keeps the environment in-sync
 3. If someone has accidentally changed the environment, ArgoCD will revert the change back the target state
+
+---
+
+# CD Flow
+
+![Inline](CD%20Flow.png)
 
 ---
 
