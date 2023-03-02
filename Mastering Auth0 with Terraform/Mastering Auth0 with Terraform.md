@@ -1,64 +1,74 @@
 autoscale: true
-footer: Zuhlke Engineering Asia
+footer: © Zühlke 2023
 slidenumbers: true
 
+![](bg-sturcture.jpeg)
 # Mastering _**Auth0**_ with _**Terraform**_
 
 ## An **IoC** approach to Auth0 Configuration Management
 
-#### by _**Kevin Lin**__
+#### by _**Kevin Lin**_
 
 ---
 
+![](bg-direction.jpeg)
 # [fit] **_1. Introduction_**
 
-- Why I want to give this talk?
-- What you will get from the talk?
+> "The best way to learn is to teach."
 
-^ 1. This talk is like a utility book, not in depth, but can be easily applied
-1. You will learn a new skill that can be applied to your next project
-1. A fresh perspective on DevOps in software project
-Brief background of the speaker and their experience with Terraform and Auth0
-Overview of Auth0 and its capabilities
-The importance of managing Auth0 configurations effectively
+^
+- My current role in project, joy from learnings from technical work
+- The best way of learning is by teaching
+- This talk is a pure tech take, not in depth, but practical
+- Anyone with basis DevOps knowledge can easily grasp it, and can use the code sample to apply their projects
+- Problem/Solution - Demo - Learnings
 
 ---
 
+![](bg-mars.jpeg)
 # _**Terraform**_
 ## [https://www.terraform.io/](https://www.terraform.io/)
 
 - A tool for infrastructure as code (IaC) that define and manage cloud infrastructure in a declarative way
-- Users describe the desired state of their infrastructure in code using a high-level language (HCL)
+- Allows users to describe the desired state of their infrastructure in code using a high-level language (HCL)
 - Helps make infrastructure management more efficient, reliable, and consistent
   - Version-control your infrastructure
   - Collaborate with others
   - Automate your infrastructure management
 
-^ Infrastructure as Code (IaC) is a practice in software engineering that involves managing and provisioning infrastructure using code instead of manual processes
-IaC allows for greater consistency, repeatability, and scalability in managing infrastructure, reducing the risk of errors caused by manual configuration.
+^ 
+* Infrastructure as Code (IaC) is a practice of managing and provisioning infrastructure through code instead of manual processes
+* IaC allows for greater consistency, repeatability, and scalability in managing infrastructure, reducing the risk of errors caused by manual configuration.
+* Common tools include Terraform, CloudFormation, and Ansible.
 
 ---
 
+![](bg-flowing.jpeg)
 # _**Auth0**_
 ## [https://auth0.com/](https://auth0.com/)
 
-* Cloud-based identity platform for authentication and authorization services
-* Add secure authentication and authorization capabilities to web, mobile, and legacy applications
-* Supports a wide range of identity providers, including social media, enterprise, and government identity systems.
-* Features include single sign-on, multifactor authentication, and user management.
+- Cloud-based identity platform for authentication and authorization services
+- Add secure authentication and authorization capabilities to web, mobile, and legacy applications
+- Offers customizable login pages, advanced features such as role-based access control and SSO, and integrations with third-party services
+- Provides developer-friendly tools and SDKs for easy integration with different programming languages and frameworks, and offers built-in security features.
 
 ---
 
+![](bg-direction.jpeg)
 # [fit] _**2. The Problem**_
+# How Auth0 should _**not**_ be managed
 
-^ Common problems and struggles with managing Auth0 configurations
-Examples of potential security risks and operational issues with manual or ad hoc management approaches
-The importance of repeatability and consistency in managing Auth0 configurations
+^
+* Share a real project story
+* Common problems and struggles with managing Auth0 configurations
+* The importance of repeatability and consistency in managing Auth0 configurations
+* Potential security risks and operational issues with manual or ad hoc management approaches
 
 ---
 
+![](bg-symbols.jpeg)
 # [fit] 😀
-# At the beginning, everything is simple and easy ...
+# At the beginning, everything is simple and easy!
 
  Patient App | Doctor App | Admin App |
 :-----------:|:----------:|:---------:|
@@ -67,8 +77,9 @@ The importance of repeatability and consistency in managing Auth0 configurations
 
 ---
 
+![](bg-symbols.jpeg)
 # [fit] 😅
-# Then comes UAT ...
+# Then comes UAT, which doubles the configurations ...
 
 Patient App | Doctor App | Admin App |
 :----------:|:----------:|:---------:|
@@ -78,8 +89,10 @@ Patient App | Doctor App | Admin App |
 
 ---
 
+![](bg-symbols.jpeg)
 # [fit] 😰
-# And then we need to set up Production to go live!!
+# And then, Production need to be setup to go life!
+## Best news: we don't have admin access this time!!
 
 Patient App | Doctor App | Admin App |
 :----------:|:----------:|:---------:|
@@ -87,10 +100,16 @@ Patient App | Doctor App | Admin App |
   UAT       |    UAT     |   UAT
 **PROD**    |  **PROD**  | **PROD**
 
+^
+- You can see the problems here:
+1. Every config change will need to be applied 3 times
+2. As 10+ people have admin access, no way to track what was changes, who made the change 
+
 ---
 
+![](bg-symbols.jpeg)
 # [fit] 😡
-# And now we need to support Staging as well!!!
+# Lastly, we need to support Staging!!!
 
 Patient App | Doctor App | Admin App |
 :----------:|:----------:|:---------:|
@@ -101,18 +120,22 @@ Patient App | Doctor App | Admin App |
 
 ---
 
+![](bg-direction.jpeg)
 # [fit] _**3. The Solution**_
+# And how to start in 3 simple steps
 
-^ How Terraform can be used to manage Auth0 configurations effectively
-Key benefits of using Terraform with Auth0, including improved consistency, security, and scalability
-A detailed explanation of how Terraform can be used to manage Auth0 configurations
+^
+- How Terraform can be used to manage Auth0 configurations effectively
+- Key benefits of using Terraform with Auth0, including improved consistency, security, and scalability
+- A detailed explanation of how Terraform can be used to manage Auth0 configurations
 
 ---
 
+![](bg-spark.jpeg)
 # #1 Connect to Auth0 Management API
 
 1. Create a Machine to Machine (M2M) Application in Auth0 with the right permissions 
-1. Setting Auth0 environment variables locally
+1. Setting Auth0 environment variables
 
 ```shell
 export AUTH0_DOMAIN=***********
@@ -120,8 +143,12 @@ export AUTH0_CLIENT_ID=***********
 export AUTH0_CLIENT_SECRET=***********
 ```
 
+^
+- These commands connects the TF CLI on your local to the target Auth0 tenant
+
 ---
 
+![](bg-sturcture.jpeg)
 # #2 Configure your Terraform module 
 
 Configure the Provider in `main.tf`
@@ -141,6 +168,7 @@ provider "auth0" {}
 
 ---
 
+![](bg-terra.jpeg)
 # #3 Initialise your Terraform module
 
 Run the command from the module folder:
@@ -153,6 +181,7 @@ And you are ready to go!
 
 ---
 
+![](bg-rythem.jpeg)
 # Auth0 Resource in Terraform - Client
 
 ```json
@@ -196,6 +225,7 @@ resource "auth0_client" "admin_app" {
 
 ---
 
+![](bg-rythem.jpeg)
 # Auth0 Resource in Terraform - SMS Connection
 
 ```json
@@ -240,6 +270,7 @@ resource "auth0_connection" "sms" {
 
 ---
 
+![](bg-rythem.jpeg)
 # Auth0 Resource in Terraform - Email Provider
 
 ```json
@@ -265,18 +296,29 @@ resource "auth0_connection_client" "sms_conn_patient_app_assoc" {
 
 ---
 
-# [fit] _**5. Lessons Learned**_
+![](bg-direction.jpeg)
+# [fit] _**4. Code Demo**_##
 
-^ Sharing of real-world examples of Terraform being used to manage Auth0 configurations
-Lessons learned from using Terraform to manage Auth0 configurations in production
-Best practices for using Terraform with Auth0 and how to get started
+### [https://github.com/kevinlin/auth0-configuration-demo](https://github.com/kevinlin/auth0-configuration-demo)
+
+^
+- Plan to start on the next big thing, name it NextGen
+- Has both mobile and web app, support SMS and email OTP
 
 ---
 
+![](bg-direction.jpeg)
+# [fit] _**5. Lessons Learned**_
+# Best practices to master Auth0 configuration
+
+---
+
+![](bg-flowing.jpeg)
 # Store Terraform state files as code
 
-1. Stores unique IDs for TF to retrieve the latest state from Auth
-1. Output any resource object from state in standard format
+1. Snapshot of Auth0 configurations
+1. Contains UUIDs that enables TF to retrieve the latest and compare
+1. Output any resource object from state in standard HCL format
 
 ```shell
 terraform import auth0_client.web_client AaiyAPdpYdesoKnqjj8HJqRn4T5titww
@@ -285,13 +327,15 @@ terraform state show auth0_client.web_client
 
 ---
 
-# Import TF state first before any changes
+![](bg-reflection.jpeg)
+# Import Existing Configurations from Auth0 first
 
 ![inline](Auth0 with Terraform.drawio.png)
 
 ---
 
-# Use Workspace to manage multiple environments
+![](bg-symbols.jpeg)
+# Use TF Workspace to manage multiple environments
 
 Together with TF variables, you manage multiple environments with the same TF module: 
 
@@ -304,33 +348,43 @@ terraform plan -var-file=$(terraform workspace show).tfvars
 terraform apply -var-file=$(terraform workspace show).tfvars
 ```
 
+^
+- Allows you to do command substitution
 
 ---
 
-# [fit] _**6. Code Demo**_##
+![](bg-symbols.jpeg)
+# Encrypt Sensitive Data
+- [https://github.com/mozilla/sops](https://github.com/mozilla/sops)
+  - Open source tool that helps teams manage secrets securely
+  - Supports various encryption formats and cloud providers
+- [terraform-sops](https://github.com/carlpett/terraform-provider-sops) - A TF plugin for using files encrypted with sops
 
-### [https://github.com/kevinlin/auth0-configuration-demo](https://github.com/kevinlin/auth0-configuration-demo)
-
-^ echo "AUTH0_DOMAIN=$AUTH0_DOMAIN"
-echo "AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID"
-echo "AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET"
-
-^ export AUTH0_DOMAIN=nextgen-dev.au.auth0.com
-export AUTH0_CLIENT_ID=uo4Y4x38QPbLpbSrMEIThAZ5pcWDUNSu
-export AUTH0_CLIENT_SECRET=7XYmE3QMblDoaQysMugXpNaAxBVRvTHWLQurzQp4OPcXElcWzFbeVG7JYTYLJE52
-
-^ terraform import -var-file=$(terraform workspace show).tfvars auth0_client.mobile_app p8e0QTi32665C19URneKXhhqdPBStvCh
-
----
-
-# [fit] _**6. Possibilities**_
+^ 
+Terraform doesn't provide an official solution for encryption
+gpg --full-generate-key
+gpg --list-keys
+gpg --armor --output sops_key.asc --export kevin.lin@zuhlke.com
+gpg --fingerprint 
+export SOPS_PGP_FP="BE5F 7B02 7354 784A CBDD  DBA8 8B77 1DA9 D18D FE84"
 
 ---
 
-# [fit] _**Q&A and Sharing**_
+![](bg-spark.jpeg)
+# Possibilities to apply the same approach
 
-^ Open floor for attendees to ask questions about the presentation and topics discussed
-Opportunity for attendees to share their experiences with Terraform and Auth0
-Summary of the presentation and key takeaways
-Invitation to continue the conversation with the speaker after the session
-Thank you to the attendees for their time and attention
+- Go beyond Cloud providers
+- Any API service that can be fully managed by RESTful API can be managed by TF, technically
+- Okta, Kong gateway, ForgeRock Cloud
+
+---
+
+![](bg-thankyou.png)
+# [fit] _**Q&A**_ + Invitation
+
+^
+- Open floor for attendees to ask questions about the presentation and topics discussed
+- Opportunity for attendees to share their experiences with Terraform and Auth0
+- Invitation to continue the conversation with the speaker after the session
+- Looking forward to your experience on applying the learnings to real client projects
+- Thank you to the attendees for their time and attention!
