@@ -1,4 +1,4 @@
-footer: © Unsigned Integer UG
+footer: © The Deckset Team
 slidenumbers: true
 
 # Deckset Basics
@@ -163,7 +163,7 @@ Add speaker notes to any slide by adding `‘^’` before your notes. Write as m
 
 ---
 
-![](presenter.jpg)
+![fit](presenter.jpg)
 
 ---
 

@@ -1,4 +1,4 @@
-footer: © Unsigned Integer UG
+footer: © The Deckset Team
 slidenumbers: true
 
 # Deckset in Education
