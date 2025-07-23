@@ -60,7 +60,6 @@
   - Create output directory structure management (docs/, slides/, assets/)
   - Implement file cleanup and organization for generated website
   - Write integration tests for complete file management workflow in tests/test_integration.py
-  - Commit the changes use the task name and push changes to remote 
   - _Requirements: 2.4, 4.3, 5.2_
 
 - [x] 9. Enhance main generator orchestration
@@ -69,7 +68,6 @@
   - Add configuration management for output directories and settings
   - Implement comprehensive error handling with graceful degradation
   - Add logging for debugging and monitoring generation process
-  - Commit the changes use the task name and push changes to remote 
   - _Requirements: 5.1, 5.4, 5.5_
 
 - [x] 10. Build comprehensive error handling and logging
@@ -78,7 +76,6 @@
   - Create detailed logging with context information for debugging
   - Implement error reporting that doesn't break the entire generation process
   - Write unit tests for error scenarios and recovery mechanisms in tests/test_error_handling.py
-  - Commit the changes use the task name and push changes to remote 
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
 - [x] 11. Create GitHub Actions workflow
@@ -88,5 +85,4 @@
   - Configure GitHub Pages deployment from generated docs/ directory
   - Add error notification and reporting for failed builds
   - Write workflow that triggers on main branch pushes
-  - Commit the changes use the task name and push changes to remote 
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
