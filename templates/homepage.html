@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Deckset Presentations{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4">Deckset Presentations</h1>
+    <p class="text-gray-600">
+        Found {{ presentations|length }} presentation{{ 's' if presentations|length != 1 else '' }}
+    </p>
+</div>
+
+{% if presentations %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for presentation in presentations %}
+    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div class="p-6">
+            {% if presentation.preview_image %}
+            <div class="mb-4">
+                <img src="{{ presentation.preview_image }}" 
+                     alt="Preview of {{ presentation.title }}"
+                     class="w-full h-32 object-cover rounded-md">
+            </div>
+            {% else %}
+            <div class="mb-4 bg-gray-200 h-32 rounded-md flex items-center justify-center">
+                <span class="text-gray-500">No Preview</span>
+            </div>
+            {% endif %}
+            
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                <a href="presentations/{{ presentation.folder_name }}.html" 
+                   class="hover:text-blue-600 transition-colors">
+                    {{ presentation.title }}
+                </a>
+            </h3>
+            
+            <div class="text-sm text-gray-600 space-y-1">
+                <p>{{ presentation.slide_count }} slide{{ 's' if presentation.slide_count != 1 else '' }}</p>
+                {% if presentation.last_modified %}
+                <p>Updated: {{ presentation.last_modified.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-12">
+    <div class="text-gray-500">
+        <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No presentations found</h3>
+        <p class="text-gray-600">Add some Deckset presentations to get started.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ presentation.info.title }} - Deckset Presentations{% endblock %}
+
+{% block nav_links %}
+{{ super() }}
+<a href="/presentations/" class="text-gray-600 hover:text-gray-900">All Presentations</a>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ presentation.info.title }}</h1>
+    <div class="text-gray-600 text-sm">
+        <span>{{ presentation.slides|length }} slide{{ 's' if presentation.slides|length != 1 else '' }}</span>
+        {% if presentation.info.last_modified %}
+        <span class="mx-2">•</span>
+        <span>Updated {{ presentation.info.last_modified.strftime('%Y-%m-%d') }}</span>
+        {% endif %}
+    </div>
+</div>
+
+{% if presentation.slides %}
+<div class="space-y-8">
+    {% for slide in presentation.slides %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide {{ slide.index }}
+                </h2>
+                <span class="text-sm text-gray-500">
+                    {{ slide.index }} of {{ presentation.slides|length }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    {% if slide.image_path %}
+                    <img src="{{ slide.image_path }}" 
+                         alt="Slide {{ slide.index }}"
+                         class="w-full border rounded-lg shadow-sm">
+                    {% else %}
+                    <div class="w-full h-64 bg-gray-200 border rounded-lg flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <svg class="mx-auto h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p>Slide Image</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="slide-content">
+                    {% if slide.content %}
+                    <div class="prose prose-sm max-w-none mb-4">
+                        {{ slide.content | markdown }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if slide.notes %}
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            {{ slide.notes | markdown }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-12">
+    <div class="text-gray-500">
+        <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No slides found</h3>
+        <p class="text-gray-600">This presentation appears to be empty.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Add any presentation-specific JavaScript here
+// For example, slide navigation, keyboard shortcuts, etc.
+</script>
+{% endblock %}
