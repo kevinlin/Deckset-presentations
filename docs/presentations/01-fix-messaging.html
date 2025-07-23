@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="01-fix-messaging - A presentation with 37 slides">
+    <title>01-fix-messaging - Deckset Presentations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for presentation content */
+        .slide-content {
+            @apply prose prose-lg max-w-none;
+        }
+
+        .slide-notes {
+            @apply text-gray-600 bg-gray-50 p-4 rounded-lg mt-4;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 640px) {
+            .slide-content {
+                @apply prose-sm;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .dark-mode-support {
+                @apply bg-gray-900 text-white;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-blue-500 focus:text-white focus:z-50">
+        Skip to main content
+    </a>
+
+    <header class="bg-white shadow-sm border-b sticky top-0 z-10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-semibold text-gray-900 flex items-center">
+                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span>Deckset Presentations</span>
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button"
+                        class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Desktop navigation -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                    <a href="/"
+                        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+
+<a href="/presentations/" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">All Presentations</a>
+                </div>
+            </div>
+
+            <!-- Mobile menu, show/hide based on menu state -->
+            <div class="mobile-menu hidden sm:hidden">
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="/"
+                        class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+
+<a href="/presentations/" class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">All Presentations</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content" class="flex-grow max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">01-fix-messaging</h1>
+            <div class="text-gray-600 text-sm">
+                <span>37 slides</span>
+                <span class="mx-2">•</span>
+                <span>Updated 2022-08-26</span>
+            </div>
+        </div>
+        <div class="mt-4 md:mt-0 flex space-x-2">
+            <button id="print-button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 no-print">
+                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print
+            </button>
+            <button id="fullscreen-button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 no-print">
+                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                </svg>
+                Fullscreen
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="mb-6 flex items-center justify-between bg-white rounded-lg shadow-sm p-4 sticky top-16 z-10 no-print">
+    <div class="flex space-x-2">
+        <button id="prev-slide" class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" >
+            <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Previous
+        </button>
+        <button id="next-slide" class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" >
+            Next
+            <svg class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+    <div id="slide-counter" class="text-sm text-gray-500">
+        Slide <span id="current-slide">1</span> of 37
+    </div>
+</div>
+
+<div id="slides-container" class="space-y-8">
+    <div id="slide-1" class="slide bg-white rounded-lg shadow-md overflow-hidden  page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 1
+                </h2>
+                <span class="text-sm text-gray-500">
+                    1 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 1"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;[fit] FIX Messaging&lt;/h1&gt;
+&lt;h1&gt;by &lt;strong&gt;&lt;em&gt;Kevin Lin&lt;/em&gt;&lt;/strong&gt;&lt;/h1&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-2" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 2
+                </h2>
+                <span class="text-sm text-gray-500">
+                    2 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 2"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;&lt;img alt=&#34;inline, 100%&#34; src=&#34;kevin-portrait.jpg&#34; /&gt; What I will talk about&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;This tech talk is for engineers with little or no prior knowledge on FIX. &lt;/li&gt;
+&lt;li&gt;To provide a basic understanding of FIX messaging standard, structure, system architecture and the programming model.&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-3" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 3
+                </h2>
+                <span class="text-sm text-gray-500">
+                    3 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 3"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;[fit] What is FIX?&lt;/h1&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-4" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 4
+                </h2>
+                <span class="text-sm text-gray-500">
+                    4 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 4"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;p&gt;&lt;img alt=&#34;left, fit&#34; src=&#34;the_fix.png&#34; /&gt;
+&lt;img alt=&#34;right, fit&#34; src=&#34;we-can-fix-it!.gif&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            &lt;p&gt;This is what you will find when your google: FIX It
+This is what you will find when your google: FIX It
+This is what you will find when your google: FIX It
+This is what you will find when your google: FIX It&lt;/p&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-5" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 5
+                </h2>
+                <span class="text-sm text-gray-500">
+                    5 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 5"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;&lt;strong&gt;&lt;em&gt;F&lt;/em&gt;&lt;/strong&gt;inancial &lt;strong&gt;&lt;em&gt;I&lt;/em&gt;&lt;/strong&gt;nformation e&lt;strong&gt;&lt;em&gt;X&lt;/em&gt;&lt;/strong&gt;change&lt;/h1&gt;
+&lt;p&gt;A electronic communications protocol for international &lt;strong&gt;&lt;em&gt;real-time&lt;/em&gt;&lt;/strong&gt; exchange of &lt;strong&gt;&lt;em&gt;securities transaction&lt;/em&gt;&lt;/strong&gt; information. &lt;/p&gt;
+&lt;p&gt;Used by the FIX community which includes nearly 300 member firms including &lt;strong&gt;&lt;em&gt;all major investment banks&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The de-facto messaging standard for &lt;strong&gt;&lt;em&gt;front office messaging&lt;/em&gt;&lt;/strong&gt;. It is used for pre-trade, trade, and post-trade communication.&lt;/p&gt;
+                    </div>
+                    
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            &lt;p&gt;Have anybody head the name SWIFT? SWFIT is the standard for back office messaging, FIX is the standard for front office messaging.
+Have anybody head the name SWIFT? SWFIT is the standard for back office messaging, FIX is the standard for front office messaging.
+Have anybody head the name SWIFT? SWFIT is the standard for back office messaging, FIX is the standard for front office messaging.
+Have anybody head the name SWIFT? SWFIT is the standard for back office messaging, FIX is the standard for front office messaging.&lt;/p&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-6" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 6
+                </h2>
+                <span class="text-sm text-gray-500">
+                    6 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 6"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Characteristic of FIX&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Simple, plain text, field-based text messages&lt;/li&gt;
+&lt;li&gt;Platform and Transport independent, compatible with almost every common network technology&lt;/li&gt;
+&lt;li&gt;Public standard&lt;ul&gt;
+&lt;li&gt;Owned &amp;amp; managed by &lt;a href=&#34;https://www.fixtrading.org/&#34;&gt;FIX Protocol Ltd&lt;/a&gt;, a non-profit financial community organization&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Wide support and lots of software vendors availability&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-7" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 7
+                </h2>
+                <span class="text-sm text-gray-500">
+                    7 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 7"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;blockquote&gt;
+&lt;p&gt;The FIX Protocol was originally authored in 1992 to enable electronic communication of equity trading data between Fidelity Investments and Salomon Brothers.
+-- by Robert &#34;Bob&#34; Lamoureux and Chris Morstatt&lt;/p&gt;
+&lt;/blockquote&gt;
+                    </div>
+                    
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            &lt;p&gt;Now let&#39;s look back how FIX was invented
+Now let&#39;s look back how FIX was invented
+Now let&#39;s look back how FIX was invented
+Now let&#39;s look back how FIX was invented&lt;/p&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-8" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 8
+                </h2>
+                <span class="text-sm text-gray-500">
+                    8 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 8"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h3&gt;Fidelity realized that information from their broker-dealers could be routed to the wrong trader, or simply lost when the parties hung up their phones.&lt;/h3&gt;
+&lt;h3&gt;It wanted such communications to be replaced with machine-readable data&lt;/h3&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;BGCcharity-damian.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-9" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 9
+                </h2>
+                <span class="text-sm text-gray-500">
+                    9 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 9"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h2&gt;Strict syntax, machine parsable while remain textual&lt;/h2&gt;
+&lt;h2&gt;Extensible, support all current and future trading activities&lt;/h2&gt;
+&lt;h2&gt;Concise, use less characters to conserve bandwidth&lt;/h2&gt;
+&lt;p&gt;JSON? No good way to enforce syntax/schema
+Protobuf? Probobaly&lt;/p&gt;
+                    </div>
+                    
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            &lt;p&gt;XML? No, too verbose
+XML? No, too verbose
+XML? No, too verbose
+XML? No, too verbose
+JSON? No good way to enforce syntax/schema
+Protobuf? Probobaly&lt;/p&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-10" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 10
+                </h2>
+                <span class="text-sm text-gray-500">
+                    10 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 10"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Buy 5000 IBM @ 110.75&lt;/h1&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;tullett10.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-11" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 11
+                </h2>
+                <span class="text-sm text-gray-500">
+                    11 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 11"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Buy 5000 IBM @ 110.75&lt;/h1&gt;
+&lt;h2&gt;&lt;em&gt;[A fund manager] tells [A broker] I&#39;m willing to&lt;/em&gt; Buy 5000 &lt;em&gt;units of&lt;/em&gt; IBM &lt;em&gt;shares at the price of&lt;/em&gt; 110.75 &lt;em&gt;dollars right now&lt;/em&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;tullett2.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-12" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 12
+                </h2>
+                <span class="text-sm text-gray-500">
+                    12 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 12"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h2&gt;Buy 5000 IBM @ 110.75&lt;/h2&gt;
+&lt;h3&gt;&lt;em&gt;[A fund manager] tells [A broker] I&#39;m willing to&lt;/em&gt; Buy 5000 &lt;em&gt;units of&lt;/em&gt; IBM &lt;em&gt;shares at the price of&lt;/em&gt; 110.75 &lt;em&gt;dollars right now&lt;/em&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Replace each piece of information with a field/tag, identified by a decimal number&lt;/li&gt;
+&lt;li&gt;And add additional fields/tags required by machine&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;tullett7.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-13" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 13
+                </h2>
+                <span class="text-sm text-gray-500">
+                    13 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 13"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h2&gt;Buy 5000 IBM @ 110.75&lt;/h2&gt;
+&lt;h4&gt;&lt;code&gt;8=FIX.4.2^9=251^35=D^49=AFUNDMGR^56=ABROKER^34=2^52=20030615-01:14:49^11=12345^21=1^55=IBM^54=1^60=2003061501:14:49^38=5000^40=2^44=110.75^10=127&lt;/code&gt;&lt;/h4&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Header fields&lt;/th&gt;
+&lt;th&gt;Body fields&lt;/th&gt;
+&lt;th&gt;Trailer Fields&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;8=BeginString (indicates FIX 4.2)&lt;/td&gt;
+&lt;td&gt;11=ClOrderID (client order id)&lt;/td&gt;
+&lt;td&gt;10=Checksum&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;9=BodyLength (251)&lt;/td&gt;
+&lt;td&gt;21=HandleInst (automated exec)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;35=MsgType (new order)&lt;/td&gt;
+&lt;td&gt;55=Symbol (IBM)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;49=SenderCompID (AFUNDMGR)&lt;/td&gt;
+&lt;td&gt;54=Side (buy)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;56=TargetCompID (ABROKER)&lt;/td&gt;
+&lt;td&gt;60=TransactTime (2003061501:14:4952)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;34=MsgSeqNum (2)&lt;/td&gt;
+&lt;td&gt;38=OrderQty (5000)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;52=SendTime (20030615-01:14:49)&lt;/td&gt;
+&lt;td&gt;40=OrdType (Limit)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;44=Price (110.75)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-14" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 14
+                </h2>
+                <span class="text-sm text-gray-500">
+                    14 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 14"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h2&gt;Buy 5000 IBM @ 110.75&lt;/h2&gt;
+&lt;h5&gt;8=FIX.4.2^9=251^35=D^49=AFUNDMGR^56=ABROKER^34=2^52=20030615-01:14:49^11=12345^21=1^&lt;strong&gt;&lt;em&gt;55=IBM&lt;/em&gt;&lt;/strong&gt;^&lt;strong&gt;&lt;em&gt;54=1&lt;/em&gt;&lt;/strong&gt;^60=2003061501:14:49^&lt;strong&gt;&lt;em&gt;38=5000&lt;/em&gt;&lt;/strong&gt;^40=2^&lt;strong&gt;&lt;em&gt;44=110.75&lt;/em&gt;&lt;/strong&gt;^10=127&lt;/h5&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Header fields&lt;/th&gt;
+&lt;th&gt;Body fields&lt;/th&gt;
+&lt;th&gt;Trailer Fields&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;8=BeginString (indicates FIX 4.2)&lt;/td&gt;
+&lt;td&gt;11=ClOrderID (client order id)&lt;/td&gt;
+&lt;td&gt;10=Checksum&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;9=BodyLength (251)&lt;/td&gt;
+&lt;td&gt;21=HandleInst (automated exec)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;35=MsgType (new order)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;em&gt;55=Symbol (IBM)&lt;/em&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;49=SenderCompID (AFUNDMGR)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;em&gt;54=Side (buy)&lt;/em&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;56=TargetCompID (ABROKER)&lt;/td&gt;
+&lt;td&gt;60=TransactTime (2003061501:14:4952)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;34=MsgSeqNum (2)&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;em&gt;38=OrderQty (5000)&lt;/em&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;52=SendTime (20030615-01:14:49)&lt;/td&gt;
+&lt;td&gt;40=OrdType (Limit)&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;&lt;em&gt;44=Price (110.75)&lt;/em&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-15" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 15
+                </h2>
+                <span class="text-sm text-gray-500">
+                    15 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 15"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;FIX message structure&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Header fields&lt;ul&gt;
+&lt;li&gt;message type, length, sequence number, sender/target, encoding, etc.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Body fields&lt;ul&gt;
+&lt;li&gt;session &amp;amp; application data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Trailer fields&lt;ul&gt;
+&lt;li&gt;Signature, checksum&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-16" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 16
+                </h2>
+                <span class="text-sm text-gray-500">
+                    16 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 16"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Message fields&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;For each field &lt;code&gt;&amp;lt;Tag&amp;gt;=&amp;lt;Value&amp;gt;&amp;lt;Delimiter&amp;gt;&lt;/code&gt; the specification defines:&lt;ul&gt;
+&lt;li&gt;Tag – A unique number.&lt;/li&gt;
+&lt;li&gt;Field Name – Field name with no spaces.&lt;/li&gt;
+&lt;li&gt;Required - Mandatory/optional&lt;/li&gt;
+&lt;li&gt;Description – Definition of data, data type, etc.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;Delimiter&amp;gt;&lt;/code&gt; is ASCII SOH character&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-17" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 17
+                </h2>
+                <span class="text-sm text-gray-500">
+                    17 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 17"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;A brief history of FIX&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Introduced in &lt;strong&gt;1992&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;1995&lt;/strong&gt; - first public spec (FIX 2.7) released&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;1996&lt;/strong&gt; - FIX 4.0&lt;ul&gt;
+&lt;li&gt;Introduced with good US equity support (still in use in US)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;2000&lt;/strong&gt; – FIX 4.2&lt;ul&gt;
+&lt;li&gt;Better international support&lt;/li&gt;
+&lt;li&gt;Futures, options, FX&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;2001&lt;/strong&gt; – FIX 4.3&lt;ul&gt;
+&lt;li&gt;Fixed income&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;2003&lt;/strong&gt; – FIX 4.4&lt;ul&gt;
+&lt;li&gt;Confirmations &amp;amp; trade reporting&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;2006&lt;/strong&gt; – FIX 5.0 &amp;amp; FIXT1.1&lt;ul&gt;
+&lt;li&gt;Complex FX, improved session/transport level&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-18" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 18
+                </h2>
+                <span class="text-sm text-gray-500">
+                    18 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 18"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Who uses FIX?&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Institutional investors (the buy side)&lt;/li&gt;
+&lt;li&gt;Broker/dealers (the sell side)&lt;/li&gt;
+&lt;li&gt;Exchanges &amp;amp; Electronic Communication Networks (ECN)&lt;/li&gt;
+&lt;li&gt;Financial industry utilities&lt;/li&gt;
+&lt;li&gt;Software &amp;amp; services vendors&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-19" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 19
+                </h2>
+                <span class="text-sm text-gray-500">
+                    19 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 19"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;What/where is it used?&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Financial Products Supported&lt;ul&gt;
+&lt;li&gt;Equities&lt;/li&gt;
+&lt;li&gt;Fixed Income&lt;/li&gt;
+&lt;li&gt;FX&lt;/li&gt;
+&lt;li&gt;Derivatives (Options, Futures, IR Swaps etc)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Used worldwide
+    -&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-20" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 20
+                </h2>
+                <span class="text-sm text-gray-500">
+                    20 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 20"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;What/where is it used?&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Financial Products Supported&lt;ul&gt;
+&lt;li&gt;Equities&lt;/li&gt;
+&lt;li&gt;Fixed Income&lt;/li&gt;
+&lt;li&gt;FX&lt;/li&gt;
+&lt;li&gt;Derivatives (Options, Futures, IR Swaps etc)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Used worldwide&lt;ul&gt;
+&lt;li&gt;Except mainland China :cn: :sin:&#34;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-21" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 21
+                </h2>
+                <span class="text-sm text-gray-500">
+                    21 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 21"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;How is it used?&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Used by exchanges, ECN, &amp;amp; brokers/ dealers to distribute market data, quotes, etc.&lt;/li&gt;
+&lt;li&gt;Money mangers use it to send orders and receive executions from brokers.&lt;/li&gt;
+&lt;li&gt;Used by exchanges &amp;amp; ECNs to receive orders or quotes &amp;amp; report trades.&lt;/li&gt;
+&lt;li&gt;Used to allocate &amp;amp; confirm trades.&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-22" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 22
+                </h2>
+                <span class="text-sm text-gray-500">
+                    22 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 22"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Variant of FIX&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;tagvalue (classic FIX)&lt;/li&gt;
+&lt;li&gt;FAST - FIX Adapted for Streaming&lt;ul&gt;
+&lt;li&gt;Binary encoding for reduced bandwidth use and low latency &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;FIXML - XML&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-23" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 23
+                </h2>
+                <span class="text-sm text-gray-500">
+                    23 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 23"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;p&gt;&lt;img alt=&#34;inline&#34; src=&#34;FIX Architecture.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Typical FIX system architecture&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-24" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 24
+                </h2>
+                <span class="text-sm text-gray-500">
+                    24 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 24"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;p&gt;&lt;img alt=&#34;35%, inline&#34; src=&#34;FIX%20System%20Connectivity%20Diagram.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Typical FIX system connectivity&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-25" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 25
+                </h2>
+                <span class="text-sm text-gray-500">
+                    25 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 25"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;p&gt;&lt;img alt=&#34;75%, inline&#34; src=&#34;tpForwardDeal_Platform.png&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-26" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 26
+                </h2>
+                <span class="text-sm text-gray-500">
+                    26 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 26"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;p&gt;`8=FIXT.1.1^A9=908^A35=y^A49=FIXEDGE^A56=UILNDRGW1^A34=2239^A52=20170309-11:41:49.132^A560=0^A393=1^A320=23387919276913833^A322=23387919276913833_37^A1151=NDF.AFRICA^A893=Y&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;matrix.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                    <div class="slide-notes">
+                        <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
+                        <div class="prose prose-sm max-w-none">
+                            &lt;p&gt;A146=1^A55=NDF.USD.UGX.10M^A460=0^A423=106^A32030=0^A32237=17^A32278=1^A32277=1^A32239=2^A32292=1^A32042=0^A32321=1^A32322=2^A32354=1^A32045=2^A32047=10^A32053=2^A32296=309^A32054=0^A32055=1000000^A32352=0^A32355=0^A32356=0^A32357=3^A32358=0^A32359=0^A32360=1^A32361=1^A32362=1^A32316=0^A32344=2^A32404=0^A167=NDF^A762=Variable Start End Date^A965=1^A32223=20170309^A32240=D^A32041=D^A32043=20170313^A32353=20170313^A32046=M^A32048=None^A32050=20180113^A32051=20180116^A32345=REUTERS^A32346=ZMWFIX=TR^A32347=USD^A32348=20180112^A32349=20180112^A32302=11:30:00^A562=0.1^A1140=50^A561=0.05^A32243=1^A32331=500000^A454=2^A455=UGX 10M.NS^A456=3^A455=ForeignExchange:NDF^A456=100^A32293=3^A32044=USD^A32044=UGX^A32044=WKNDS^A32294=3^A32052=USD^A32052=UGX^A32052=WKNDS^A1310=1^A1301=FX.AFRICA^A1205=1^A1206=0^A1207=1500^A1208=0.0001^A1237=1^A40=2^A10=251^A2&lt;code&gt;A146=1^A55=NDF.USD.UGX.10M^A460=0^A423=106^A32030=0^A32237=17^A32278=1^A32277=1^A32239=2^A32292=1^A32042=0^A32321=1^A32322=2^A32354=1^A32045=2^A32047=10^A32053=2^A32296=309^A32054=0^A32055=1000000^A32352=0^A32355=0^A32356=0^A32357=3^A32358=0^A32359=0^A32360=1^A32361=1^A32362=1^A32316=0^A32344=2^A32404=0^A167=NDF^A762=Variable Start End Date^A965=1^A32223=20170309^A32240=D^A32041=D^A32043=20170313^A32353=20170313^A32046=M^A32048=None^A32050=20180113^A32051=20180116^A32345=REUTERS^A32346=ZMWFIX=TR^A32347=USD^A32348=20180112^A32349=20180112^A32302=11:30:00^A562=0.1^A1140=50^A561=0.05^A32243=1^A32331=500000^A454=2^A455=UGX 10M.NS^A456=3^A455=ForeignExchange:NDF^A456=100^A32293=3^A32044=USD^A32044=UGX^A32044=WKNDS^A32294=3^A32052=USD^A32052=UGX^A32052=WKNDS^A1310=1^A1301=FX.AFRICA^A1205=1^A1206=0^A1207=1500^A1208=0.0001^A1237=1^A40=2^A10=251^A2&lt;/code&gt;
+A146=1A55=NDF.USD.UGX.10MA460=0A423=106A32030=0A32237=17A32278=1A32277=1A32239=2A32292=1A32042=0A32321=1A32322=2A32354=1A32045=2A32047=10A32053=2A32296=309A32054=0A32055=1000000A32352=0A32355=0A32356=0A32357=3A32358=0A32359=0A32360=1A32361=1A32362=1A32316=0A32344=2A32404=0A167=NDFA762=Variable Start End DateA965=1A32223=20170309A32240=DA32041=DA32043=20170313A32353=20170313A32046=MA32048=NoneA32050=20180113A32051=20180116A32345=REUTERSA32346=ZMWFIX=TRA32347=USDA32348=20180112A32349=20180112A32302=11:30:00A562=0.1A1140=50A561=0.05A32243=1A32331=500000A454=2A455=UGX 10M.NSA456=3A455=ForeignExchange:NDFA456=100A32293=3A32044=USDA32044=UGXA32044=WKNDSA32294=3A32052=USDA32052=UGXA32052=WKNDSA1310=1A1301=FX.AFRICAA1205=1A1206=0A1207=1500A1208=0.0001A1237=1A40=2A10=251A2`&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;matrix.jpg&#34; /&gt;&lt;/p&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-27" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 27
+                </h2>
+                <span class="text-sm text-gray-500">
+                    27 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 27"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;FIX Versioning&lt;/h1&gt;
+&lt;p&gt;FIX currently supports three versions of the application messages that serve as the basis for standardization:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Version 5.0 Service Pack 2
+    &lt;strong&gt;&lt;em&gt;FIX.5.0SP2&lt;/em&gt;&lt;/strong&gt; is the most current version of FIX that supports multiple asset classes and a wide range of trading life cycle business processes. 
+    The FIX session protocol was separated from the application with the introduction of FIX.5.0&lt;/li&gt;
+&lt;li&gt;Version 4.4
+    &lt;strong&gt;&lt;em&gt;FIX.4.4&lt;/em&gt;&lt;/strong&gt; is one of the most widely adopted versions oF FIX. FIX.4.4 covers multiple asset classes including fixed income instruments. As of 2010, it is considered compliant to use fields, messages, and components as of the latest extension pack of FIX with FIX.4.4.&lt;/li&gt;
+&lt;li&gt;Version 4.2
+    &lt;strong&gt;&lt;em&gt;FIX.4.2&lt;/em&gt;&lt;/strong&gt; is widely used for equities, FX, and listed derivatives trading.&lt;/li&gt;
+&lt;/ol&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-28" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 28
+                </h2>
+                <span class="text-sm text-gray-500">
+                    28 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 28"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;FIX tag number space&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Public fields (tagNum &amp;lt; 5000)&lt;ul&gt;
+&lt;li&gt;Reserved for standard specifications or extentions&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;User defined fields (5000 &amp;lt;= tagNum &amp;lt; 9999)&lt;ul&gt;
+&lt;li&gt;Publicly registered, fully allocated &lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.fixtrading.org/standards/user-defined-fields/&#34;&gt;User Defined Fields&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;User defined fields (10,000 &amp;lt;= tagNum &amp;lt;= 39999)&lt;ul&gt;
+&lt;li&gt;For bilateral user between parties, do not need to be registered&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-29" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 29
+                </h2>
+                <span class="text-sm text-gray-500">
+                    29 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 29"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Session &amp;amp; application layers&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Session layer/protocol&lt;ul&gt;
+&lt;li&gt;Make &amp;amp; terminate connections&lt;/li&gt;
+&lt;li&gt;Deliver messages in sequence w/ data integrity&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Application layer&lt;ul&gt;
+&lt;li&gt;Business level messages&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Session &amp;amp; application layers are coupled prior FIX 5.0.&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-30" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 30
+                </h2>
+                <span class="text-sm text-gray-500">
+                    30 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 30"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Session Level Messages&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;Logon&lt;/li&gt;
+&lt;li&gt;Heartbeat&lt;/li&gt;
+&lt;li&gt;Test Request&lt;/li&gt;
+&lt;li&gt;Resend Request&lt;/li&gt;
+&lt;li&gt;Reject&lt;/li&gt;
+&lt;li&gt;Sequence Reset&lt;/li&gt;
+&lt;li&gt;Logout&lt;/li&gt;
+&lt;/ol&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-31" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 31
+                </h2>
+                <span class="text-sm text-gray-500">
+                    31 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 31"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Application Messages&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Pre-trade messages&lt;ul&gt;
+&lt;li&gt;Market Data&lt;/li&gt;
+&lt;li&gt;Security Info etc&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Trade messages&lt;ul&gt;
+&lt;li&gt;Single Orders / Basket/List Orders / Multi-leg orders&lt;/li&gt;
+&lt;li&gt;Execution Reports&lt;/li&gt;
+&lt;li&gt;Order Cancel/Replace&lt;/li&gt;
+&lt;li&gt;Status etc&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Post-Trade messages&lt;ul&gt;
+&lt;li&gt;Allocations&lt;/li&gt;
+&lt;li&gt;Settlement Instructions&lt;/li&gt;
+&lt;li&gt;Positions Management etc&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-32" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 32
+                </h2>
+                <span class="text-sm text-gray-500">
+                    32 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 32"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;ul&gt;
+&lt;li&gt;FIX Dictionary&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://btobits.com/fixopaedia/index.html&#34;&gt;https://btobits.com/fixopaedia/index.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.onixs.biz/fix-dictionary.html&#34;&gt;https://www.onixs.biz/fix-dictionary.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;FIX Parser&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://fix.aprics.net/&#34;&gt;http://fix.aprics.net/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-33" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 33
+                </h2>
+                <span class="text-sm text-gray-500">
+                    33 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 33"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;QuickFIX Family&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Free and open source implementation of the FIX protocol&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Java&lt;/strong&gt; - &lt;a href=&#34;http://www.quickfixj.org/&#34;&gt;QuickFIX/J&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;.NET&lt;/strong&gt; - &lt;a href=&#34;http://www.quickfixn.org/&#34;&gt;QuickFIX/N&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Go&lt;/strong&gt; - &lt;a href=&#34;http://www.quickfixgo.org/&#34;&gt;Quickfix/Go&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-34" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 34
+                </h2>
+                <span class="text-sm text-gray-500">
+                    34 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 34"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h2&gt;Create and send FIX message in OO way&lt;/h2&gt;
+&lt;div class=&#34;codehilite&#34;&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nn&#34;&gt;quickfix.*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+
+&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;sendOrderCancelRequest&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;throws&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SessionNotFound&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;quickfix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;fix41&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;OrderCancelRequest&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;message&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;quickfix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;fix41&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;OrderCancelRequest&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;OrigClOrdID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;123&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
+&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ClOrdID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;321&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
+&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Symbol&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;LNUX&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
+&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Side&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Side&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;BUY&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+
+&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;message&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;set&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;Cancel My Order!&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+
+&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Session&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;sendToTarget&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;message&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;TW&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;TARGET&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-35" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 35
+                </h2>
+                <span class="text-sm text-gray-500">
+                    35 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 35"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Key things to take note working on FIX systems&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;FIX systems are generally high-throughput, low-latency systems, design ahead&lt;/li&gt;
+&lt;li&gt;High availability, i.e. failover, auto-recovery are usually hard requirement&lt;/li&gt;
+&lt;li&gt;To protective in coding to handle unexpected message scenarios&lt;/li&gt;
+&lt;li&gt;Message logs are the source of truth when there is a problem&lt;/li&gt;
+&lt;/ol&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-36" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 36
+                </h2>
+                <span class="text-sm text-gray-500">
+                    36 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 36"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;[fit] Thank you! :heart:&lt;/h1&gt;
+&lt;p&gt;&lt;img alt=&#34;inline, original&#34; src=&#34;Fix-It%20Felix%20Jr.png&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="slide-37" class="slide bg-white rounded-lg shadow-md overflow-hidden hidden page-break">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Slide 37
+                </h2>
+                <span class="text-sm text-gray-500">
+                    37 of 37
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="slide-image">
+                    <img src="/slides/redacted.png" 
+                         alt="Slide 37"
+                         class="w-full border rounded-lg shadow-sm"
+                         loading="lazy">
+                </div>
+                
+                <div class="slide-content">
+                    <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
+                        &lt;h1&gt;Resources&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kevinlin/Deckset-presentations/tree/master/FIX%20Messaging&#34;&gt;This presentation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.fixtrading.org/&#34;&gt;FIX Trading Community&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.investopedia.com/terms/f/financial-information-exchange.asp&#34;&gt;Investopedia - Financial Information Exchange (FIX)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img alt=&#34;&#34; src=&#34;wreck-it-ralph-clipart.jpg&#34; /&gt;&lt;/p&gt;
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </main>
+
+    <footer class="bg-white border-t mt-12 no-print">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <p class="text-center text-gray-500 text-sm mb-2 sm:mb-0">
+                    Generated by Deckset Website Generator
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-gray-500">
+                        <span class="sr-only">GitHub</span>
+                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Slide navigation
+    const slides = document.querySelectorAll('.slide');
+    const prevButton = document.getElementById('prev-slide');
+    const nextButton = document.getElementById('next-slide');
+    const currentSlideElement = document.getElementById('current-slide');
+    const printButton = document.getElementById('print-button');
+    const fullscreenButton = document.getElementById('fullscreen-button');
+    
+    let currentSlideIndex = 0;
+    
+    function showSlide(index) {
+        if (slides.length === 0) return;
+        
+        // Hide all slides
+        slides.forEach(slide => slide.classList.add('hidden'));
+        
+        // Show the current slide
+        slides[index].classList.remove('hidden');
+        
+        // Update counter
+        if (currentSlideElement) {
+            currentSlideElement.textContent = index + 1;
+        }
+        
+        // Update buttons
+        if (prevButton) {
+            prevButton.disabled = index === 0;
+        }
+        if (nextButton) {
+            nextButton.disabled = index === slides.length - 1;
+        }
+        
+        // Update URL hash
+        window.location.hash = `slide-${index + 1}`;
+        
+        // Store current index
+        currentSlideIndex = index;
+    }
+    
+    // Initialize from URL hash if present
+    function initFromHash() {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#slide-')) {
+            const slideNumber = parseInt(hash.substring(7));
+            if (!isNaN(slideNumber) && slideNumber >= 1 && slideNumber <= slides.length) {
+                showSlide(slideNumber - 1);
+                return;
+            }
+        }
+        showSlide(0);
+    }
+    
+    // Set up event listeners
+    if (prevButton) {
+        prevButton.addEventListener('click', function() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        });
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', function() {
+            if (currentSlideIndex < slides.length - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        });
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            if (currentSlideIndex < slides.length - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+    });
+    
+    // Print functionality
+    if (printButton) {
+        printButton.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Fullscreen functionality
+    if (fullscreenButton) {
+        fullscreenButton.addEventListener('click', function() {
+            const slidesContainer = document.getElementById('slides-container');
+            if (slidesContainer) {
+                if (!document.fullscreenElement) {
+                    if (slidesContainer.requestFullscreen) {
+                        slidesContainer.requestFullscreen();
+                    } else if (slidesContainer.webkitRequestFullscreen) {
+                        slidesContainer.webkitRequestFullscreen();
+                    } else if (slidesContainer.msRequestFullscreen) {
+                        slidesContainer.msRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            }
+        });
+    }
+    
+    // Handle hash changes
+    window.addEventListener('hashchange', initFromHash);
+    
+    // Initialize
+    initFromHash();
+});
+</script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuButton = document.querySelector('.mobile-menu-button');
+            const mobileMenu = document.querySelector('.mobile-menu');
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function () {
+                    mobileMenu.classList.toggle('hidden');
+                    const expanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+                    mobileMenuButton.setAttribute('aria-expanded', !expanded);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
