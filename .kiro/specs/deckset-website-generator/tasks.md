@@ -14,11 +14,11 @@
   - Create templates/ directory with base template structure
   - _Requirements: 1.1, 1.2, 5.1, 5.5_
 
-- [ ] 3. Implement repository scanner functionality
+- [x] 3. Implement repository scanner functionality
   - Create PresentationScanner class to discover presentation folders
   - Implement folder scanning logic that excludes system directories (.git, .kiro, Examples, etc.)
   - Add markdown file detection and selection logic (prefer folder-named files)
-  - Write unit tests for scanner functionality with various folder structures
+  - Write unit tests for scanner functionality with various folder structures in tests/test_scanner.py
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
 - [ ] 4. Refactor existing code into presentation processor
@@ -26,7 +26,7 @@
   - Enhance slide splitting to handle various separator formats
   - Add frontmatter metadata parsing for presentation configuration
   - Improve notes extraction to handle different note formats
-  - Write unit tests for markdown processing with various content formats
+  - Write unit tests for markdown processing with various content formats in tests/test_processor.py
   - _Requirements: 2.1, 2.2, 2.5_
 
 - [ ] 5. Create template management system
@@ -34,7 +34,7 @@
   - Enhance existing presentation template with better responsive layout
   - Create homepage template with presentation grid layout
   - Add base template with common styling and navigation elements
-  - Write unit tests for template rendering with mock data
+  - Write unit tests for template rendering with mock data in tests/test_templates.py
   - _Requirements: 3.1, 3.2, 3.4, 3.5_
 
 - [ ] 6. Implement web page generator
@@ -43,7 +43,7 @@
   - Implement individual presentation page generation with slide images and notes
   - Add proper image path handling with fallback for missing slides
   - Implement error handling for template rendering failures
-  - Write unit tests for page generation with various presentation data
+  - Write unit tests for page generation with various presentation data in tests/test_generator.py
   - _Requirements: 2.3, 2.4, 3.3, 5.2, 5.3_
 
 - [ ] 7. Build homepage generator functionality
@@ -51,7 +51,7 @@
   - Add preview image handling with placeholder fallbacks
   - Create presentation metadata display (title, slide count, last modified)
   - Implement responsive grid layout for presentation cards
-  - Write unit tests for homepage generation with multiple presentations
+  - Write unit tests for homepage generation with multiple presentations in tests/test_generator.py
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
 - [ ] 8. Create file and asset management
@@ -59,7 +59,7 @@
   - Implement slide image copying from source folders to output directory
   - Create output directory structure management (docs/, slides/, assets/)
   - Implement file cleanup and organization for generated website
-  - Write integration tests for complete file management workflow
+  - Write integration tests for complete file management workflow in tests/test_integration.py
   - _Requirements: 2.4, 4.3, 5.2_
 
 - [ ] 9. Enhance main generator orchestration
@@ -75,7 +75,7 @@
   - Add graceful error recovery that continues processing other presentations
   - Create detailed logging with context information for debugging
   - Implement error reporting that doesn't break the entire generation process
-  - Write unit tests for error scenarios and recovery mechanisms
+  - Write unit tests for error scenarios and recovery mechanisms in tests/test_error_handling.py
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
 - [ ] 11. Create GitHub Actions workflow

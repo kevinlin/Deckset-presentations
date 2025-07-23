@@ -197,6 +197,8 @@ class TemplateRenderingError(GeneratorError):
 
 ## Testing Strategy
 
+**Note**: All tests are organized under the `tests/` directory following Python best practices, with test files named `test_*.py` for automatic discovery by pytest.
+
 ### Unit Tests
 
 1. **Scanner Tests**:
@@ -237,12 +239,11 @@ tests/
 │   │   │   └── slides/
 │   │   └── presentation2/
 │   └── expected_outputs/
-├── unit/
-│   ├── test_scanner.py
-│   ├── test_processor.py
-│   └── test_generator.py
-└── integration/
-    └── test_end_to_end.py
+├── test_scanner.py
+├── test_processor.py
+├── test_generator.py
+├── test_templates.py
+└── test_integration.py
 ```
 
 ## File Structure
