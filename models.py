@@ -54,7 +54,25 @@ class GeneratorConfig:
 # Base exception classes for error handling
 class GeneratorError(Exception):
     """Base exception for all generator-related errors."""
-    pass
+    
+    def __init__(self, message: str, context: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the error with message and optional context.
+        
+        Args:
+            message: Error message
+            context: Optional dictionary with additional context information
+        """
+        super().__init__(message)
+        self.message = message
+        self.context = context or {}
+    
+    def __str__(self) -> str:
+        """Return string representation with context if available."""
+        if self.context:
+            context_str = ", ".join(f"{k}={v}" for k, v in self.context.items())
+            return f"{self.message} (Context: {context_str})"
+        return self.message
 
 
 class PresentationProcessingError(GeneratorError):
@@ -64,4 +82,19 @@ class PresentationProcessingError(GeneratorError):
 
 class TemplateRenderingError(GeneratorError):
     """Errors that occur during template rendering."""
+    pass
+
+
+class FileOperationError(GeneratorError):
+    """Errors that occur during file operations."""
+    pass
+
+
+class ScanningError(GeneratorError):
+    """Errors that occur during repository scanning."""
+    pass
+
+
+class ConfigurationError(GeneratorError):
+    """Errors that occur due to invalid configuration."""
     pass

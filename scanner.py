@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from datetime import datetime
 
-from models import PresentationInfo, GeneratorConfig, GeneratorError
+from models import PresentationInfo, GeneratorConfig, GeneratorError, ScanningError
 
 
 # Set up logging
@@ -47,17 +47,39 @@ class PresentationScanner:
             List of discovered presentations
             
         Raises:
-            GeneratorError: If scanning fails
+            ScanningError: If scanning fails
         """
         presentations = []
         root_path = Path(root_path)
         
         if not root_path.exists():
-            raise GeneratorError(f"Root path does not exist: {root_path}")
+            raise ScanningError(
+                f"Root path does not exist: {root_path}",
+                context={"root_path": str(root_path)}
+            )
+        
+        if not root_path.is_dir():
+            raise ScanningError(
+                f"Root path is not a directory: {root_path}",
+                context={"root_path": str(root_path)}
+            )
         
         logger.info(f"Scanning for presentations in {root_path}")
         
-        for item in root_path.iterdir():
+        try:
+            items = list(root_path.iterdir())
+        except PermissionError as e:
+            raise ScanningError(
+                f"Permission denied accessing root path: {root_path}",
+                context={"root_path": str(root_path), "error": str(e)}
+            )
+        except OSError as e:
+            raise ScanningError(
+                f"OS error accessing root path: {root_path}",
+                context={"root_path": str(root_path), "error": str(e)}
+            )
+        
+        for item in items:
             if item.is_dir() and self.is_presentation_folder(str(item)):
                 try:
                     presentation_info = self._create_presentation_info(item)
@@ -65,8 +87,15 @@ class PresentationScanner:
                         presentations.append(presentation_info)
                         logger.info(f"Found presentation: {presentation_info.title} in {item.name}")
                 except Exception as e:
-                    # Log error but continue processing other folders
-                    logger.warning(f"Failed to process folder {item.name}: {e}")
+                    # Log error with context but continue processing other folders (graceful degradation)
+                    logger.warning(
+                        f"Failed to process folder {item.name}: {e}",
+                        extra={
+                            "folder_path": str(item),
+                            "folder_name": item.name,
+                            "error_type": type(e).__name__
+                        }
+                    )
                     continue
         
         logger.info(f"Found {len(presentations)} presentations")
@@ -131,9 +160,27 @@ class PresentationScanner:
             # Fallback to folder name
             return Path(markdown_path).parent.name
             
+        except (IOError, OSError, UnicodeDecodeError) as e:
+            # Fallback to folder name if reading fails (graceful degradation)
+            logger.warning(
+                f"Failed to extract title from {markdown_path}: {e}",
+                extra={
+                    "markdown_path": markdown_path,
+                    "error_type": type(e).__name__,
+                    "fallback_used": True
+                }
+            )
+            return Path(markdown_path).parent.name
         except Exception as e:
-            # Fallback to folder name if reading fails
-            logger.warning(f"Failed to extract title from {markdown_path}: {e}")
+            # Unexpected error - log with more detail but still fallback
+            logger.error(
+                f"Unexpected error extracting title from {markdown_path}: {e}",
+                extra={
+                    "markdown_path": markdown_path,
+                    "error_type": type(e).__name__,
+                    "fallback_used": True
+                }
+            )
             return Path(markdown_path).parent.name
     
     def _extract_title_from_frontmatter(self, content: str) -> Optional[str]:
@@ -208,8 +255,25 @@ class PresentationScanner:
             # Count slide separators and add 1 for the first slide
             slide_count = content.count('\n---\n') + 1
             return slide_count
+        except (IOError, OSError, UnicodeDecodeError) as e:
+            logger.warning(
+                f"Failed to count slides in {markdown_path}: {e}",
+                extra={
+                    "markdown_path": markdown_path,
+                    "error_type": type(e).__name__,
+                    "fallback_count": 0
+                }
+            )
+            return 0
         except Exception as e:
-            logger.warning(f"Failed to count slides in {markdown_path}: {e}")
+            logger.error(
+                f"Unexpected error counting slides in {markdown_path}: {e}",
+                extra={
+                    "markdown_path": markdown_path,
+                    "error_type": type(e).__name__,
+                    "fallback_count": 0
+                }
+            )
             return 0
     
     def find_preview_image(self, folder_path: str) -> Optional[str]:

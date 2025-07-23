@@ -17,6 +17,10 @@ except ImportError:
     JINJA2_AVAILABLE = False
 
 from models import GeneratorConfig, TemplateRenderingError, ProcessedPresentation, PresentationInfo
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class TemplateManager:
@@ -76,13 +80,31 @@ class TemplateManager:
         """
         if not JINJA2_AVAILABLE:
             raise TemplateRenderingError(
-                "Jinja2 is not available. Please install it to use templates."
+                "Jinja2 is not available. Please install it to use templates.",
+                context={"template_name": template_name}
             )
         
         try:
-            return self.env.get_template(template_name)
+            template = self.env.get_template(template_name)
+            logger.debug(f"Successfully loaded template: {template_name}")
+            return template
         except Exception as e:
-            raise TemplateRenderingError(f"Failed to load template {template_name}: {e}")
+            logger.error(
+                f"Failed to load template {template_name}: {e}",
+                extra={
+                    "template_name": template_name,
+                    "template_dir": str(self.template_dir),
+                    "error_type": type(e).__name__
+                }
+            )
+            raise TemplateRenderingError(
+                f"Failed to load template {template_name}: {e}",
+                context={
+                    "template_name": template_name,
+                    "template_dir": str(self.template_dir),
+                    "error_type": type(e).__name__
+                }
+            )
     
     def render_template(self, template_name: str, data: Dict[str, Any]) -> str:
         """
@@ -100,9 +122,26 @@ class TemplateManager:
         """
         template = self.load_template(template_name)
         try:
-            return template.render(**data)
+            rendered_content = template.render(**data)
+            logger.debug(f"Successfully rendered template {template_name} ({len(rendered_content)} chars)")
+            return rendered_content
         except Exception as e:
-            raise TemplateRenderingError(f"Failed to render template {template_name}: {e}")
+            logger.error(
+                f"Failed to render template {template_name}: {e}",
+                extra={
+                    "template_name": template_name,
+                    "data_keys": list(data.keys()) if data else [],
+                    "error_type": type(e).__name__
+                }
+            )
+            raise TemplateRenderingError(
+                f"Failed to render template {template_name}: {e}",
+                context={
+                    "template_name": template_name,
+                    "data_keys": list(data.keys()) if data else [],
+                    "error_type": type(e).__name__
+                }
+            )
     
     def render_presentation(self, presentation: ProcessedPresentation, 
                            output_path: Optional[str] = None) -> str:

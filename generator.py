@@ -16,7 +16,8 @@ from models import (
     ProcessedPresentation, 
     PresentationInfo, 
     GeneratorConfig,
-    TemplateRenderingError
+    TemplateRenderingError,
+    FileOperationError
 )
 from templates import TemplateManager
 from file_manager import FileManager
@@ -52,26 +53,86 @@ class WebPageGenerator:
         Raises:
             TemplateRenderingError: If page generation fails
         """
+        self.logger.info(f"Generating presentation page for '{presentation.info.title}'")
+        
         try:
             # Create output directory if it doesn't exist
             output_path = Path(output_path)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+            except (OSError, PermissionError) as e:
+                raise FileOperationError(
+                    f"Failed to create output directory {output_path.parent}: {e}",
+                    context={
+                        "presentation_title": presentation.info.title,
+                        "output_path": str(output_path),
+                        "directory": str(output_path.parent)
+                    }
+                )
             
             # Process slide images and ensure they have proper paths
-            self._process_slide_images(presentation)
+            try:
+                self._process_slide_images(presentation)
+            except Exception as e:
+                self.logger.warning(
+                    f"Failed to process slide images for '{presentation.info.title}': {e}",
+                    extra={
+                        "presentation_title": presentation.info.title,
+                        "error_type": type(e).__name__
+                    }
+                )
+                # Continue with generation even if image processing fails
             
             # Render the presentation using the template manager
-            html_content = self.template_manager.render_presentation(presentation, None)
+            try:
+                html_content = self.template_manager.render_presentation(presentation, None)
+            except Exception as e:
+                raise TemplateRenderingError(
+                    f"Failed to render template for presentation '{presentation.info.title}': {e}",
+                    context={
+                        "presentation_title": presentation.info.title,
+                        "slide_count": len(presentation.slides),
+                        "template_error": str(e)
+                    }
+                )
             
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html_content)
+            # Write the HTML file
+            try:
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(html_content)
+            except (OSError, PermissionError, UnicodeEncodeError) as e:
+                raise FileOperationError(
+                    f"Failed to write presentation page to {output_path}: {e}",
+                    context={
+                        "presentation_title": presentation.info.title,
+                        "output_path": str(output_path),
+                        "content_length": len(html_content)
+                    }
+                )
                 
             self.logger.info(f"Generated presentation page for '{presentation.info.title}' at {output_path}")
                 
+        except (TemplateRenderingError, FileOperationError):
+            # Re-raise our custom exceptions
+            raise
         except Exception as e:
-            error_msg = f"Failed to generate presentation page for {presentation.info.title}: {str(e)}"
-            self.logger.error(error_msg)
-            raise TemplateRenderingError(error_msg) from e
+            error_msg = f"Unexpected error generating presentation page for {presentation.info.title}: {str(e)}"
+            self.logger.error(
+                error_msg,
+                extra={
+                    "presentation_title": presentation.info.title,
+                    "output_path": str(output_path),
+                    "error_type": type(e).__name__
+                }
+            )
+            raise TemplateRenderingError(
+                error_msg,
+                context={
+                    "presentation_title": presentation.info.title,
+                    "output_path": str(output_path),
+                    "unexpected_error": str(e)
+                }
+            ) from e
     
     def generate_homepage(
         self, 
@@ -88,33 +149,96 @@ class WebPageGenerator:
         Raises:
             TemplateRenderingError: If homepage generation fails
         """
+        self.logger.info(f"Generating homepage with {len(presentations)} presentations")
+        
         try:
             # Create output directory if it doesn't exist
             output_path = Path(output_path)
-            output_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+            except (OSError, PermissionError) as e:
+                raise FileOperationError(
+                    f"Failed to create output directory {output_path.parent}: {e}",
+                    context={
+                        "output_path": str(output_path),
+                        "directory": str(output_path.parent),
+                        "presentation_count": len(presentations)
+                    }
+                )
             
             # Process preview images for each presentation
-            self._process_preview_images(presentations)
+            try:
+                self._process_preview_images(presentations)
+            except Exception as e:
+                self.logger.warning(
+                    f"Failed to process preview images: {e}",
+                    extra={
+                        "presentation_count": len(presentations),
+                        "error_type": type(e).__name__
+                    }
+                )
+                # Continue with generation even if preview processing fails
             
             # Sort presentations by last modified date (newest first)
-            sorted_presentations = sorted(
-                presentations,
-                key=lambda p: p.last_modified if p.last_modified else datetime.min,
-                reverse=True
-            )
+            try:
+                sorted_presentations = sorted(
+                    presentations,
+                    key=lambda p: p.last_modified if p.last_modified else datetime.min,
+                    reverse=True
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to sort presentations, using original order: {e}")
+                sorted_presentations = presentations
             
             # Render the homepage using the template manager
-            html_content = self.template_manager.render_homepage(sorted_presentations, None)
+            try:
+                html_content = self.template_manager.render_homepage(sorted_presentations, None)
+            except Exception as e:
+                raise TemplateRenderingError(
+                    f"Failed to render homepage template: {e}",
+                    context={
+                        "presentation_count": len(presentations),
+                        "template_error": str(e)
+                    }
+                )
             
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html_content)
+            # Write the HTML file
+            try:
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(html_content)
+            except (OSError, PermissionError, UnicodeEncodeError) as e:
+                raise FileOperationError(
+                    f"Failed to write homepage to {output_path}: {e}",
+                    context={
+                        "output_path": str(output_path),
+                        "content_length": len(html_content),
+                        "presentation_count": len(presentations)
+                    }
+                )
                 
             self.logger.info(f"Generated homepage with {len(presentations)} presentations at {output_path}")
                 
+        except (TemplateRenderingError, FileOperationError):
+            # Re-raise our custom exceptions
+            raise
         except Exception as e:
-            error_msg = f"Failed to generate homepage: {str(e)}"
-            self.logger.error(error_msg)
-            raise TemplateRenderingError(error_msg) from e
+            error_msg = f"Unexpected error generating homepage: {str(e)}"
+            self.logger.error(
+                error_msg,
+                extra={
+                    "output_path": str(output_path),
+                    "presentation_count": len(presentations),
+                    "error_type": type(e).__name__
+                }
+            )
+            raise TemplateRenderingError(
+                error_msg,
+                context={
+                    "output_path": str(output_path),
+                    "presentation_count": len(presentations),
+                    "unexpected_error": str(e)
+                }
+            ) from e
     
     def _process_slide_images(self, presentation: ProcessedPresentation) -> None:
         """

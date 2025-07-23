@@ -16,6 +16,10 @@ from models import (
     Slide, 
     PresentationProcessingError
 )
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class PresentationProcessor:
@@ -49,17 +53,36 @@ class PresentationProcessor:
         Raises:
             PresentationProcessingError: If processing fails
         """
+        logger.info(f"Processing presentation: {presentation_info.title}")
+        
         try:
             with open(presentation_info.markdown_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-        except IOError as e:
+        except (IOError, OSError) as e:
             raise PresentationProcessingError(
-                f"Failed to read markdown file {presentation_info.markdown_path}: {e}"
+                f"Failed to read markdown file {presentation_info.markdown_path}: {e}",
+                context={
+                    "presentation_title": presentation_info.title,
+                    "markdown_path": presentation_info.markdown_path,
+                    "error_type": type(e).__name__
+                }
+            )
+        except UnicodeDecodeError as e:
+            raise PresentationProcessingError(
+                f"Failed to decode markdown file {presentation_info.markdown_path}: {e}",
+                context={
+                    "presentation_title": presentation_info.title,
+                    "markdown_path": presentation_info.markdown_path,
+                    "encoding_error": str(e)
+                }
             )
         
         try:
             metadata = self.extract_metadata(content)
+            logger.debug(f"Extracted metadata: {list(metadata.keys())}")
+            
             slides = self.extract_slides(content)
+            logger.debug(f"Extracted {len(slides)} slides")
             
             # Update presentation info with slide count
             presentation_info.slide_count = len(slides)
@@ -71,7 +94,13 @@ class PresentationProcessor:
             )
         except Exception as e:
             raise PresentationProcessingError(
-                f"Failed to process presentation {presentation_info.title}: {e}"
+                f"Failed to process presentation {presentation_info.title}: {e}",
+                context={
+                    "presentation_title": presentation_info.title,
+                    "markdown_path": presentation_info.markdown_path,
+                    "processing_stage": "content_parsing",
+                    "error_type": type(e).__name__
+                }
             )
     
     def extract_slides(self, content: str) -> List[Slide]:
@@ -84,44 +113,85 @@ class PresentationProcessor:
         Returns:
             List of Slide objects
         """
-        # Remove frontmatter from content before processing slides
-        content_without_frontmatter = self._remove_frontmatter(content)
-        
-        # Try different separator patterns until one works
-        slide_contents = None
-        for pattern in self._slide_separators:
-            potential_slides = pattern.split(content_without_frontmatter)
-            if len(potential_slides) > 1:
-                slide_contents = potential_slides
-                break
-        
-        # If no separators found, treat entire content as one slide
-        if slide_contents is None:
-            slide_contents = [content_without_frontmatter]
-        
-        slides = []
-        for i, slide_content in enumerate(slide_contents):
-            slide_content = slide_content.strip()
-            if not slide_content:
-                continue
+        try:
+            # Remove frontmatter from content before processing slides
+            content_without_frontmatter = self._remove_frontmatter(content)
             
-            notes = self.extract_notes(slide_content)
+            # Try different separator patterns until one works
+            slide_contents = None
+            separator_used = None
+            for i, pattern in enumerate(self._slide_separators):
+                try:
+                    potential_slides = pattern.split(content_without_frontmatter)
+                    if len(potential_slides) > 1:
+                        slide_contents = potential_slides
+                        separator_used = i
+                        break
+                except Exception as e:
+                    logger.warning(f"Failed to apply separator pattern {i}: {e}")
+                    continue
             
-            # Remove notes from slide content
-            clean_content = self._remove_notes_from_content(slide_content)
+            # If no separators found, treat entire content as one slide
+            if slide_contents is None:
+                slide_contents = [content_without_frontmatter]
+                logger.debug("No slide separators found, treating as single slide")
+            else:
+                logger.debug(f"Split content into {len(slide_contents)} slides using separator pattern {separator_used}")
             
-            # Set image path based on slide index (for future use)
-            image_path = f"slides/{i + 1}.png" if i > 0 or len(slide_contents) > 1 else None
+            slides = []
+            for i, slide_content in enumerate(slide_contents):
+                slide_content = slide_content.strip()
+                if not slide_content:
+                    logger.debug(f"Skipping empty slide at index {i}")
+                    continue
+                
+                try:
+                    notes = self.extract_notes(slide_content)
+                    
+                    # Remove notes from slide content
+                    clean_content = self._remove_notes_from_content(slide_content)
+                    
+                    # Set image path based on slide index (for future use)
+                    image_path = f"slides/{i + 1}.png" if i > 0 or len(slide_contents) > 1 else None
+                    
+                    slide = Slide(
+                        index=i + 1,
+                        content=clean_content,
+                        notes=notes,
+                        image_path=image_path
+                    )
+                    slides.append(slide)
+                    
+                except Exception as e:
+                    # Log error but continue with other slides (graceful degradation)
+                    logger.error(
+                        f"Failed to process slide {i + 1}: {e}",
+                        extra={
+                            "slide_index": i + 1,
+                            "slide_content_length": len(slide_content),
+                            "error_type": type(e).__name__
+                        }
+                    )
+                    # Create a minimal slide with raw content
+                    slide = Slide(
+                        index=i + 1,
+                        content=slide_content,
+                        notes="",
+                        image_path=None
+                    )
+                    slides.append(slide)
             
-            slide = Slide(
-                index=i + 1,
-                content=clean_content,
-                notes=notes,
-                image_path=image_path
-            )
-            slides.append(slide)
-        
-        return slides
+            return slides
+            
+        except Exception as e:
+            logger.error(f"Critical error in slide extraction: {e}")
+            # Return a single slide with the raw content as fallback
+            return [Slide(
+                index=1,
+                content=content,
+                notes="",
+                image_path=None
+            )]
     
     def extract_notes(self, slide_content: str) -> str:
         """
@@ -135,27 +205,44 @@ class PresentationProcessor:
         """
         note_lines = []
         
-        # Try different note patterns
-        for pattern in self._note_patterns:
-            matches = pattern.findall(slide_content)
-            for match in matches:
-                note_text = match.strip()
-                if note_text:
-                    note_lines.append(note_text)
-        
-        # Also handle the legacy format from main.py (multiline notes after \n^)
-        if '\n^' in slide_content:
-            notes_idx = slide_content.index('\n^')
-            legacy_notes = slide_content[notes_idx:].replace('^ ', '').replace('^', '').strip()
-            if legacy_notes:
-                note_lines.append(legacy_notes)
-        
-        # Convert notes to HTML using markdown
-        if note_lines:
-            notes_text = '\n'.join(note_lines)
-            return markdown.markdown(notes_text)
-        
-        return ""
+        try:
+            # Try different note patterns
+            for i, pattern in enumerate(self._note_patterns):
+                try:
+                    matches = pattern.findall(slide_content)
+                    for match in matches:
+                        note_text = match.strip()
+                        if note_text:
+                            note_lines.append(note_text)
+                except Exception as e:
+                    logger.warning(f"Failed to apply note pattern {i}: {e}")
+                    continue
+            
+            # Also handle the legacy format from main.py (multiline notes after \n^)
+            try:
+                if '\n^' in slide_content:
+                    notes_idx = slide_content.index('\n^')
+                    legacy_notes = slide_content[notes_idx:].replace('^ ', '').replace('^', '').strip()
+                    if legacy_notes:
+                        note_lines.append(legacy_notes)
+            except Exception as e:
+                logger.warning(f"Failed to extract legacy notes: {e}")
+            
+            # Convert notes to HTML using markdown
+            if note_lines:
+                try:
+                    notes_text = '\n'.join(note_lines)
+                    return markdown.markdown(notes_text)
+                except Exception as e:
+                    logger.error(f"Failed to convert notes to markdown: {e}")
+                    # Return raw notes as fallback
+                    return '\n'.join(note_lines)
+            
+            return ""
+            
+        except Exception as e:
+            logger.error(f"Critical error in note extraction: {e}")
+            return ""
     
     def extract_metadata(self, content: str) -> Dict[str, Any]:
         """

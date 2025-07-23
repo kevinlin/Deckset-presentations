@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Set
 
-from models import GeneratorConfig, ProcessedPresentation, PresentationInfo
+from models import GeneratorConfig, ProcessedPresentation, PresentationInfo, FileOperationError
 
 
 class FileManager:
@@ -37,36 +37,37 @@ class FileManager:
         - slides directory (e.g., docs/slides/)
         - images directory (e.g., docs/images/)
         - assets directory (e.g., docs/assets/)
+        
+        Raises:
+            FileOperationError: If directory creation fails
         """
         output_dir = Path(self.config.output_dir)
         
-        # Create main output directory
-        output_dir.mkdir(parents=True, exist_ok=True)
-        self.logger.info(f"Created output directory: {output_dir}")
+        directories_to_create = [
+            (output_dir, "main output"),
+            (output_dir / "presentations", "presentations"),
+            (output_dir / self.config.slides_dir, "slides"),
+            (output_dir / "images", "images"),
+            (output_dir / "assets", "assets"),
+            (output_dir / "assets" / "css", "assets/css"),
+            (output_dir / "assets" / "js", "assets/js")
+        ]
         
-        # Create presentations directory
-        presentations_dir = output_dir / "presentations"
-        presentations_dir.mkdir(exist_ok=True)
-        self.logger.info(f"Created presentations directory: {presentations_dir}")
+        for dir_path, description in directories_to_create:
+            try:
+                dir_path.mkdir(parents=True, exist_ok=True)
+                self.logger.debug(f"Created {description} directory: {dir_path}")
+            except (OSError, PermissionError) as e:
+                raise FileOperationError(
+                    f"Failed to create {description} directory {dir_path}: {e}",
+                    context={
+                        "directory_path": str(dir_path),
+                        "directory_type": description,
+                        "output_dir": self.config.output_dir
+                    }
+                )
         
-        # Create slides directory
-        slides_dir = output_dir / self.config.slides_dir
-        slides_dir.mkdir(exist_ok=True)
-        self.logger.info(f"Created slides directory: {slides_dir}")
-        
-        # Create images directory for preview images
-        images_dir = output_dir / "images"
-        images_dir.mkdir(exist_ok=True)
-        self.logger.info(f"Created images directory: {images_dir}")
-        
-        # Create assets directory
-        assets_dir = output_dir / "assets"
-        assets_dir.mkdir(exist_ok=True)
-        
-        # Create subdirectories in assets
-        (assets_dir / "css").mkdir(exist_ok=True)
-        (assets_dir / "js").mkdir(exist_ok=True)
-        self.logger.info(f"Created assets directory: {assets_dir}")
+        self.logger.info(f"Successfully set up output directory structure in {output_dir}")
         
     def ensure_fallback_image(self) -> None:
         """
@@ -118,41 +119,86 @@ class FileManager:
             presentation: Processed presentation with slides
         """
         output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
-        output_slides_dir.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            output_slides_dir.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            self.logger.error(
+                f"Failed to create slides directory for '{presentation.info.title}': {e}",
+                extra={
+                    "presentation_title": presentation.info.title,
+                    "slides_directory": str(output_slides_dir),
+                    "error_type": type(e).__name__
+                }
+            )
+            # Set all slides to use fallback image (graceful degradation)
+            for slide in presentation.slides:
+                slide.image_path = f"/{self.config.fallback_image}"
+            return
         
         for slide in presentation.slides:
             # Skip slides with no image path or using fallback
             if not slide.image_path or slide.image_path.startswith(f"/{self.config.fallback_image}"):
                 continue
                 
-            # Get the source image path
-            source_path = Path(slide.image_path)
-            if not source_path.is_absolute() and not str(source_path).startswith('/'):
-                # If it's a relative path, resolve it relative to the presentation folder
-                source_path = Path(presentation.info.folder_path) / source_path
-            
-            # Skip if source doesn't exist
-            if not source_path.exists():
-                self.logger.warning(f"Source image not found: {source_path}")
-                # Update slide to use fallback image
-                slide.image_path = f"/{self.config.fallback_image}"
-                continue
-            
-            # Determine destination path
-            dest_filename = source_path.name
-            dest_path = output_slides_dir / dest_filename
-            
-            # Copy the image
             try:
-                shutil.copy2(source_path, dest_path)
-                self.logger.debug(f"Copied slide image: {source_path} -> {dest_path}")
+                # Get the source image path
+                source_path = Path(slide.image_path)
+                if not source_path.is_absolute() and not str(source_path).startswith('/'):
+                    # If it's a relative path, resolve it relative to the presentation folder
+                    source_path = Path(presentation.info.folder_path) / source_path
                 
-                # Update the image path to use the web-accessible path
-                rel_path = f"{presentation.info.folder_name}/{dest_filename}"
-                slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+                # Skip if source doesn't exist
+                if not source_path.exists():
+                    self.logger.warning(
+                        f"Source image not found for slide {slide.index}: {source_path}",
+                        extra={
+                            "presentation_title": presentation.info.title,
+                            "slide_index": slide.index,
+                            "source_path": str(source_path)
+                        }
+                    )
+                    # Update slide to use fallback image (graceful degradation)
+                    slide.image_path = f"/{self.config.fallback_image}"
+                    continue
+                    
+                # Determine destination path
+                dest_filename = source_path.name
+                dest_path = output_slides_dir / dest_filename
+                
+                # Copy the image
+                try:
+                    shutil.copy2(source_path, dest_path)
+                    self.logger.debug(f"Copied slide image: {source_path} -> {dest_path}")
+                    
+                    # Update the image path to use the web-accessible path
+                    rel_path = f"{presentation.info.folder_name}/{dest_filename}"
+                    slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+                    
+                except (OSError, PermissionError, shutil.Error) as e:
+                    self.logger.error(
+                        f"Failed to copy slide image {source_path}: {e}",
+                        extra={
+                            "presentation_title": presentation.info.title,
+                            "slide_index": slide.index,
+                            "source_path": str(source_path),
+                            "dest_path": str(dest_path),
+                            "error_type": type(e).__name__
+                        }
+                    )
+                    # Update slide to use fallback image (graceful degradation)
+                    slide.image_path = f"/{self.config.fallback_image}"
+                    
             except Exception as e:
-                self.logger.error(f"Failed to copy slide image {source_path}: {e}")
-                # Update slide to use fallback image
+                self.logger.error(
+                    f"Unexpected error processing slide {slide.index} image: {e}",
+                    extra={
+                        "presentation_title": presentation.info.title,
+                        "slide_index": slide.index,
+                        "error_type": type(e).__name__
+                    }
+                )
+                # Update slide to use fallback image (graceful degradation)
                 slide.image_path = f"/{self.config.fallback_image}"
     
     def copy_preview_image(self, presentation: PresentationInfo) -> None:
