@@ -41,6 +41,8 @@ class PresentationProcessor:
         ]
         # Pattern for extracting markdown images: ![alt](filename)
         self._image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)', re.MULTILINE)
+        # Pattern for Deckset-specific images with positioning: ![left, fit](filename)
+        self._deckset_image_pattern = re.compile(r'!\[(left|right|inline|fit|fill|original|filtered|[^]]*)\]\(([^)]+)\)', re.MULTILINE)
     
     def process_presentation(self, presentation_info: PresentationInfo) -> ProcessedPresentation:
         """
@@ -150,13 +152,15 @@ class PresentationProcessor:
                 try:
                     notes = self.extract_notes(slide_content)
                     
-                    # Remove notes from slide content
-                    clean_content = self._remove_notes_from_content(slide_content)
-                    
-                    # Extract image references from slide content
+                    # Extract image references from slide content first
                     slide_images = self.extract_slide_images(slide_content)
                     # Use the first image found as the primary slide image, or None if no images
                     image_path = slide_images[0] if slide_images else None
+                    
+                    # Remove notes and images from slide content for display
+                    clean_content = self._remove_notes_from_content(slide_content)
+                    clean_content = self._remove_images_from_content(clean_content)
+                    clean_content = self._clean_deckset_syntax(clean_content)
                     
                     slide = Slide(
                         index=i + 1,
@@ -259,14 +263,24 @@ class PresentationProcessor:
             List of image filenames referenced in the slide
         """
         try:
-            matches = self._image_pattern.findall(slide_content)
             image_filenames = []
             
-            for alt_text, filename in matches:
+            # First try the Deckset-specific pattern (which is more specific)
+            deckset_matches = self._deckset_image_pattern.findall(slide_content)
+            for alt_text, filename in deckset_matches:
                 # Clean up the filename (remove any query parameters or fragments)
                 filename = filename.split('?')[0].split('#')[0].strip()
                 if filename and not filename.startswith('http'):
                     # Only include local image files, not URLs
+                    image_filenames.append(filename)
+            
+            # Then try the standard markdown pattern for any missed images
+            standard_matches = self._image_pattern.findall(slide_content)
+            for alt_text, filename in standard_matches:
+                # Clean up the filename (remove any query parameters or fragments)
+                filename = filename.split('?')[0].split('#')[0].strip()
+                if filename and not filename.startswith('http') and filename not in image_filenames:
+                    # Only include local image files, not URLs, and avoid duplicates
                     image_filenames.append(filename)
             
             logger.debug(f"Found {len(image_filenames)} image references: {image_filenames}")
@@ -387,3 +401,24 @@ class PresentationProcessor:
             content = content[:notes_idx]
         
         return content.strip()
+    
+    def _remove_images_from_content(self, content: str) -> str:
+        """Remove image references from slide content for display."""
+        # Remove Deckset-specific image positioning syntax first (more specific)
+        content = self._deckset_image_pattern.sub('', content)
+        
+        # Remove any remaining standard markdown images ![alt](src)
+        content = self._image_pattern.sub('', content)
+        
+        return content.strip()
+    
+    def _clean_deckset_syntax(self, content: str) -> str:
+        """Remove Deckset-specific syntax that shouldn't appear in web content."""
+        # Remove [fit] syntax
+        content = re.sub(r'\[fit\]\s*', '', content)
+        
+        # Remove empty lines that result from removed syntax
+        lines = content.split('\n')
+        cleaned_lines = [line for line in lines if line.strip()]
+        
+        return '\n'.join(cleaned_lines).strip()

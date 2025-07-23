@@ -138,11 +138,11 @@ class FileManager:
         
         for slide in presentation.slides:
             # Skip slides with no image path or using fallback
-            if not slide.image_path or slide.image_path.startswith(f"/{self.config.fallback_image}"):
+            if not slide.image_path or slide.image_path.startswith(f"/{self.config.fallback_image}") or slide.image_path.startswith(f"/{self.config.slides_dir}/"):
                 continue
                 
             try:
-                # Get the source image path
+                # Get the source image path - this should be the original relative path from the markdown
                 source_path = Path(slide.image_path)
                 if not source_path.is_absolute() and not str(source_path).startswith('/'):
                     # If it's a relative path, resolve it relative to the presentation folder
@@ -290,11 +290,11 @@ class FileManager:
         Args:
             presentation: Processed presentation
         """
-        # Update slide image paths
-        self._update_slide_image_paths(presentation)
-        
-        # Copy slide images
+        # Copy slide images first (while paths are still original)
         self.copy_slide_images(presentation)
+        
+        # Then update slide image paths to web-accessible paths
+        self._update_slide_image_paths(presentation)
         
         # Copy preview image
         self.copy_preview_image(presentation.info)
@@ -302,6 +302,7 @@ class FileManager:
     def _update_slide_image_paths(self, presentation: ProcessedPresentation) -> None:
         """
         Update slide image paths to use web-accessible paths.
+        This should be called after copy_slide_images().
         
         Args:
             presentation: Processed presentation
@@ -314,18 +315,28 @@ class FileManager:
                 slide.image_path = f"/{self.config.fallback_image}"
                 continue
                 
-            # Check if the image exists
-            image_path = Path(slide.image_path)
-            if not image_path.exists():
-                self.logger.warning(f"Source image not found: {image_path}")
-                slide.image_path = f"/{self.config.fallback_image}"
+            # Skip slides already using fallback image or web paths
+            if slide.image_path.startswith(f"/{self.config.fallback_image}") or slide.image_path.startswith(f"/{self.config.slides_dir}/"):
                 continue
                 
-            # Determine the destination path for the image
-            rel_path = f"{presentation.info.folder_name}/{image_path.name}"
+            # Resolve image path relative to presentation folder if needed
+            image_path = Path(slide.image_path)
+            if not image_path.is_absolute() and not str(image_path).startswith('/'):
+                resolved_image_path = Path(presentation.info.folder_path) / image_path
+            else:
+                resolved_image_path = image_path
+                
+            # Check if the image was successfully copied to the output directory
+            dest_filename = resolved_image_path.name
+            dest_path = output_slides_dir / dest_filename
             
-            # Update the image path to use the web-accessible path
-            slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+            if dest_path.exists():
+                # Image was successfully copied, update to web-accessible path
+                rel_path = f"{presentation.info.folder_name}/{dest_filename}"
+                slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+            else:
+                # Image was not copied (probably failed), use fallback
+                slide.image_path = f"/{self.config.fallback_image}"
     
     def process_all_presentations(self, presentations: List[ProcessedPresentation]) -> None:
         """

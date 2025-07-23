@@ -104,7 +104,7 @@
                 <div class="slide-content">
                     {% if slide.content %}
                     <div class="prose prose-sm md:prose-base lg:prose-lg max-w-none mb-4">
-                        {{ slide.content | markdown }}
+                        {{ slide.content | markdown | safe }}
                     </div>
                     {% endif %}
                     
@@ -112,7 +112,7 @@
                     <div class="slide-notes">
                         <h4 class="font-medium text-gray-900 mb-2">Speaker Notes</h4>
                         <div class="prose prose-sm max-w-none">
-                            {{ slide.notes | markdown }}
+                            {{ slide.notes | markdown | safe }}
                         </div>
                     </div>
                     {% endif %}

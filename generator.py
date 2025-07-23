@@ -70,18 +70,8 @@ class WebPageGenerator:
                     }
                 )
             
-            # Process slide images and ensure they have proper paths
-            try:
-                self._process_slide_images(presentation)
-            except Exception as e:
-                self.logger.warning(
-                    f"Failed to process slide images for '{presentation.info.title}': {e}",
-                    extra={
-                        "presentation_title": presentation.info.title,
-                        "error_type": type(e).__name__
-                    }
-                )
-                # Continue with generation even if image processing fails
+            # Note: Image processing is handled by FileManager.process_presentation_files() 
+            # which is called in generate_all_pages() before this method
             
             # Render the presentation using the template manager
             try:
@@ -245,15 +235,12 @@ class WebPageGenerator:
         Process slide images and ensure they have proper paths.
         
         This method updates the image_path for each slide, handling fallbacks for missing images.
+        This is now a lightweight method that just updates paths - the actual copying
+        is handled by FileManager.copy_slide_images().
         
         Args:
             presentation: The presentation to process
         """
-        output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
-        
-        # Create slides directory if it doesn't exist
-        output_slides_dir.mkdir(parents=True, exist_ok=True)
-        
         for slide in presentation.slides:
             # If the slide has no image path, set the fallback image
             if not slide.image_path:
@@ -273,11 +260,8 @@ class WebPageGenerator:
                 slide.image_path = f"/{self.config.fallback_image}"
                 continue
                 
-            # Determine the destination path for the image
-            rel_path = f"{presentation.info.folder_name}/{image_path.name}"
-            
-            # Update the image path to use the web-accessible path
-            slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+            # Leave the image_path as-is for now - FileManager will handle the copying
+            # and update the path to the web-accessible location
     
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
@@ -384,7 +368,7 @@ class WebPageGenerator:
                 if presentation.info.slide_count == 0:
                     presentation.info.slide_count = len(presentation.slides)
                 
-                # Process files for this presentation
+                # Process files for this presentation (this handles image copying and path updates)
                 self.file_manager.process_presentation_files(presentation)
                 
                 # Generate the presentation page
