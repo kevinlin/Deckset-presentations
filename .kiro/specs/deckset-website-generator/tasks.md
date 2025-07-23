@@ -21,7 +21,7 @@
   - Write unit tests for scanner functionality with various folder structures in tests/test_scanner.py
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [-] 4. Refactor existing code into presentation processor
+- [x] 4. Refactor existing code into presentation processor
   - Extract current markdown processing logic into PresentationProcessor class
   - Enhance slide splitting to handle various separator formats
   - Add frontmatter metadata parsing for presentation configuration
@@ -29,7 +29,7 @@
   - Write unit tests for markdown processing with various content formats in tests/test_processor.py
   - _Requirements: 2.1, 2.2, 2.5_
 
-- [ ] 5. Create template management system
+- [x] 5. Create template management system
   - Create TemplateManager class using Jinja2 for HTML rendering
   - Enhance existing presentation template with better responsive layout
   - Create homepage template with presentation grid layout
