@@ -133,12 +133,12 @@ class FileManager:
             )
             # Set all slides to use fallback image (graceful degradation)
             for slide in presentation.slides:
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
             return
         
         for slide in presentation.slides:
             # Skip slides with no image path or using fallback
-            if not slide.image_path or slide.image_path.startswith(f"/{self.config.fallback_image}") or slide.image_path.startswith(f"/{self.config.slides_dir}/"):
+            if not slide.image_path or slide.image_path.startswith(self.config.fallback_image) or slide.image_path.startswith(f"{self.config.slides_dir}/"):
                 continue
                 
             try:
@@ -159,7 +159,7 @@ class FileManager:
                         }
                     )
                     # Update slide to use fallback image (graceful degradation)
-                    slide.image_path = f"/{self.config.fallback_image}"
+                    slide.image_path = f"../{self.config.fallback_image}"
                     continue
                     
                 # Determine destination path
@@ -173,7 +173,7 @@ class FileManager:
                     
                     # Update the image path to use the web-accessible path
                     rel_path = f"{presentation.info.folder_name}/{dest_filename}"
-                    slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+                    slide.image_path = f"../{self.config.slides_dir}/{rel_path}"
                     
                 except (OSError, PermissionError, shutil.Error) as e:
                     self.logger.error(
@@ -187,7 +187,7 @@ class FileManager:
                         }
                     )
                     # Update slide to use fallback image (graceful degradation)
-                    slide.image_path = f"/{self.config.fallback_image}"
+                    slide.image_path = f"../{self.config.fallback_image}"
                     
             except Exception as e:
                 self.logger.error(
@@ -199,7 +199,7 @@ class FileManager:
                     }
                 )
                 # Update slide to use fallback image (graceful degradation)
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
     
     def copy_preview_image(self, presentation: PresentationInfo) -> None:
         """
@@ -209,7 +209,7 @@ class FileManager:
             presentation: Presentation info with preview image
         """
         # Skip if no preview image or using fallback
-        if not presentation.preview_image or presentation.preview_image.startswith(f"/{self.config.fallback_image}"):
+        if not presentation.preview_image or presentation.preview_image.startswith(f"../{self.config.fallback_image}"):
             return
             
         # Get the source image path
@@ -221,7 +221,7 @@ class FileManager:
         # Skip if source doesn't exist
         if not source_path.exists():
             self.logger.warning(f"Preview image not found: {source_path}")
-            presentation.preview_image = f"/{self.config.fallback_image}"
+            presentation.preview_image = f"../{self.config.fallback_image}"
             return
         
         # Determine destination path
@@ -237,11 +237,11 @@ class FileManager:
             self.logger.debug(f"Copied preview image: {source_path} -> {dest_path}")
             
             # Update preview image path to web-accessible path
-            presentation.preview_image = f"/images/{preview_filename}"
+            presentation.preview_image = f"../images/{preview_filename}"
         except Exception as e:
             self.logger.error(f"Failed to copy preview image {source_path}: {e}")
             # Update to use fallback image
-            presentation.preview_image = f"/{self.config.fallback_image}"
+            presentation.preview_image = f"../{self.config.fallback_image}"
     
     def cleanup_output_directory(self, presentations: List[ProcessedPresentation]) -> None:
         """
@@ -312,11 +312,11 @@ class FileManager:
         for slide in presentation.slides:
             # If the slide has no image path, set the fallback image
             if not slide.image_path:
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
                 continue
                 
             # Skip slides already using fallback image or web paths
-            if slide.image_path.startswith(f"/{self.config.fallback_image}") or slide.image_path.startswith(f"/{self.config.slides_dir}/"):
+            if slide.image_path.startswith(f"../{self.config.fallback_image}") or slide.image_path.startswith(f"../{self.config.slides_dir}/"):
                 continue
                 
             # Resolve image path relative to presentation folder if needed
@@ -333,10 +333,10 @@ class FileManager:
             if dest_path.exists():
                 # Image was successfully copied, update to web-accessible path
                 rel_path = f"{presentation.info.folder_name}/{dest_filename}"
-                slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
+                slide.image_path = f"../{self.config.slides_dir}/{rel_path}"
             else:
                 # Image was not copied (probably failed), use fallback
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
     
     def process_all_presentations(self, presentations: List[ProcessedPresentation]) -> None:
         """

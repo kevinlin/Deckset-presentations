@@ -283,7 +283,7 @@ class TestErrorHandling:
         file_manager.copy_slide_images(processed_presentation)
         
         # Slide should use fallback image
-        assert processed_presentation.slides[0].image_path == f"/{config.fallback_image}"
+        assert processed_presentation.slides[0].image_path == f"../{config.fallback_image}"
 
     def test_template_manager_jinja2_not_available(self, config):
         """Test template manager when Jinja2 is not available."""
@@ -508,7 +508,7 @@ Content 3"""
         for presentation in presentations:
             assert presentation.preview_image is not None
             if presentation.folder_name == "no_preview":
-                assert presentation.preview_image == f"/{config.fallback_image}"
+                assert presentation.preview_image == f"../{config.fallback_image}"
 
 
 if __name__ == "__main__":

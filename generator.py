@@ -244,7 +244,7 @@ class WebPageGenerator:
         for slide in presentation.slides:
             # If the slide has no image path, set the fallback image
             if not slide.image_path:
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
                 continue
                 
             # Check if the image exists (resolve relative to presentation folder)
@@ -257,7 +257,7 @@ class WebPageGenerator:
                 
             if not resolved_image_path.exists():
                 self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {resolved_image_path}")
-                slide.image_path = f"/{self.config.fallback_image}"
+                slide.image_path = f"../{self.config.fallback_image}"
                 continue
                 
             # Leave the image_path as-is for now - FileManager will handle the copying
@@ -305,7 +305,7 @@ class WebPageGenerator:
                 
                 if not image_path.exists():
                     self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
-                    presentation.preview_image = f"/{self.config.fallback_image}"
+                    presentation.preview_image = f"../{self.config.fallback_image}"
                     continue
                 
                 # Create a standardized preview image name
@@ -313,10 +313,10 @@ class WebPageGenerator:
                 dest_path = preview_dir / preview_filename
                 
                 # Update the preview image path to use the web-accessible path
-                presentation.preview_image = f"/images/{preview_filename}"
+                presentation.preview_image = f"../images/{preview_filename}"
             else:
                 # Use fallback image if no preview is available
-                presentation.preview_image = f"/{self.config.fallback_image}"
+                presentation.preview_image = f"../{self.config.fallback_image}"
     
     def generate_all_pages(
         self, 
@@ -386,10 +386,23 @@ class WebPageGenerator:
                 self.logger.error(f"Failed to generate page for '{presentation.info.title}': {e}")
                 # Continue with other presentations despite errors
         
-        # Generate homepage
+                    # Generate homepage - adjust preview image paths for root level
         try:
+            # Create a copy of presentation_infos with adjusted paths for homepage
+            homepage_presentation_infos = []
+            for presentation_info in presentation_infos:
+                # Create a copy to avoid modifying the original
+                from copy import copy
+                homepage_info = copy(presentation_info)
+                
+                # Adjust preview image paths for homepage (remove ../ prefix)
+                if homepage_info.preview_image and homepage_info.preview_image.startswith("../"):
+                    homepage_info.preview_image = homepage_info.preview_image[3:]  # Remove "../"
+                
+                homepage_presentation_infos.append(homepage_info)
+            
             homepage_path = output_dir_path / "index.html"
-            self.generate_homepage(presentation_infos, homepage_path)
+            self.generate_homepage(homepage_presentation_infos, homepage_path)
         except Exception as e:
             stats["errors"].append({
                 "presentation": "homepage",

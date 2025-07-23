@@ -175,11 +175,11 @@ class TestWebPageGenerator:
         generator._process_slide_images(processed_presentation)
         
         # Verify fallback image is set for missing image
-        assert processed_presentation.slides[2].image_path == f"/{config.fallback_image}"
+        assert processed_presentation.slides[2].image_path == f"../{config.fallback_image}"
         
         # Verify other slides have web paths
-        assert processed_presentation.slides[0].image_path.startswith(f"/{config.slides_dir}/")
-        assert processed_presentation.slides[1].image_path.startswith(f"/{config.slides_dir}/")
+        assert processed_presentation.slides[0].image_path.startswith(f"../{config.slides_dir}/")
+        assert processed_presentation.slides[1].image_path.startswith(f"../{config.slides_dir}/")
         
     def test_process_preview_images(self, config, presentation_list, tmp_path, monkeypatch):
         """Test processing preview images with fallbacks."""
@@ -208,11 +208,11 @@ class TestWebPageGenerator:
         generator._process_preview_images(presentation_list)
         
         # Verify preview image paths are updated
-        assert presentation_list[0].preview_image.startswith("/images/")
+        assert presentation_list[0].preview_image.startswith("../images/")
         assert presentation_list[0].preview_image.endswith("-preview.png")
         
         # Verify fallback image is set for missing preview
-        assert presentation_list[1].preview_image == f"/{config.fallback_image}"
+        assert presentation_list[1].preview_image == f"../{config.fallback_image}"
 
     @patch('generator.WebPageGenerator.generate_presentation_page')
     @patch('generator.WebPageGenerator.generate_homepage')

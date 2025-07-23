@@ -214,8 +214,8 @@ class TestFileManagement:
         assert (images_dir / "presentation2-preview.jpg").exists()
         
         # Check that paths were updated
-        assert presentations[0].info.preview_image == "/images/presentation1-preview.png"
-        assert presentations[1].info.preview_image == "/images/presentation2-preview.jpg"
+        assert presentations[0].info.preview_image == "../images/presentation1-preview.png"
+        assert presentations[1].info.preview_image == "../images/presentation2-preview.jpg"
     
     def test_cleanup_output_directory(self, config, presentations, test_output_dir):
         """Test cleanup of unused files."""
@@ -273,14 +273,14 @@ class TestFileManagement:
         assert (test_output_dir / "slides" / "redacted.png").exists()
         
         # Check that paths were updated
-        assert presentations[0].info.preview_image.startswith("/images/")
-        assert presentations[1].info.preview_image.startswith("/images/")
+        assert presentations[0].info.preview_image.startswith("../images/")
+        assert presentations[1].info.preview_image.startswith("../images/")
         
         # Check that slide paths were updated
-        assert presentations[0].slides[0].image_path.startswith("/slides/")
-        assert presentations[0].slides[1].image_path.startswith("/slides/")
-        assert presentations[1].slides[0].image_path == "/slides/redacted.png"
-        assert presentations[1].slides[1].image_path == "/slides/redacted.png"
+        assert presentations[0].slides[0].image_path.startswith("../slides/")
+        assert presentations[0].slides[1].image_path.startswith("../slides/")
+        assert presentations[1].slides[0].image_path == f"../{config.fallback_image}"
+        assert presentations[1].slides[1].image_path == f"../{config.fallback_image}"
     
     def test_integration_with_generator(self, config, presentations, test_output_dir, monkeypatch):
         """Test integration with WebPageGenerator."""
