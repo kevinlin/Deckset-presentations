@@ -1,0 +1,78 @@
+# Requirements Document
+
+## Introduction
+
+This feature will create a dynamic website generator that converts Deckset presentations stored in folders into a comprehensive web-based presentation viewer. The system will automatically discover presentation folders, convert markdown slides to web pages, generate preview images, create a homepage with navigation, and automate the entire process through GitHub Actions.
+
+## Requirements
+
+### Requirement 1
+
+**User Story:** As a presentation author, I want the system to automatically discover all Deckset presentations in my repository, so that I don't have to manually configure each presentation.
+
+#### Acceptance Criteria
+
+1. WHEN the system runs THEN it SHALL scan all folders in the repository root directory
+2. WHEN a folder contains a markdown file THEN the system SHALL identify it as a presentation folder
+3. WHEN multiple markdown files exist in a folder THEN the system SHALL use the file with the same name as the folder or the first markdown file found
+4. IF no markdown file matches the folder name THEN the system SHALL use the first markdown file alphabetically
+
+### Requirement 2
+
+**User Story:** As a presentation author, I want each presentation converted to a web page with slide images and speaker notes, so that viewers can see both the visual slides and accompanying content.
+
+#### Acceptance Criteria
+
+1. WHEN processing a presentation markdown file THEN the system SHALL split content by slide separators ("---")
+2. WHEN extracting speaker notes THEN the system SHALL identify notes marked with "^" prefix
+3. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
+4. WHEN a slide image is missing THEN the system SHALL display a fallback "redacted.png" image
+5. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
+
+### Requirement 3
+
+**User Story:** As a presentation author, I want the generated website to have consistent styling and responsive design, so that presentations look professional on all devices.
+
+#### Acceptance Criteria
+
+1. WHEN generating web pages THEN the system SHALL apply consistent CSS styling using Tailwind CSS
+2. WHEN viewing on mobile devices THEN the layout SHALL adapt responsively
+3. WHEN displaying slide images THEN they SHALL be properly sized and bordered
+4. WHEN rendering text content THEN it SHALL use readable typography and spacing
+5. WHEN navigating between pages THEN the styling SHALL remain consistent
+
+### Requirement 4
+
+**User Story:** As a website visitor, I want a homepage that shows all available presentations with preview images, so that I can easily browse and select presentations to view.
+
+#### Acceptance Criteria
+
+1. WHEN generating the homepage THEN the system SHALL list all discovered presentations
+2. WHEN displaying each presentation THEN the system SHALL show a preview image from the first slide
+3. WHEN a preview image is unavailable THEN the system SHALL display a placeholder image
+4. WHEN clicking on a presentation THEN the system SHALL navigate to the presentation's web page
+5. WHEN displaying presentation titles THEN the system SHALL use the folder name or extracted title from the markdown
+
+### Requirement 5
+
+**User Story:** As a system administrator, I want the website generator to handle errors gracefully, so that partial failures don't prevent the entire website from being generated.
+
+#### Acceptance Criteria
+
+1. WHEN a presentation folder cannot be processed THEN the system SHALL log the error and continue with other presentations
+2. WHEN slide images are missing THEN the system SHALL use fallback images without failing
+3. WHEN markdown parsing fails THEN the system SHALL display raw content or skip the problematic slide
+4. WHEN the homepage generation encounters errors THEN it SHALL still generate a basic homepage with available presentations
+5. WHEN file operations fail THEN the system SHALL provide clear error messages for debugging
+
+### Requirement 6
+
+**User Story:** As a repository maintainer, I want the website generation to be automated through GitHub Actions, so that the website updates automatically when presentations are added or modified.
+
+#### Acceptance Criteria
+
+1. WHEN changes are pushed to the main branch THEN the GitHub Action SHALL trigger automatically
+2. WHEN the action runs THEN it SHALL generate all presentation web pages
+3. WHEN the action runs THEN it SHALL generate the homepage with current presentations
+4. WHEN generation is complete THEN the action SHALL deploy the website to GitHub Pages or specified hosting
+5. IF generation fails THEN the action SHALL report clear error messages
