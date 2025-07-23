@@ -7,6 +7,8 @@ and the homepage with presentation listings.
 
 import os
 import logging
+import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -89,8 +91,18 @@ class WebPageGenerator:
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             
+            # Process preview images for each presentation
+            self._process_preview_images(presentations)
+            
+            # Sort presentations by last modified date (newest first)
+            sorted_presentations = sorted(
+                presentations,
+                key=lambda p: p.last_modified if p.last_modified else datetime.min,
+                reverse=True
+            )
+            
             # Render the homepage using the template manager
-            html_content = self.template_manager.render_homepage(presentations, None)
+            html_content = self.template_manager.render_homepage(sorted_presentations, None)
             
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
@@ -139,6 +151,65 @@ class WebPageGenerator:
             # Copy the image file (this will be implemented in the file management task)
             # For now, just log that we would copy the file
             self.logger.debug(f"Would copy {image_path} to {dest_path}")
+            
+    def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
+        """
+        Process preview images for presentations.
+        
+        This method updates the preview_image for each presentation, handling fallbacks
+        for missing images and creating preview directories.
+        
+        Args:
+            presentations: List of presentation info objects to process
+        """
+        # Create images directory for previews if it doesn't exist
+        preview_dir = Path(self.config.output_dir) / "images"
+        preview_dir.mkdir(parents=True, exist_ok=True)
+        
+        for presentation in presentations:
+            # If no preview image is set, try to find the first slide image
+            if not presentation.preview_image:
+                # Look for potential first slide image in the presentation folder
+                potential_images = list(Path(presentation.folder_path).glob("*.png")) + \
+                                  list(Path(presentation.folder_path).glob("*.jpg")) + \
+                                  list(Path(presentation.folder_path).glob("*.jpeg"))
+                
+                # Also check in a slides/ subdirectory if it exists
+                slides_dir = Path(presentation.folder_path) / "slides"
+                if slides_dir.exists():
+                    potential_images.extend(list(slides_dir.glob("*.png")))
+                    potential_images.extend(list(slides_dir.glob("*.jpg")))
+                    potential_images.extend(list(slides_dir.glob("*.jpeg")))
+                
+                # Sort by name to try to get slide1.png or similar
+                potential_images.sort(key=lambda p: p.name)
+                
+                if potential_images:
+                    # Use the first image found as preview
+                    presentation.preview_image = str(potential_images[0])
+            
+            # Process the preview image if it exists
+            if presentation.preview_image:
+                image_path = Path(presentation.preview_image)
+                
+                if not image_path.exists():
+                    self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
+                    presentation.preview_image = f"/{self.config.fallback_image}"
+                    continue
+                
+                # Create a standardized preview image name
+                preview_filename = f"{presentation.folder_name}-preview{image_path.suffix}"
+                dest_path = preview_dir / preview_filename
+                
+                # Update the preview image path to use the web-accessible path
+                presentation.preview_image = f"/images/{preview_filename}"
+                
+                # Copy the image file (this will be implemented in the file management task)
+                # For now, just log that we would copy the file
+                self.logger.debug(f"Would copy {image_path} to {dest_path}")
+            else:
+                # Use fallback image if no preview is available
+                presentation.preview_image = f"/{self.config.fallback_image}"
     
     def generate_all_pages(
         self, 
@@ -165,6 +236,10 @@ class WebPageGenerator:
         presentations_dir = output_dir_path / "presentations"
         presentations_dir.mkdir(parents=True, exist_ok=True)
         
+        # Create images directory for previews
+        images_dir = output_dir_path / "images"
+        images_dir.mkdir(parents=True, exist_ok=True)
+        
         stats = {
             "total": len(presentations),
             "successful": 0,
@@ -176,6 +251,18 @@ class WebPageGenerator:
         presentation_infos = []
         for presentation in presentations:
             try:
+                # Update presentation metadata
+                if not presentation.info.last_modified:
+                    # Set last modified time based on markdown file
+                    md_path = Path(presentation.info.markdown_path)
+                    if md_path.exists():
+                        presentation.info.last_modified = datetime.fromtimestamp(md_path.stat().st_mtime)
+                
+                # Set slide count if not already set
+                if presentation.info.slide_count == 0:
+                    presentation.info.slide_count = len(presentation.slides)
+                
+                # Generate the presentation page
                 output_path = presentations_dir / f"{presentation.info.folder_name}.html"
                 self.generate_presentation_page(presentation, output_path)
                 presentation_infos.append(presentation.info)

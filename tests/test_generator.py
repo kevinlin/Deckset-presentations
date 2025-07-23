@@ -149,7 +149,7 @@ class TestWebPageGenerator:
         # Verify template manager was called correctly
         mock_render.assert_called_once()
         args, _ = mock_render.call_args
-        assert args[0] == presentation_list
+        assert len(args[0]) == len(presentation_list)
 
     @patch('templates.TemplateManager.render_homepage')
     def test_generate_homepage_error(self, mock_render, config, presentation_list, tmp_path):
@@ -180,6 +180,39 @@ class TestWebPageGenerator:
         # Verify other slides have web paths
         assert processed_presentation.slides[0].image_path.startswith(f"/{config.slides_dir}/")
         assert processed_presentation.slides[1].image_path.startswith(f"/{config.slides_dir}/")
+        
+    def test_process_preview_images(self, config, presentation_list, tmp_path, monkeypatch):
+        """Test processing preview images with fallbacks."""
+        # Setup
+        generator = WebPageGenerator(config)
+        
+        # Create a temporary image file for testing
+        test_image_dir = tmp_path / "test-presentation"
+        test_image_dir.mkdir(parents=True)
+        test_image_path = test_image_dir / "slide1.png"
+        with open(test_image_path, 'w') as f:
+            f.write("dummy image content")
+            
+        # Update the first presentation to use the test image
+        presentation_list[0].preview_image = str(test_image_path)
+        
+        # Patch the exists method to return True for our test image
+        original_exists = Path.exists
+        def mock_exists(self):
+            if str(self) == str(test_image_path):
+                return True
+            return original_exists(self)
+        monkeypatch.setattr(Path, "exists", mock_exists)
+        
+        # Execute
+        generator._process_preview_images(presentation_list)
+        
+        # Verify preview image paths are updated
+        assert presentation_list[0].preview_image.startswith("/images/")
+        assert presentation_list[0].preview_image.endswith("-preview.png")
+        
+        # Verify fallback image is set for missing preview
+        assert presentation_list[1].preview_image == f"/{config.fallback_image}"
 
     @patch('generator.WebPageGenerator.generate_presentation_page')
     @patch('generator.WebPageGenerator.generate_homepage')
@@ -223,3 +256,62 @@ class TestWebPageGenerator:
         
         # Verify homepage was still attempted
         mock_homepage.assert_called_once()
+        
+    def test_homepage_with_multiple_presentations(self, config, tmp_path):
+        """Test generating homepage with multiple presentations."""
+        # Setup
+        generator = WebPageGenerator(config)
+        
+        # Create multiple presentations with different last_modified dates
+        presentations = [
+            PresentationInfo(
+                folder_name="presentation1",
+                folder_path="presentation1",
+                markdown_path="presentation1/test.md",
+                title="Presentation 1",
+                preview_image=None,
+                slide_count=5,
+                last_modified=datetime(2023, 1, 1)
+            ),
+            PresentationInfo(
+                folder_name="presentation2",
+                folder_path="presentation2",
+                markdown_path="presentation2/test.md",
+                title="Presentation 2",
+                preview_image=None,
+                slide_count=3,
+                last_modified=datetime(2023, 2, 1)
+            ),
+            PresentationInfo(
+                folder_name="presentation3",
+                folder_path="presentation3",
+                markdown_path="presentation3/test.md",
+                title="Presentation 3",
+                preview_image=None,
+                slide_count=7,
+                last_modified=datetime(2023, 3, 1)
+            )
+        ]
+        
+        # Mock the template manager's render_homepage method
+        with patch('templates.TemplateManager.render_homepage') as mock_render:
+            mock_render.return_value = "<html>Homepage with multiple presentations</html>"
+            output_path = tmp_path / "index.html"
+            
+            # Execute
+            generator.generate_homepage(presentations, output_path)
+            
+            # Verify
+            mock_render.assert_called_once()
+            args, _ = mock_render.call_args
+            
+            # Verify presentations are sorted by last_modified (newest first)
+            sorted_presentations = args[0]
+            assert len(sorted_presentations) == 3
+            assert sorted_presentations[0].folder_name == "presentation3"
+            assert sorted_presentations[1].folder_name == "presentation2"
+            assert sorted_presentations[2].folder_name == "presentation1"
+            
+            # Verify all presentations have preview images set (fallbacks)
+            for presentation in sorted_presentations:
+                assert presentation.preview_image is not None

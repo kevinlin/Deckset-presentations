@@ -46,7 +46,7 @@
   - Write unit tests for page generation with various presentation data in tests/test_generator.py
   - _Requirements: 2.3, 2.4, 3.3, 5.2, 5.3_
 
-- [ ] 7. Build homepage generator functionality
+- [x] 7. Build homepage generator functionality
   - Implement homepage generation with presentation listings
   - Add preview image handling with placeholder fallbacks
   - Create presentation metadata display (title, slide count, last modified)
