@@ -63,6 +63,7 @@ class PresentationProcessor:
     def extract_slides(self, content: str) -> List[Slide]
     def extract_notes(self, slide_content: str) -> str
     def extract_metadata(self, content: str) -> Dict[str, Any]
+    def extract_slide_images(self, slide_content: str) -> List[str]
 ```
 
 **Key Methods**:
@@ -70,6 +71,9 @@ class PresentationProcessor:
 - `extract_slides()`: Splits content by slide separators and processes each slide
 - `extract_notes()`: Extracts speaker notes marked with "^" prefix
 - `extract_metadata()`: Parses frontmatter for presentation configuration
+- `extract_slide_images()`: Parses markdown image syntax to discover referenced images
+
+**Image Discovery Logic**: The processor parses each slide's markdown content using regex patterns to find image references in the format `![alt-text](filename.ext)`. It extracts the filename and resolves the path relative to the presentation folder. When multiple images exist in a slide, the first image found is used as the primary slide image for web display.
 
 ### 3. Web Page Generator (`generator.py`)
 

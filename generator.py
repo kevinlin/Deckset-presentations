@@ -260,20 +260,25 @@ class WebPageGenerator:
                 slide.image_path = f"/{self.config.fallback_image}"
                 continue
                 
-            # Check if the image exists
+            # Check if the image exists (resolve relative to presentation folder)
             image_path = Path(slide.image_path)
-            if not image_path.exists():
-                self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {slide.image_path}")
+            if not image_path.is_absolute() and not str(image_path).startswith('/'):
+                # Resolve relative to presentation folder
+                resolved_image_path = Path(presentation.info.folder_path) / image_path
+            else:
+                resolved_image_path = image_path
+                
+            if not resolved_image_path.exists():
+                self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {resolved_image_path}")
                 slide.image_path = f"/{self.config.fallback_image}"
                 continue
                 
             # Determine the destination path for the image
             rel_path = f"{presentation.info.folder_name}/{image_path.name}"
-            dest_path = Path(self.config.output_dir) / self.config.slides_dir / rel_path
             
             # Update the image path to use the web-accessible path
             slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
-            
+    
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
         Process preview images for presentations.

@@ -39,6 +39,8 @@ class PresentationProcessor:
             re.compile(r'^\^\s+(.*)$', re.MULTILINE),  # ^ with spaces
             re.compile(r'^\s*\^\s*(.*)$', re.MULTILINE),  # ^ with leading spaces
         ]
+        # Pattern for extracting markdown images: ![alt](filename)
+        self._image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)', re.MULTILINE)
     
     def process_presentation(self, presentation_info: PresentationInfo) -> ProcessedPresentation:
         """
@@ -151,8 +153,10 @@ class PresentationProcessor:
                     # Remove notes from slide content
                     clean_content = self._remove_notes_from_content(slide_content)
                     
-                    # Set image path based on slide index (for future use)
-                    image_path = f"slides/{i + 1}.png" if i > 0 or len(slide_contents) > 1 else None
+                    # Extract image references from slide content
+                    slide_images = self.extract_slide_images(slide_content)
+                    # Use the first image found as the primary slide image, or None if no images
+                    image_path = slide_images[0] if slide_images else None
                     
                     slide = Slide(
                         index=i + 1,
@@ -239,10 +243,38 @@ class PresentationProcessor:
                     return '\n'.join(note_lines)
             
             return ""
-            
+        
         except Exception as e:
             logger.error(f"Critical error in note extraction: {e}")
             return ""
+    
+    def extract_slide_images(self, slide_content: str) -> List[str]:
+        """
+        Extract image references from slide markdown content.
+        
+        Args:
+            slide_content: Content of a single slide
+            
+        Returns:
+            List of image filenames referenced in the slide
+        """
+        try:
+            matches = self._image_pattern.findall(slide_content)
+            image_filenames = []
+            
+            for alt_text, filename in matches:
+                # Clean up the filename (remove any query parameters or fragments)
+                filename = filename.split('?')[0].split('#')[0].strip()
+                if filename and not filename.startswith('http'):
+                    # Only include local image files, not URLs
+                    image_filenames.append(filename)
+            
+            logger.debug(f"Found {len(image_filenames)} image references: {image_filenames}")
+            return image_filenames
+            
+        except Exception as e:
+            logger.error(f"Error extracting slide images: {e}")
+            return []
     
     def extract_metadata(self, content: str) -> Dict[str, Any]:
         """

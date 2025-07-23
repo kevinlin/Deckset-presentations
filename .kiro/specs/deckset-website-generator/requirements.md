@@ -24,10 +24,11 @@ This feature will create a dynamic website generator that converts Deckset prese
 #### Acceptance Criteria
 
 1. WHEN processing a presentation markdown file THEN the system SHALL split content by slide separators ("---")
-2. WHEN extracting speaker notes THEN the system SHALL identify notes marked with "^" prefix
-3. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
-4. WHEN a slide image is missing THEN the system SHALL display a fallback "redacted.png" image
-5. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
+2. WHEN extracting slide images THEN the system SHALL parse markdown image syntax (e.g., `![alt](filename.ext)`) from each slide's content to discover referenced images
+3. WHEN multiple images exist in a slide THEN the system SHALL use the first image found as the primary slide image
+4. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
+5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a fallback "redacted.png" image
+6. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
 
 ### Requirement 3
 
