@@ -50,6 +50,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test_output/
 
 # Translations
 *.mo
@@ -164,6 +165,9 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# Cursor
+.history/
 
 # macOS
 .DS_Store
