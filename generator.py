@@ -19,6 +19,7 @@ from models import (
     TemplateRenderingError
 )
 from templates import TemplateManager
+from file_manager import FileManager
 
 
 class WebPageGenerator:
@@ -33,6 +34,7 @@ class WebPageGenerator:
         """
         self.config = config
         self.template_manager = TemplateManager(config)
+        self.file_manager = FileManager(config)
         self.logger = logging.getLogger(__name__)
     
     def generate_presentation_page(
@@ -148,10 +150,6 @@ class WebPageGenerator:
             # Update the image path to use the web-accessible path
             slide.image_path = f"/{self.config.slides_dir}/{rel_path}"
             
-            # Copy the image file (this will be implemented in the file management task)
-            # For now, just log that we would copy the file
-            self.logger.debug(f"Would copy {image_path} to {dest_path}")
-            
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
         Process preview images for presentations.
@@ -203,10 +201,6 @@ class WebPageGenerator:
                 
                 # Update the preview image path to use the web-accessible path
                 presentation.preview_image = f"/images/{preview_filename}"
-                
-                # Copy the image file (this will be implemented in the file management task)
-                # For now, just log that we would copy the file
-                self.logger.debug(f"Would copy {image_path} to {dest_path}")
             else:
                 # Use fallback image if no preview is available
                 presentation.preview_image = f"/{self.config.fallback_image}"
@@ -232,13 +226,12 @@ class WebPageGenerator:
         if output_dir is None:
             output_dir = self.config.output_dir
             
+        # Set up output directories and ensure fallback image exists
+        self.file_manager.setup_output_directories()
+        self.file_manager.ensure_fallback_image()
+            
         output_dir_path = Path(output_dir)
         presentations_dir = output_dir_path / "presentations"
-        presentations_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Create images directory for previews
-        images_dir = output_dir_path / "images"
-        images_dir.mkdir(parents=True, exist_ok=True)
         
         stats = {
             "total": len(presentations),
@@ -261,6 +254,9 @@ class WebPageGenerator:
                 # Set slide count if not already set
                 if presentation.info.slide_count == 0:
                     presentation.info.slide_count = len(presentation.slides)
+                
+                # Process files for this presentation
+                self.file_manager.process_presentation_files(presentation)
                 
                 # Generate the presentation page
                 output_path = presentations_dir / f"{presentation.info.folder_name}.html"
@@ -287,5 +283,8 @@ class WebPageGenerator:
                 "error": str(e)
             })
             self.logger.error(f"Failed to generate homepage: {e}")
+        
+        # Clean up unused files
+        self.file_manager.cleanup_output_directory(presentations)
         
         return stats

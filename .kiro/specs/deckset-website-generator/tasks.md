@@ -54,7 +54,7 @@
   - Write unit tests for homepage generation with multiple presentations in tests/test_generator.py
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [-] 8. Create file and asset management
+- [x] 8. Create file and asset management
   - Create slides/redacted.png fallback image (referenced in template but missing)
   - Implement slide image copying from source folders to output directory
   - Create output directory structure management (docs/, slides/, assets/)
@@ -63,7 +63,7 @@
   - Commit the changes use the task name and push changes to remote 
   - _Requirements: 2.4, 4.3, 5.2_
 
-- [ ] 9. Enhance main generator orchestration
+- [-] 9. Enhance main generator orchestration
   - Refactor existing main.py into DecksetWebsiteGenerator class
   - Implement complete website generation workflow for multiple presentations
   - Add configuration management for output directories and settings
@@ -90,4 +90,3 @@
   - Write workflow that triggers on main branch pushes
   - Commit the changes use the task name and push changes to remote 
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
-
