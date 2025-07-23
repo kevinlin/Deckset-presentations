@@ -1,0 +1,142 @@
+name: Generate and Deploy Deckset Website
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggering
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for last modified dates
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install UV (fast Python package installer)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r <(uv pip compile pyproject.toml)
+      
+      - name: Validate generator configuration
+        run: |
+          python main.py --validate
+      
+      - name: Generate website
+        run: |
+          python main.py --verbose --output docs
+        env:
+          PYTHONPATH: .
+      
+      - name: Check generated files
+        run: |
+          echo "Generated files:"
+          find docs -type f -name "*.html" | head -20
+          echo "Total HTML files: $(find docs -type f -name "*.html" | wc -l)"
+          echo "Total slide images: $(find docs/slides -type f -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" 2>/dev/null | wc -l || echo 0)"
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          path: ./docs
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+  # Notification job for failures
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Create issue on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Website Generation Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Website Generation Failure
+            
+            The automated website generation workflow failed on the main branch.
+            
+            **Details:**
+            - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            - **Commit:** ${{ github.sha }}
+            - **Branch:** ${{ github.ref_name }}
+            - **Triggered by:** ${{ github.actor }}
+            - **Timestamp:** ${new Date().toISOString()}
+            
+            **Next Steps:**
+            1. Check the workflow logs for specific error messages
+            2. Verify that all presentation markdown files are valid
+            3. Ensure all referenced images exist in their respective folders
+            4. Test the generation locally with: \`python main.py --verbose\`
+            
+            This issue was automatically created by the GitHub Actions workflow.
+            `;
+            
+            // Check if there's already an open issue for today
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['automated', 'website-generation', 'failure']
+            });
+            
+            const today = new Date().toISOString().split('T')[0];
+            const existingIssue = issues.find(issue => 
+              issue.title.includes(today) && issue.title.includes('Website Generation Failed')
+            );
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['automated', 'website-generation', 'failure']
+              });
+              console.log('Created failure notification issue');
+            } else {
+              console.log('Issue already exists for today, not creating duplicate');
+            }
