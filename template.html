@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Title</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      p {
+        font-size: 14px;
+        margin-bottom: 1rem;
+      }
+      a {
+        color: #0645ad;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body class="mx-4 text-gray-900">
+    <h1 class="text-center text-4xl my-6">Title</h1>
+    <div
+      class="max-w-xl mx-auto mb-4 rounded p-4 bg-gray-100 border border-gray-300"
+    >
+      <p>Here's where you might write a summary of your talk.</p>
+      <p class="m-0">Another paragraph!</p>
+    </div>
+    <div class="max-w-4xl sm:grid sm:mx-auto" style="">
+      {% for notes in slides %}
+      <hr class="col-span-2 border-gray-300 mb-4" />
+      <div class="mb-4 sm:mr-4">
+        <img
+          class="border border-gray-300"
+          src="slides/{{loop.index}}.png"
+          onerror="this.onerror=null; this.src='slides/redacted.png';"
+        />
+      </div>
+      <div class="mb-4">{{notes}}</div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

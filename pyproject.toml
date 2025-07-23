@@ -1,0 +1,18 @@
+[project]
+name = "deckset-presentations"
+version = "0.1.0"
+description = "A tool for generating presentations using Markdown and Jinja2 templates"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2>=3.1.6",
+    "markdown>=3.8.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/deckset-presentations"
+Repository = "https://github.com/yourusername/deckset-presentations"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
