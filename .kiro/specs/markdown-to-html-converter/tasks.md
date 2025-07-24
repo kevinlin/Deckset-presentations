@@ -1,12 +1,12 @@
 # Implementation Plan
 
-- [ ] 1. Set up enhanced project structure and core interfaces
+- [x] 1. Set up enhanced project structure and core interfaces
   - Create directory structure for enhanced Deckset processing components
   - Define base interfaces for DecksetParser, MediaProcessor, and SlideProcessor
   - Set up enhanced data models for DecksetConfig, SlideConfig, and ProcessedSlide
   - _Requirements: 1.1, 1.4, 1.5_
 
-- [ ] 2. Implement core Deckset markdown parser
+- [-] 2. Implement core Deckset markdown parser
 - [ ] 2.1 Create DecksetParser class with global command processing
   - Implement parse_global_commands() to extract slidenumbers, footer, autoscale settings
   - Implement parse_slide_commands() for slide-specific directives like [.column], [.background-image]
