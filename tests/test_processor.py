@@ -378,12 +378,12 @@ Thank you!
         assert len(slides) == 4
         
         # First slide
-        assert "[fit] Title Slide" in slides[0].content
+        assert "Title Slide" in slides[0].content
         assert "Opening notes" in slides[0].notes
         
         # Second slide with image
         assert "Content Slide" in slides[1].content
-        assert "image1.jpg" in slides[1].content
+        assert slides[1].image_path == "image1.jpg"  # Image should be extracted to image_path
         assert "This slide has an image" in slides[1].notes
         
         # Code slide

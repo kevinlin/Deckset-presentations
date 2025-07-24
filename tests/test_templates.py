@@ -212,9 +212,15 @@ def test_ensure_template_dir(tmp_path):
     """Test ensuring the template directory exists."""
     new_template_dir = tmp_path / "new_templates"
     config = GeneratorConfig(template_dir=str(new_template_dir))
-    manager = TemplateManager(config)
     
+    # Directory should not exist initially
     assert not new_template_dir.exists()
+    
+    # Creating TemplateManager should create the directory
+    manager = TemplateManager(config)
+    assert new_template_dir.exists()
+    
+    # ensure_template_dir should work even if directory already exists
     manager.ensure_template_dir()
     assert new_template_dir.exists()
 

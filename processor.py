@@ -414,7 +414,7 @@ class PresentationProcessor:
     
     def _clean_deckset_syntax(self, content: str) -> str:
         """Remove Deckset-specific syntax that shouldn't appear in web content."""
-        # Remove [fit] syntax
+        # Remove [fit] syntax but preserve the text after it
         content = re.sub(r'\[fit\]\s*', '', content)
         
         # Remove empty lines that result from removed syntax

@@ -11,7 +11,12 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
-from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+try:
+    from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+    JINJA2_AVAILABLE = True
+except ImportError:
+    JINJA2_AVAILABLE = False
+
 import markdown as md
 
 from models import (
@@ -40,17 +45,19 @@ class TemplateManager:
         """
         self.config = config
         self.logger = logging.getLogger(__name__)
+        self.template_dir = Path(config.template_dir)
+        
+        if not JINJA2_AVAILABLE:
+            self.env = None
+            return
         
         # Set up Jinja2 environment
-        template_dir = Path(config.template_dir)
-        if not template_dir.exists():
-            raise TemplateRenderingError(
-                f"Template directory does not exist: {template_dir}",
-                context={"template_dir": str(template_dir)}
-            )
+        if not self.template_dir.exists():
+            # Create the template directory if it doesn't exist
+            self.template_dir.mkdir(parents=True, exist_ok=True)
         
         self.env = Environment(
-            loader=FileSystemLoader(str(template_dir)),
+            loader=FileSystemLoader(str(self.template_dir)),
             autoescape=select_autoescape(['html', 'xml']),
             trim_blocks=True,
             lstrip_blocks=True
@@ -89,6 +96,15 @@ class TemplateManager:
         Raises:
             TemplateRenderingError: If template loading fails
         """
+        if not JINJA2_AVAILABLE or self.env is None:
+            raise TemplateRenderingError(
+                "Jinja2 is not available. Please install it to use template functionality.",
+                context={
+                    "jinja2_available": False,
+                    "template_name": template_name
+                }
+            )
+        
         try:
             template = self.env.get_template(template_name)
             logger.debug(f"Successfully loaded template: {template_name}")
@@ -98,7 +114,7 @@ class TemplateManager:
                 f"Failed to load template {template_name}: {e}",
                 extra={
                     "template_name": template_name,
-                    "template_dir": str(self.config.template_dir),
+                    "template_dir": str(self.template_dir),
                     "error_type": type(e).__name__
                 }
             )
@@ -106,7 +122,7 @@ class TemplateManager:
                 f"Failed to load template {template_name}: {e}",
                 context={
                     "template_name": template_name,
-                    "template_dir": str(self.config.template_dir),
+                    "template_dir": str(self.template_dir),
                     "error_type": type(e).__name__
                 }
             )
@@ -230,7 +246,7 @@ class TemplateManager:
         Returns:
             True if the template exists, False otherwise
         """
-        template_path = Path(self.config.template_dir) / template_name
+        template_path = self.template_dir / template_name
         return template_path.exists()
     
     def ensure_template_dir(self) -> None:
@@ -239,7 +255,7 @@ class TemplateManager:
         
         Creates the template directory if it doesn't exist.
         """
-        self.config.template_dir.mkdir(parents=True, exist_ok=True)
+        self.template_dir.mkdir(parents=True, exist_ok=True)
         
     def get_all_templates(self) -> List[str]:
         """
@@ -248,10 +264,10 @@ class TemplateManager:
         Returns:
             List of template names
         """
-        if not self.config.template_dir.exists():
+        if not self.template_dir.exists():
             return []
             
         templates = []
-        for file in self.config.template_dir.glob('*.html'):
+        for file in self.template_dir.glob('*.html'):
             templates.append(file.name)
         return templates
