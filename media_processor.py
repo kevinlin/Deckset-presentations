@@ -38,6 +38,7 @@ class MediaProcessor(MediaProcessorInterface):
     
     def process_image(self, image_syntax: str, slide_context: SlideContext) -> ProcessedImage:
         """Process image with Deckset modifiers."""
+        image_path = None
         try:
             match = self.image_pattern.match(image_syntax.strip())
             if not match:
@@ -60,11 +61,14 @@ class MediaProcessor(MediaProcessorInterface):
                 alt_text=alt_text
             )
             
+        except MediaProcessingError:
+            raise
         except Exception as e:
             raise MediaProcessingError(f"Error processing image: {str(e)}", image_path, "image")
     
     def process_video(self, video_syntax: str, slide_context: SlideContext) -> ProcessedVideo:
         """Process video with Deckset modifiers."""
+        video_path = None
         try:
             match = self.image_pattern.match(video_syntax.strip())
             if not match:
@@ -105,11 +109,14 @@ class MediaProcessor(MediaProcessorInterface):
                 embed_url=embed_url
             )
             
+        except MediaProcessingError:
+            raise
         except Exception as e:
             raise MediaProcessingError(f"Error processing video: {str(e)}", video_path, "video")
     
     def process_audio(self, audio_syntax: str, slide_context: SlideContext) -> ProcessedAudio:
         """Process audio with Deckset modifiers."""
+        audio_path = None
         try:
             match = self.image_pattern.match(audio_syntax.strip())
             if not match:
@@ -131,6 +138,8 @@ class MediaProcessor(MediaProcessorInterface):
                 modifiers=modifiers
             )
             
+        except MediaProcessingError:
+            raise
         except Exception as e:
             raise MediaProcessingError(f"Error processing audio: {str(e)}", audio_path, "audio")
     
