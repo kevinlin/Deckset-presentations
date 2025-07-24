@@ -6,26 +6,26 @@
   - Set up enhanced data models for DecksetConfig, SlideConfig, and ProcessedSlide
   - _Requirements: 1.1, 1.4, 1.5_
 
-- [-] 2. Implement core Deckset markdown parser
-- [ ] 2.1 Create DecksetParser class with global command processing
+- [x] 2. Implement core Deckset markdown parser
+- [x] 2.1 Create DecksetParser class with global command processing
   - Implement parse_global_commands() to extract slidenumbers, footer, autoscale settings
   - Implement parse_slide_commands() for slide-specific directives like [.column], [.background-image]
   - Create unit tests for global and slide command parsing
   - _Requirements: 1.4, 1.5, 7.6, 7.7_
 
-- [ ] 2.2 Implement slide separation and auto-break functionality
+- [x] 2.2 Implement slide separation and auto-break functionality
   - Implement extract_slide_separators() to handle --- slide breaks
   - Implement detect_auto_slide_breaks() for slide-dividers configuration
   - Create unit tests for slide splitting logic
   - _Requirements: 1.1, 1.6_
 
-- [ ] 2.3 Implement speaker notes and footnote processing
+- [x] 2.3 Implement speaker notes and footnote processing
   - Implement process_speaker_notes() to extract ^ prefixed notes
   - Implement process_footnotes() to handle [^1] references and definitions
   - Create unit tests for notes and footnotes extraction
   - _Requirements: 1.3, 7.2_
 
-- [ ] 2.4 Implement fit headers and emoji processing
+- [x] 2.4 Implement fit headers and emoji processing
   - Implement process_fit_headers() to handle [fit] modifier on headings
   - Implement process_emoji_shortcodes() to convert :emoji: to Unicode
   - Create unit tests for text processing features
