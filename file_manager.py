@@ -290,14 +290,133 @@ class FileManager:
         Args:
             presentation: Processed presentation
         """
-        # Copy slide images first (while paths are still original)
-        self.copy_slide_images(presentation)
-        
-        # Then update slide image paths to web-accessible paths
-        self._update_slide_image_paths(presentation)
+        # Check if this is an enhanced presentation with media processing
+        if hasattr(presentation, 'config') and hasattr(presentation, 'slides'):
+            # Enhanced presentation - process all media types
+            self._process_enhanced_presentation_media(presentation)
+        else:
+            # Basic presentation - use legacy image processing
+            # Copy slide images first (while paths are still original)
+            self.copy_slide_images(presentation)
+            
+            # Then update slide image paths to web-accessible paths
+            self._update_slide_image_paths(presentation)
         
         # Copy preview image
         self.copy_preview_image(presentation.info)
+    
+    def _process_enhanced_presentation_media(self, presentation) -> None:
+        """
+        Process media files for enhanced presentations with full Deckset support.
+        
+        Args:
+            presentation: EnhancedPresentation object
+        """
+        try:
+            from media_processor import MediaProcessor
+            media_processor = MediaProcessor()
+            
+            # Create output directories for this presentation
+            output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
+            output_slides_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Process each slide's media
+            for slide in presentation.slides:
+                # Process background image
+                if slide.background_image:
+                    self._copy_processed_image(slide.background_image, output_slides_dir, presentation.info.folder_name)
+                
+                # Process inline images
+                for image in slide.inline_images:
+                    self._copy_processed_image(image, output_slides_dir, presentation.info.folder_name)
+                
+                # Process videos
+                for video in slide.videos:
+                    if video.embed_type == "local":
+                        self._copy_processed_video(video, output_slides_dir, presentation.info.folder_name)
+                
+                # Process audio
+                for audio in slide.audio:
+                    self._copy_processed_audio(audio, output_slides_dir, presentation.info.folder_name)
+            
+            self.logger.info(f"Processed enhanced media for presentation: {presentation.info.title}")
+            
+        except ImportError:
+            self.logger.warning("Enhanced media processor not available, falling back to basic image processing")
+            # Fallback to basic processing
+            self.copy_slide_images(presentation)
+            self._update_slide_image_paths(presentation)
+        except Exception as e:
+            self.logger.error(f"Failed to process enhanced media for {presentation.info.title}: {e}")
+            # Fallback to basic processing
+            self.copy_slide_images(presentation)
+            self._update_slide_image_paths(presentation)
+    
+    def _copy_processed_image(self, processed_image, output_dir: Path, presentation_folder: str) -> None:
+        """Copy a processed image to the output directory."""
+        try:
+            source_path = Path(processed_image.src_path)
+            if not source_path.exists():
+                self.logger.warning(f"Processed image source not found: {source_path}")
+                return
+            
+            dest_filename = source_path.name
+            dest_path = output_dir / dest_filename
+            
+            # Copy the image
+            shutil.copy2(source_path, dest_path)
+            
+            # Update web path to be relative to presentations directory
+            processed_image.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
+            
+            self.logger.debug(f"Copied processed image: {source_path} -> {dest_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to copy processed image {processed_image.src_path}: {e}")
+    
+    def _copy_processed_video(self, processed_video, output_dir: Path, presentation_folder: str) -> None:
+        """Copy a processed video to the output directory."""
+        try:
+            source_path = Path(processed_video.src_path)
+            if not source_path.exists():
+                self.logger.warning(f"Processed video source not found: {source_path}")
+                return
+            
+            dest_filename = source_path.name
+            dest_path = output_dir / dest_filename
+            
+            # Copy the video
+            shutil.copy2(source_path, dest_path)
+            
+            # Update web path to be relative to presentations directory
+            processed_video.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
+            
+            self.logger.debug(f"Copied processed video: {source_path} -> {dest_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to copy processed video {processed_video.src_path}: {e}")
+    
+    def _copy_processed_audio(self, processed_audio, output_dir: Path, presentation_folder: str) -> None:
+        """Copy a processed audio file to the output directory."""
+        try:
+            source_path = Path(processed_audio.src_path)
+            if not source_path.exists():
+                self.logger.warning(f"Processed audio source not found: {source_path}")
+                return
+            
+            dest_filename = source_path.name
+            dest_path = output_dir / dest_filename
+            
+            # Copy the audio
+            shutil.copy2(source_path, dest_path)
+            
+            # Update web path to be relative to presentations directory
+            processed_audio.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
+            
+            self.logger.debug(f"Copied processed audio: {source_path} -> {dest_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to copy processed audio {processed_audio.src_path}: {e}")
         
     def _update_slide_image_paths(self, presentation: ProcessedPresentation) -> None:
         """

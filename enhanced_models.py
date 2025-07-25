@@ -158,6 +158,7 @@ class EnhancedPresentation:
     slides: List[ProcessedSlide]
     config: DecksetConfig
     global_footnotes: Dict[str, str] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)  # For compatibility with basic processor
 
 
 # Context Models for Processing

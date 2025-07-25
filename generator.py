@@ -34,9 +34,20 @@ class WebPageGenerator:
             config: Generator configuration object
         """
         self.config = config
-        self.template_manager = TemplateManager(config)
+        # Try to use enhanced template engine if available
+        try:
+            from enhanced_templates import EnhancedTemplateEngine
+            self.template_manager = EnhancedTemplateEngine(config.template_dir)
+            self.enhanced_mode = True
+            self.logger = logging.getLogger(__name__)
+            self.logger.info("Using enhanced template engine")
+        except ImportError as e:
+            self.logger = logging.getLogger(__name__)
+            self.logger.warning(f"Enhanced template engine not available, falling back to basic templates: {e}")
+            from templates import TemplateManager
+            self.template_manager = TemplateManager(config)
+            self.enhanced_mode = False
         self.file_manager = FileManager(config)
-        self.logger = logging.getLogger(__name__)
     
     def generate_presentation_page(
         self, 
@@ -75,7 +86,12 @@ class WebPageGenerator:
             
             # Render the presentation using the template manager
             try:
-                html_content = self.template_manager.render_presentation(presentation, None)
+                if self.enhanced_mode and hasattr(presentation, 'config'):
+                    # Enhanced presentation with Deckset features
+                    html_content = self._render_enhanced_presentation(presentation)
+                else:
+                    # Basic presentation rendering
+                    html_content = self.template_manager.render_presentation(presentation, None)
             except Exception as e:
                 raise TemplateRenderingError(
                     f"Failed to render template for presentation '{presentation.info.title}': {e}",
@@ -414,3 +430,93 @@ class WebPageGenerator:
         self.file_manager.cleanup_output_directory(presentations)
         
         return stats
+    
+    def _render_enhanced_presentation(self, presentation) -> str:
+        """
+        Render enhanced presentation with full Deckset features.
+        
+        Args:
+            presentation: EnhancedPresentation object
+            
+        Returns:
+            Rendered HTML content
+        """
+        try:
+            # Create base HTML structure for enhanced presentation
+            slides_html = []
+            
+            for slide in presentation.slides:
+                slide_html = self.template_manager.render_slide(
+                    slide, 
+                    presentation.config, 
+                    len(presentation.slides)
+                )
+                slides_html.append(slide_html)
+            
+            # Combine slides into full presentation
+            presentation_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{presentation.info.title}</title>
+    <link rel="stylesheet" href="../enhanced_slide_styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="presentation-container" data-presentation-title="{presentation.info.title}">
+        <div class="slides-container">
+            {"".join(slides_html)}
+        </div>
+        
+        <!-- Navigation -->
+        <div class="navigation">
+            <button id="prev-slide" class="nav-button">Previous</button>
+            <span id="slide-counter">1 / {len(presentation.slides)}</span>
+            <button id="next-slide" class="nav-button">Next</button>
+            <button id="toggle-notes" class="nav-button">Notes</button>
+        </div>
+    </div>
+    
+    <!-- Enhanced JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="../assets/js/enhanced-slide-viewer.js"></script>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        {self._get_mathjax_config()}
+    </script>
+</body>
+</html>
+            """
+            
+            return presentation_html
+            
+        except Exception as e:
+            self.logger.error(f"Failed to render enhanced presentation: {e}")
+            # Fallback to basic rendering
+            return self.template_manager.render_presentation(presentation, None)
+    
+    def _get_mathjax_config(self) -> str:
+        """Get MathJax configuration for enhanced presentations."""
+        try:
+            from math_processor import MathProcessor
+            processor = MathProcessor()
+            return processor.generate_mathjax_config(responsive=True, error_handling=True)
+        except ImportError:
+            # Fallback MathJax config
+            return """
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['\\\\(', '\\\\)']],
+                    displayMath: [['\\\\[', '\\\\]']],
+                    processEscapes: true
+                },
+                svg: {
+                    fontCache: 'global'
+                }
+            };
+            """

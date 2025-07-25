@@ -152,15 +152,15 @@
   - Create unit tests for navigation and accessibility
   - _Requirements: 8.5_
 
-- [ ] 10. Integrate with existing website generator
-- [ ] 10.1 Update main generator to use enhanced processors
+- [x] 10. Integrate with existing website generator
+- [x] 10.1 Update main generator to use enhanced processors
   - Modify existing PresentationProcessor to use DecksetParser
   - Update template rendering to use EnhancedTemplateEngine
   - Integrate MediaProcessor with existing file management
   - Create integration tests for enhanced processing pipeline
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-- [ ] 10.2 Update website structure and navigation
+- [x] 10.2 Update website structure and navigation
   - Ensure enhanced presentations integrate with existing homepage
   - Update presentation listing to handle enhanced features
   - Maintain backward compatibility with existing presentations

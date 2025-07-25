@@ -593,3 +593,266 @@ class EnhancedTemplateEngine:
             return f"""
                 <span class="slide-number-current">{slide_index}</span>
             """
+    
+    def render_homepage(self, presentations, context=None):
+        """
+        Render homepage with presentation listings using existing template structure.
+        
+        Args:
+            presentations: List of presentation info objects
+            context: Optional context (for compatibility)
+            
+        Returns:
+            Rendered HTML content for homepage
+        """
+        try:
+            # Use the existing base template structure but with enhanced features
+            presentation_cards = []
+            
+            for presentation in presentations:
+                # Create presentation card compatible with existing styles
+                preview_image = presentation.preview_image or "images/fallback.png"
+                last_modified_str = ""
+                if hasattr(presentation, 'last_modified') and presentation.last_modified:
+                    last_modified_str = f"<p>Updated: {presentation.last_modified.strftime('%Y-%m-%d')}</p>"
+                
+                presentation_cards.append(f"""
+                    <div class="presentation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                        <a href="presentations/{presentation.folder_name}.html" class="block">
+                            <div class="aspect-w-16 aspect-h-9">
+                                <img src="{preview_image}" 
+                                     alt="Preview of {self._escape_html(presentation.title)}"
+                                     class="w-full h-48 object-cover"
+                                     loading="lazy">
+                            </div>
+                        </a>
+                        
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2 presentation-title">
+                                <a href="presentations/{presentation.folder_name}.html" 
+                                   class="hover:text-blue-600 transition-colors">
+                                    {self._escape_html(presentation.title)}
+                                </a>
+                            </h3>
+                            
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p>{presentation.slide_count} slide{'s' if presentation.slide_count != 1 else ''}</p>
+                                {last_modified_str}
+                            </div>
+                            
+                            <div class="mt-4 flex justify-end">
+                                <a href="presentations/{presentation.folder_name}.html" 
+                                   class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    View Presentation
+                                    <svg class="ml-1 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                """)
+            
+            # Create homepage HTML using existing base template structure
+            homepage_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse a collection of Deckset presentations with {len(presentations)} available presentations">
+    <title>Deckset Presentations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for presentation content */
+        .slide-content {{
+            @apply prose prose-lg max-w-none;
+        }}
+
+        .slide-notes {{
+            @apply text-gray-600 bg-gray-50 p-4 rounded-lg mt-4;
+        }}
+
+        /* Responsive improvements */
+        @media (max-width: 640px) {{
+            .slide-content {{
+                @apply prose-sm;
+            }}
+        }}
+
+        /* Print styles */
+        @media print {{
+            .no-print {{
+                display: none;
+            }}
+
+            .page-break {{
+                page-break-after: always;
+            }}
+        }}
+
+        /* Accessibility improvements */
+        .sr-only {{
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }}
+
+        /* Enhanced presentation features indicator */
+        .enhanced-indicator {{
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }}
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-blue-500 focus:text-white focus:z-50">
+        Skip to main content
+    </a>
+
+    <header class="bg-white shadow-sm border-b sticky top-0 z-10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-semibold text-gray-900 flex items-center">
+                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span>Deckset Presentations</span>
+                        <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Enhanced</span>
+                    </a>
+                </div>
+
+                <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                    <a href="/"
+                        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content" class="flex-grow max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Deckset Presentations</h1>
+                    <p class="text-gray-600">
+                        Found {len(presentations)} presentation{'s' if len(presentations) != 1 else ''} with enhanced Deckset features
+                    </p>
+                </div>
+                
+                <div class="mt-4 md:mt-0">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Search presentations..." 
+                               class="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="presentations-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {"".join(presentation_cards)}
+        </div>
+
+        <div id="no-results" class="hidden text-center py-12">
+            <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No matching presentations</h3>
+                <p class="text-gray-600">Try adjusting your search criteria.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t mt-12 no-print">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <p class="text-center text-gray-500 text-sm mb-2 sm:mb-0">
+                    Generated by Enhanced Deckset Website Generator
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {{
+            const searchInput = document.getElementById('search-input');
+            const presentationCards = document.querySelectorAll('.presentation-card');
+            const presentationsGrid = document.getElementById('presentations-grid');
+            const noResults = document.getElementById('no-results');
+            
+            if (searchInput) {{
+                searchInput.addEventListener('input', function() {{
+                    const searchTerm = this.value.toLowerCase().trim();
+                    let matchCount = 0;
+                    
+                    presentationCards.forEach(card => {{
+                        const title = card.querySelector('.presentation-title').textContent.toLowerCase();
+                        if (title.includes(searchTerm)) {{
+                            card.classList.remove('hidden');
+                            matchCount++;
+                        }} else {{
+                            card.classList.add('hidden');
+                        }}
+                    }});
+                    
+                    // Show/hide no results message
+                    if (matchCount === 0 && searchTerm !== '') {{
+                        presentationsGrid.classList.add('hidden');
+                        noResults.classList.remove('hidden');
+                    }} else {{
+                        presentationsGrid.classList.remove('hidden');
+                        noResults.classList.add('hidden');
+                    }}
+                }});
+            }}
+        }});
+    </script>
+</body>
+</html>
+            """
+            
+            return homepage_html
+            
+        except Exception as e:
+            # Fallback to minimal homepage
+            return f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentations</title>
+</head>
+<body>
+    <h1>Presentations</h1>
+    <p>Error rendering enhanced homepage: {self._escape_html(str(e))}</p>
+    <ul>
+        {"".join(f'<li><a href="presentations/{p.folder_name}.html">{self._escape_html(p.title)}</a></li>' for p in presentations)}
+    </ul>
+</body>
+</html>
+            """
