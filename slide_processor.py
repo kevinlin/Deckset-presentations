@@ -56,6 +56,8 @@ class SlideProcessor(SlideProcessorInterface):
             # Process columns if present
             if slide.slide_config.columns:
                 slide.columns = self.process_columns(slide.content)
+                # Remove column content from main slide content
+                slide.content = self._remove_column_content(slide.content)
             
             # Process background image
             slide.background_image = self.process_background_image(slide.content)
@@ -63,8 +65,8 @@ class SlideProcessor(SlideProcessorInterface):
             # Process code blocks
             slide.content = self.process_code_blocks(slide.content)
             
-            # Process math formulas
-            slide.content = self.process_math_formulas(slide.content)
+            # Note: Math formulas are processed by the enhanced processor
+            # to create proper MathFormula objects
             
             # Apply autoscale if needed
             if config.autoscale or slide.slide_config.autoscale:
@@ -84,11 +86,17 @@ class SlideProcessor(SlideProcessorInterface):
     def process_columns(self, slide_content: str) -> List[ColumnContent]:
         """Process multi-column layout."""
         try:
-            # Split content by column markers
-            column_parts = self.column_pattern.split(slide_content)
+            # Find the first column marker
+            first_column_match = self.column_pattern.search(slide_content)
+            if not first_column_match:
+                return []
             
-            # Remove empty parts and clean up
-            column_parts = [part.strip() for part in column_parts if part.strip()]
+            # Split content by column markers, starting from the first marker
+            column_content = slide_content[first_column_match.start():]
+            column_parts = self.column_pattern.split(column_content)
+            
+            # Remove the first empty part (before the first marker) and clean up
+            column_parts = [part.strip() for part in column_parts[1:] if part.strip()]
             
             if not column_parts:
                 return []
@@ -98,7 +106,7 @@ class SlideProcessor(SlideProcessorInterface):
             width_percentage = 100.0 / num_columns if num_columns > 0 else 100.0
             
             for i, content in enumerate(column_parts):
-                # Remove column directive from content if it's at the beginning
+                # Remove any remaining column directive from content
                 content = re.sub(r'^\[\.column\]\s*', '', content, flags=re.MULTILINE)
                 
                 columns.append(ColumnContent(
@@ -178,26 +186,11 @@ class SlideProcessor(SlideProcessorInterface):
             raise SlideProcessingError(f"Error processing code blocks: {str(e)}")
     
     def process_math_formulas(self, slide_content: str) -> str:
-        """Process mathematical formulas."""
-        try:
-            # Process display math ($$...$$)
-            def replace_display_math(match):
-                formula = match.group(1).strip()
-                return f'<div class="math-display">\\[{formula}\\]</div>'
-            
-            content = self.display_math_pattern.sub(replace_display_math, slide_content)
-            
-            # Process inline math ($...$)
-            def replace_inline_math(match):
-                formula = match.group(1).strip()
-                return f'<span class="math-inline">\\({formula}\\)</span>'
-            
-            content = self.inline_math_pattern.sub(replace_inline_math, content)
-            
-            return content
-            
-        except Exception as e:
-            raise SlideProcessingError(f"Error processing math formulas: {str(e)}")
+        """Process mathematical formulas. (Stub - handled by enhanced processor)"""
+        # This is a stub implementation to satisfy the interface requirement.
+        # The actual math processing is handled by the enhanced processor
+        # to create proper MathFormula objects.
+        return slide_content
     
     def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str:
         """Apply autoscale to slide content."""
@@ -259,3 +252,18 @@ class SlideProcessor(SlideProcessorInterface):
         )
         
         return overflow_score > 50  # Threshold for autoscale trigger
+
+    def _remove_column_content(self, slide_content: str) -> str:
+        """Remove column markers and column content from slide content."""
+        try:
+            # Find the first column marker
+            first_column_match = self.column_pattern.search(slide_content)
+            if not first_column_match:
+                return slide_content
+            
+            # Return only the content before the first column marker
+            return slide_content[:first_column_match.start()].strip()
+            
+        except Exception as e:
+            # If there's an error, return the original content
+            return slide_content

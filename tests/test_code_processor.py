@@ -47,7 +47,7 @@ class TestCodeProcessor:
         assert result.language == "python"
         assert result.highlighted_lines == {1, 3}
         assert result.line_numbers is True
-        assert 'class="code-line highlighted"' in result.content
+        assert 'class="code-line code-line-highlighted"' in result.content
     
     def test_process_code_block_invalid_highlight(self):
         """Test code block processing with invalid highlight configuration."""
@@ -153,7 +153,12 @@ class TestCodeProcessor:
         config = HighlightConfig(highlighted_lines=set(), highlight_type="none")
         
         result = self.processor.apply_line_highlighting(code, config)
-        assert result == code  # Should be unchanged
+        # Should wrap lines but not add highlighting classes
+        assert 'class="code-line" data-line="1"' in result
+        assert 'class="code-line" data-line="2"' in result
+        assert 'class="code-line" data-line="3"' in result
+        assert 'code-line-highlighted' not in result
+        assert 'code-block-with-highlighting' not in result
     
     def test_apply_line_highlighting_specific_lines(self):
         """Test line highlighting with specific lines."""
@@ -162,9 +167,12 @@ class TestCodeProcessor:
         
         result = self.processor.apply_line_highlighting(code, config)
         
-        assert 'class="code-line highlighted" data-line="1"' in result
+        assert 'class="code-line code-line-highlighted" data-line="1"' in result
         assert 'class="code-line" data-line="2"' in result
-        assert 'class="code-line highlighted" data-line="3"' in result
+        assert 'class="code-line code-line-highlighted" data-line="3"' in result
+        assert 'data-highlight="true"' in result
+        assert 'data-highlight="false"' in result
+        assert 'class="code-block-with-highlighting"' in result
     
     def test_apply_line_highlighting_all_lines(self):
         """Test line highlighting with all lines highlighted."""
@@ -173,8 +181,10 @@ class TestCodeProcessor:
         
         result = self.processor.apply_line_highlighting(code, config)
         
-        assert 'class="code-line highlighted" data-line="1"' in result
-        assert 'class="code-line highlighted" data-line="2"' in result
+        assert 'class="code-line code-line-highlighted" data-line="1"' in result
+        assert 'class="code-line code-line-highlighted" data-line="2"' in result
+        assert result.count('data-highlight="true"') == 2
+        assert 'class="code-block-with-highlighting"' in result
     
     def test_normalize_language_basic(self):
         """Test basic language normalization."""
@@ -286,7 +296,7 @@ class TestCodeProcessor:
         assert len(blocks) == 1
         assert blocks[0].language == "python"
         assert blocks[0].highlighted_lines == {1, 3}
-        assert 'class="code-line-highlighted"' in processed_content
+        assert 'class="code-line code-line-highlighted"' in processed_content
     
     def test_apply_line_highlighting_enhanced_classes(self):
         """Test enhanced line highlighting with better CSS classes."""

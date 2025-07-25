@@ -10,43 +10,28 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, Set
 import logging
 
+from enhanced_models import DecksetConfig, SlideConfig
+
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class DecksetConfig:
-    """Global Deckset configuration settings."""
-    # Global settings
-    theme: Optional[str] = None
-    autoscale: bool = False
-    slide_numbers: bool = False
-    slide_count: bool = False
-    footer: Optional[str] = None
-    background_image: Optional[str] = None
-    build_lists: bool = False
-    slide_transition: Optional[str] = None
-    code_language: Optional[str] = None
-    fit_headers: List[str] = field(default_factory=list)
-    slide_dividers: List[str] = field(default_factory=list)
-
-
-@dataclass
-class SlideConfig:
-    """Slide-specific configuration overrides."""
-    background_image: Optional[str] = None
-    hide_footer: bool = False
-    hide_slide_numbers: bool = False
-    autoscale: Optional[bool] = None
-    slide_transition: Optional[str] = None
-    columns: bool = False
-
-
 class DecksetParsingError(Exception):
-    """Errors specific to Deckset syntax parsing."""
-    def __init__(self, message: str, line_number: int = None, context: str = None):
+    """Exception raised when Deckset parsing fails."""
+    
+    def __init__(self, message: str, line_number: Optional[int] = None, context: Optional[str] = None):
+        self.message = message
         self.line_number = line_number
         self.context = context
-        super().__init__(message)
+        super().__init__(message)  # Pass only the message to the parent class
+    
+    def get_formatted_message(self) -> str:
+        """Get the error message with context formatting."""
+        parts = [self.message]
+        if self.line_number:
+            parts.append(f"Line {self.line_number}")
+        if self.context:
+            parts.append(f"Context: {self.context}")
+        return " | ".join(parts)
 
 
 class DecksetParser:
@@ -200,7 +185,11 @@ class DecksetParser:
                             value = match.group(1).strip()
                             setattr(config, command, value)
                             
-                        logger.debug(f"Parsed slide command {command}: {getattr(config, command)}")
+                        # Log the parsed command with correct attribute name
+                        if command == 'column':
+                            logger.debug(f"Parsed slide command {command}: {config.columns}")
+                        else:
+                            logger.debug(f"Parsed slide command {command}: {getattr(config, command)}")
                         
                 except Exception as e:
                     logger.warning(f"Failed to parse slide command {command}: {e}")

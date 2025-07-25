@@ -426,11 +426,12 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
         
         result = self.engine.render_code_block(code_block)
         
-        self.assertIn('class="code-block language-python"', result)
+        self.assertIn('class="language-python"', result)
+        self.assertIn('class="code-block-with-highlighting"', result)
         self.assertIn('def hello():', result)
         self.assertIn('print(&#x27;Hello, World!&#x27;)', result)
-        self.assertIn('line-number', result)
-        self.assertIn('highlighted', result)
+        self.assertIn('data-line=', result)
+        self.assertIn('code-line-highlighted', result)
     
     def test_render_code_block_no_highlighting(self):
         """Test code block rendering without line highlighting."""
@@ -445,10 +446,10 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
         
         result = self.engine.render_code_block(code_block)
         
-        self.assertIn('class="code-block language-javascript"', result)
+        self.assertIn('class="language-javascript"', result)
         self.assertIn('console.log(&#x27;test&#x27;);', result)
-        self.assertNotIn('line-number', result)
-        self.assertNotIn('highlighted', result)
+        self.assertIn('data-line=', result)
+        self.assertNotIn('code-line-highlighted', result)
     
     def test_render_code_block_multiple_highlighted_lines(self):
         """Test code block rendering with multiple highlighted lines."""
@@ -463,7 +464,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
         result = self.engine.render_code_block(code_block)
         
         # Count highlighted lines
-        highlighted_count = result.count('highlighted')
+        highlighted_count = result.count('code-line-highlighted')
         self.assertEqual(highlighted_count, 3)
         self.assertIn('line 1', result)
         self.assertIn('line 4', result)

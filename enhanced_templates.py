@@ -469,11 +469,35 @@ class EnhancedTemplateEngine:
         if not code_block:
             return ""
         
-        # The CodeProcessor already generates the complete HTML with proper CSS classes
-        # We just need to wrap it in a container for consistent styling
-        return f"""
+        # Check if content is already processed HTML (contains <pre> tags)
+        if '<pre' in code_block.content and '</pre>' in code_block.content:
+            # Content is already processed, just wrap it
+            return f"""
             <div class="code-container">
                 {code_block.content}
+            </div>
+        """
+        
+        # Content is raw code, need to process it
+        from code_processor import CodeProcessor
+        processor = CodeProcessor()
+        
+        # Determine highlight configuration
+        if code_block.highlighted_lines:
+            highlight_config = ",".join(str(line) for line in sorted(code_block.highlighted_lines))
+        else:
+            highlight_config = ""
+        
+        # Process the code block
+        processed = processor.process_code_block(
+            code_block.content, 
+            code_block.language, 
+            highlight_config
+        )
+        
+        return f"""
+            <div class="code-container">
+                {processed.content}
             </div>
         """
     
@@ -831,3 +855,106 @@ class EnhancedTemplateEngine:
 </body>
 </html>
             """
+
+    def render_presentation(self, presentation, config=None, context=None):
+        """
+        Render a complete presentation with all slides.
+        
+        Args:
+            presentation: ProcessedPresentation or EnhancedPresentation object
+            config: Optional configuration overrides
+            context: Optional additional context
+            
+        Returns:
+            Complete HTML for the presentation
+        """
+        try:
+            # Extract presentation info and slides
+            if hasattr(presentation, 'info'):
+                info = presentation.info
+                slides = presentation.slides
+                presentation_config = getattr(presentation, 'config', config)
+            else:
+                # Fallback for basic ProcessedPresentation
+                info = presentation.info if hasattr(presentation, 'info') else presentation
+                slides = presentation.slides if hasattr(presentation, 'slides') else []
+                presentation_config = config
+                
+            if not presentation_config:
+                from enhanced_models import DecksetConfig
+                presentation_config = DecksetConfig()
+            
+            # Render all slides
+            rendered_slides = []
+            for slide in slides:
+                rendered_slide = self.render_slide(slide, presentation_config, len(slides))
+                rendered_slides.append(rendered_slide)
+            
+            # Create the complete presentation HTML
+            presentation_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{self._escape_html(info.title if hasattr(info, 'title') else 'Presentation')}</title>
+    <link rel="stylesheet" href="../assets/enhanced_slide_styles.css">
+    <link rel="stylesheet" href="../assets/code_highlighting_styles.css">
+    <script src="../assets/js/enhanced-slide-viewer.js" defer></script>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slides-container">
+            {"".join(rendered_slides)}
+        </div>
+        
+        <div class="presentation-controls">
+            <button id="prev-slide">Previous</button>
+            <span id="slide-counter">1 / {len(slides)}</span>
+            <button id="next-slide">Next</button>
+            <button id="fullscreen-toggle">Fullscreen</button>
+        </div>
+        
+        <div class="presentation-navigation">
+            <div class="slide-thumbnails">
+                {self._render_slide_thumbnails(slides)}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+            
+            return presentation_html
+            
+        except Exception as e:
+            # Fallback to minimal presentation
+            return f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Error</title>
+</head>
+<body>
+    <h1>Presentation Rendering Error</h1>
+    <p>Error: {self._escape_html(str(e))}</p>
+    <p>Presentation: {self._escape_html(str(presentation))}</p>
+</body>
+</html>
+            """
+    
+    def _render_slide_thumbnails(self, slides):
+        """Render slide thumbnails for navigation."""
+        thumbnails = []
+        for i, slide in enumerate(slides, 1):
+            # Create a simplified thumbnail view
+            content_preview = slide.content[:100] + "..." if len(slide.content) > 100 else slide.content
+            thumbnails.append(f"""
+                <div class="slide-thumbnail" data-slide="{i}">
+                    <div class="thumbnail-number">{i}</div>
+                    <div class="thumbnail-content">{self._escape_html(content_preview)}</div>
+                </div>
+            """)
+        return "".join(thumbnails)

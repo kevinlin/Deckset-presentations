@@ -180,29 +180,31 @@ class TestSlideProcessorColumns:
     def test_process_columns_basic(self):
         """Test basic column processing."""
         content = """
+Header content
+[.column]
 First column content
 [.column]
 Second column content
-[.column]
-Third column content
         """
         
         columns = self.processor.process_columns(content)
         
-        assert len(columns) == 3
+        assert len(columns) == 2
         assert columns[0].index == 0
         assert columns[1].index == 1
-        assert columns[2].index == 2
         assert "First column content" in columns[0].content
         assert "Second column content" in columns[1].content
-        assert "Third column content" in columns[2].content
+        # Header content should not be in any column
+        for column in columns:
+            assert "Header content" not in column.content
     
     def test_process_columns_equal_width(self):
-        """Test that columns get equal width percentages."""
+        """Test column processing with equal width distribution."""
         content = """
-Column 1
 [.column]
-Column 2
+Column A
+[.column]
+Column B
         """
         
         columns = self.processor.process_columns(content)
@@ -212,21 +214,21 @@ Column 2
         assert columns[1].width_percentage == 50.0
     
     def test_process_columns_three_columns(self):
-        """Test three-column layout."""
+        """Test processing with three columns."""
         content = """
-Column 1
 [.column]
-Column 2
+First
 [.column]
-Column 3
+Second
+[.column]
+Third
         """
         
         columns = self.processor.process_columns(content)
         
         assert len(columns) == 3
-        expected_width = 100.0 / 3
         for column in columns:
-            assert abs(column.width_percentage - expected_width) < 0.01
+            assert abs(column.width_percentage - 33.333333333333336) < 0.001
     
     def test_process_columns_empty_content(self):
         """Test column processing with empty content."""
@@ -245,23 +247,29 @@ No column markers here
         
         columns = self.processor.process_columns(content)
         
-        assert len(columns) == 1
-        assert columns[0].width_percentage == 100.0
-        assert "Single column content" in columns[0].content
+        # With no column markers, no columns should be created
+        assert len(columns) == 0
     
     def test_process_columns_clean_content(self):
         """Test that column markers are cleaned from content."""
         content = """
-First content
+Header content
 [.column]
-Second content
+First column content
+[.column]
+Second column content
         """
         
         columns = self.processor.process_columns(content)
         
+        # Should have 2 columns
+        assert len(columns) == 2
         # Column markers should be removed from content
         assert "[.column]" not in columns[0].content
         assert "[.column]" not in columns[1].content
+        # Header content should not be in any column
+        for column in columns:
+            assert "Header content" not in column.content
     
     def test_process_columns_error_handling(self):
         """Test error handling in column processing."""
@@ -465,7 +473,7 @@ class TestSlideProcessorMathFormulas:
         self.processor = SlideProcessor()
     
     def test_process_math_formulas_display(self):
-        """Test display math formula processing."""
+        """Test display math formula processing (stub - no processing expected)."""
         content = """
 # Math Example
 Here is a formula:
@@ -474,22 +482,24 @@ $$E = mc^2$$
         
         processed = self.processor.process_math_formulas(content)
         
-        assert '$$E = mc^2$$' not in processed
-        assert '<div class="math-display">\\[E = mc^2\\]</div>' in processed
+        # Slide processor no longer processes math - it's handled by enhanced processor
+        assert processed == content
+        assert '$$E = mc^2$$' in processed
     
     def test_process_math_formulas_inline(self):
-        """Test inline math formula processing."""
+        """Test inline math formula processing (stub - no processing expected)."""
         content = """
 The formula $x = y + z$ is inline.
         """
         
         processed = self.processor.process_math_formulas(content)
         
-        assert '$x = y + z$' not in processed
-        assert '<span class="math-inline">\\(x = y + z\\)</span>' in processed
+        # Slide processor no longer processes math - it's handled by enhanced processor
+        assert processed == content
+        assert '$x = y + z$' in processed
     
     def test_process_math_formulas_mixed(self):
-        """Test mixed display and inline math."""
+        """Test mixed display and inline math (stub - no processing expected)."""
         content = """
 Inline math $a = b$ and display math:
 $$\\int_0^1 x dx = \\frac{1}{2}$$
@@ -497,21 +507,22 @@ $$\\int_0^1 x dx = \\frac{1}{2}$$
         
         processed = self.processor.process_math_formulas(content)
         
-        assert '<span class="math-inline">\\(a = b\\)</span>' in processed
-        assert '<div class="math-display">\\[' in processed
-        assert '\\int_0^1 x dx = \\frac{1}{2}' in processed
-        assert '\\]</div>' in processed
+        # Slide processor no longer processes math - it's handled by enhanced processor
+        assert processed == content
+        assert '$a = b$' in processed
+        assert '$$\\int_0^1 x dx = \\frac{1}{2}$$' in processed
     
     def test_process_math_formulas_complex(self):
-        """Test complex math formulas."""
+        """Test complex math formulas (stub - no processing expected)."""
         content = """
 $$\\sum_{i=1}^{n} x_i = \\frac{n(n+1)}{2}$$
         """
         
         processed = self.processor.process_math_formulas(content)
         
+        # Slide processor no longer processes math - it's handled by enhanced processor
+        assert processed == content
         assert '\\sum_{i=1}^{n} x_i = \\frac{n(n+1)}{2}' in processed
-        assert 'math-display' in processed
     
     def test_process_math_formulas_none(self):
         """Test content without math formulas."""
