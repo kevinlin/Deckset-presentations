@@ -287,8 +287,8 @@ class TestFileManagement:
         # Mock the template rendering to avoid actual HTML generation
         from unittest.mock import patch
         
-        with patch('templates.TemplateManager.render_presentation', return_value="<html>Test</html>"), \
-             patch('templates.TemplateManager.render_homepage', return_value="<html>Homepage</html>"):
+        with patch('enhanced_templates.EnhancedTemplateEngine.render_presentation', return_value="<html>Test</html>"), \
+             patch('enhanced_templates.EnhancedTemplateEngine.render_homepage', return_value="<html>Homepage</html>"):
             
             # Create generator
             generator = WebPageGenerator(config)

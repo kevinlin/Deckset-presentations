@@ -92,7 +92,7 @@ class TestWebPageGenerator:
         assert generator.config == config
         assert generator.template_manager is not None
 
-    @patch('templates.TemplateManager.render_presentation')
+    @patch('enhanced_templates.EnhancedTemplateEngine.render_presentation')
     def test_generate_presentation_page(self, mock_render, config, processed_presentation, tmp_path):
         """Test generating a presentation page."""
         # Setup
@@ -114,7 +114,7 @@ class TestWebPageGenerator:
         args, _ = mock_render.call_args
         assert args[0] == processed_presentation
 
-    @patch('templates.TemplateManager.render_presentation')
+    @patch('enhanced_templates.EnhancedTemplateEngine.render_presentation')
     def test_generate_presentation_page_error(self, mock_render, config, processed_presentation, tmp_path):
         """Test error handling when generating a presentation page."""
         # Setup
@@ -129,7 +129,7 @@ class TestWebPageGenerator:
         # Verify file was not created
         assert not output_path.exists()
 
-    @patch('templates.TemplateManager.render_homepage')
+    @patch('enhanced_templates.EnhancedTemplateEngine.render_homepage')
     def test_generate_homepage(self, mock_render, config, presentation_list, tmp_path):
         """Test generating the homepage."""
         # Setup
@@ -151,7 +151,7 @@ class TestWebPageGenerator:
         args, _ = mock_render.call_args
         assert len(args[0]) == len(presentation_list)
 
-    @patch('templates.TemplateManager.render_homepage')
+    @patch('enhanced_templates.EnhancedTemplateEngine.render_homepage')
     def test_generate_homepage_error(self, mock_render, config, presentation_list, tmp_path):
         """Test error handling when generating the homepage."""
         # Setup
@@ -294,7 +294,7 @@ class TestWebPageGenerator:
         ]
         
         # Mock the template manager's render_homepage method
-        with patch('templates.TemplateManager.render_homepage') as mock_render:
+        with patch('enhanced_templates.EnhancedTemplateEngine.render_homepage') as mock_render:
             mock_render.return_value = "<html>Homepage with multiple presentations</html>"
             output_path = tmp_path / "index.html"
             

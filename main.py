@@ -22,7 +22,7 @@ from models import (
     TemplateRenderingError,
 )
 from scanner import PresentationScanner
-from processor import PresentationProcessor
+from enhanced_processor import EnhancedPresentationProcessor
 from generator import WebPageGenerator
 
 
@@ -46,19 +46,9 @@ class DecksetWebsiteGenerator:
 
         # Initialize components
         self.scanner = PresentationScanner(self.config)
-        # Use enhanced processor for full Deckset compatibility
-        try:
-            from enhanced_processor import EnhancedPresentationProcessor
-
-            self.processor = EnhancedPresentationProcessor()
-            self.enhanced_mode = True
-            self.logger.info("Using enhanced Deckset processor")
-        except ImportError as e:
-            self.logger.warning(
-                f"Enhanced processor not available, falling back to basic processor: {e}"
-            )
-            self.processor = PresentationProcessor()
-            self.enhanced_mode = False
+        self.processor = EnhancedPresentationProcessor()
+        self.enhanced_mode = True
+        self.logger.info("Using enhanced Deckset processor")
         self.generator = WebPageGenerator(self.config)
 
         # Statistics tracking

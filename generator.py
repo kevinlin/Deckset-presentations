@@ -19,7 +19,7 @@ from models import (
     TemplateRenderingError,
     FileOperationError
 )
-from templates import TemplateManager
+from enhanced_templates import EnhancedTemplateEngine
 from file_manager import FileManager
 
 
@@ -34,19 +34,10 @@ class WebPageGenerator:
             config: Generator configuration object
         """
         self.config = config
-        # Try to use enhanced template engine if available
-        try:
-            from enhanced_templates import EnhancedTemplateEngine
-            self.template_manager = EnhancedTemplateEngine(config.template_dir)
-            self.enhanced_mode = True
-            self.logger = logging.getLogger(__name__)
-            self.logger.info("Using enhanced template engine")
-        except ImportError as e:
-            self.logger = logging.getLogger(__name__)
-            self.logger.warning(f"Enhanced template engine not available, falling back to basic templates: {e}")
-            from templates import TemplateManager
-            self.template_manager = TemplateManager(config)
-            self.enhanced_mode = False
+        self.template_manager = EnhancedTemplateEngine(config.template_dir)
+        self.enhanced_mode = True
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Using enhanced template engine")
         self.file_manager = FileManager(config)
     
     def generate_presentation_page(
