@@ -79,15 +79,15 @@
   - Create unit tests for line highlighting functionality
   - _Requirements: 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 6. Implement mathematical formula processor
-- [ ] 6.1 Create MathProcessor class with MathJax integration
+- [x] 6. Implement mathematical formula processor
+- [x] 6.1 Create MathProcessor class with MathJax integration
   - Implement process_math_formulas() to handle $$...$$ and $...$ delimiters
   - Implement extract_display_math() and extract_inline_math() functions
   - Implement validate_latex_syntax() for error handling
   - Create unit tests for math formula processing
   - _Requirements: 5.1, 5.2, 5.4_
 
-- [ ] 6.2 Implement responsive math and error handling
+- [x] 6.2 Implement responsive math and error handling
   - Implement generate_mathjax_config() for responsive math rendering
   - Add support for math formula scaling and horizontal scrolling
   - Create unit tests for responsive math and error scenarios
