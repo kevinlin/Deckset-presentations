@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, Set
 import logging
 
-from enhanced_models import DecksetConfig, SlideConfig
+from models import DecksetConfig, SlideConfig
 
 logger = logging.getLogger(__name__)
 

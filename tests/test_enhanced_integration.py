@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 
 from models import PresentationInfo, GeneratorConfig
 from enhanced_processor import EnhancedPresentationProcessor
-from enhanced_models import DecksetConfig, ProcessedSlide, EnhancedPresentation
+from models import DecksetConfig, ProcessedSlide, EnhancedPresentation
 
 
 class TestEnhancedIntegration:

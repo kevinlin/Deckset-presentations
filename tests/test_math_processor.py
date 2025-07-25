@@ -6,7 +6,7 @@ Tests mathematical formula processing, LaTeX validation, and MathJax integration
 
 import pytest
 from math_processor import MathProcessor
-from enhanced_models import MathFormula
+from models import MathFormula
 
 
 class TestMathProcessor:

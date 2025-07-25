@@ -10,7 +10,7 @@ import os
 import re
 from typing import List, Dict, Optional
 from jinja2 import Environment, FileSystemLoader, Template
-from enhanced_models import (
+from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ProcessedVideo, ProcessedAudio,
     ProcessedCodeBlock, MathFormula, DecksetConfig, SlideConfig, ImageGrid
 )
@@ -881,7 +881,7 @@ class EnhancedTemplateEngine:
                 presentation_config = config
                 
             if not presentation_config:
-                from enhanced_models import DecksetConfig
+                from models import DecksetConfig
                 presentation_config = DecksetConfig()
             
             # Render all slides

@@ -7,7 +7,7 @@ background images, code blocks, math formulas, and autoscaling.
 
 import re
 from typing import List, Optional
-from enhanced_models import (
+from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ProcessedCodeBlock, MathFormula,
     DecksetConfig, SlideConfig, SlideContext, SlideProcessingError, SlideProcessorInterface
 )
@@ -131,7 +131,7 @@ class SlideProcessor(SlideProcessorInterface):
             
             # Create a basic ProcessedImage for background
             # Note: In a full implementation, this would use MediaProcessor
-            from enhanced_models import ImageModifiers
+            from models import ImageModifiers
             
             modifiers = ImageModifiers(
                 placement="background",

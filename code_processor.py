@@ -8,7 +8,7 @@ supporting Deckset-specific code block directives and syntax highlighting.
 import re
 from typing import Set, List, Optional, Tuple
 from dataclasses import dataclass
-from enhanced_models import HighlightConfig, ProcessedCodeBlock, DecksetParsingError
+from models import HighlightConfig, ProcessedCodeBlock, DecksetParsingError
 
 
 class CodeProcessor:

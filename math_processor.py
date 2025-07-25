@@ -8,7 +8,7 @@ including LaTeX syntax parsing, MathJax integration, and responsive rendering.
 import re
 import logging
 from typing import List, Tuple, Optional
-from enhanced_models import MathFormula, DecksetParsingError
+from models import MathFormula, DecksetParsingError
 
 
 class MathProcessor:

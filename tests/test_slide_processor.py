@@ -8,7 +8,7 @@ math formulas, and autoscaling functionality.
 import pytest
 from unittest.mock import Mock, patch
 from slide_processor import SlideProcessor
-from enhanced_models import (
+from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ProcessedCodeBlock, MathFormula,
     DecksetConfig, SlideConfig, SlideProcessingError, ImageModifiers
 )

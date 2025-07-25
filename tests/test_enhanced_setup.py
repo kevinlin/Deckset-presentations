@@ -16,7 +16,7 @@ if __name__ == "__main__":
 def test_enhanced_models_import():
     """Test that enhanced models can be imported."""
     try:
-        from enhanced_models import (
+        from models import (
             DecksetConfig,
             SlideConfig,
             ImageModifiers,
@@ -34,26 +34,26 @@ def test_enhanced_models_import():
         )
 
         print("✅ Enhanced models imported successfully")
-        return True
+        assert True
     except ImportError as e:
         print(f"❌ Failed to import enhanced models: {e}")
-        return False
+        assert False, f"Failed to import enhanced models: {e}"
 
 
 def test_interfaces_import():
     """Test that interfaces can be imported."""
     try:
-        from enhanced_models import (
+        from models import (
             DecksetParserInterface,
             MediaProcessorInterface,
             SlideProcessorInterface,
         )
 
         print("✅ Interfaces imported successfully")
-        return True
+        assert True
     except ImportError as e:
         print(f"❌ Failed to import interfaces: {e}")
-        return False
+        assert False, f"Failed to import interfaces: {e}"
 
 
 def test_implementations_import():
@@ -64,16 +64,16 @@ def test_implementations_import():
         from slide_processor import SlideProcessor
 
         print("✅ Implementations imported successfully")
-        return True
+        assert True
     except ImportError as e:
         print(f"❌ Failed to import implementations: {e}")
-        return False
+        assert False, f"Failed to import implementations: {e}"
 
 
 def test_basic_instantiation():
     """Test that classes can be instantiated."""
     try:
-        from enhanced_models import DecksetConfig, SlideConfig
+        from models import DecksetConfig, SlideConfig
         from deckset_parser import DecksetParser
         from media_processor import MediaProcessor
         from slide_processor import SlideProcessor
@@ -88,17 +88,17 @@ def test_basic_instantiation():
         slide_processor = SlideProcessor()
 
         print("✅ Basic instantiation successful")
-        return True
+        assert True
     except Exception as e:
         print(f"❌ Failed basic instantiation: {e}")
-        return False
+        assert False, f"Failed basic instantiation: {e}"
 
 
 def test_basic_functionality():
     """Test basic functionality of the components."""
     try:
         from deckset_parser import DecksetParser
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
 
         parser = DecksetParser()
 
@@ -124,10 +124,10 @@ Content here
         assert len(slides) == 3
 
         print("✅ Basic functionality tests passed")
-        return True
+        assert True
     except Exception as e:
         print(f"❌ Basic functionality test failed: {e}")
-        return False
+        assert False, f"Basic functionality test failed: {e}"
 
 
 def run_all_tests():

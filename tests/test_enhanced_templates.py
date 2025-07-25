@@ -8,7 +8,7 @@ and template functionality with Deckset features.
 import unittest
 from unittest.mock import Mock, patch
 from enhanced_templates import EnhancedTemplateEngine
-from enhanced_models import (
+from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ImageModifiers,
     DecksetConfig, SlideConfig
 )
@@ -270,7 +270,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_video_player_local(self):
         """Test rendering local video player."""
-        from enhanced_models import ProcessedVideo, MediaModifiers
+        from models import ProcessedVideo, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="inline",
@@ -298,7 +298,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_video_player_youtube(self):
         """Test rendering YouTube video player."""
-        from enhanced_models import ProcessedVideo, MediaModifiers
+        from models import ProcessedVideo, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="inline",
@@ -324,7 +324,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_video_player_with_positioning(self):
         """Test rendering video player with left/right positioning."""
-        from enhanced_models import ProcessedVideo, MediaModifiers
+        from models import ProcessedVideo, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="left",
@@ -345,7 +345,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_video_player_hidden(self):
         """Test rendering hidden video player."""
-        from enhanced_models import ProcessedVideo, MediaModifiers
+        from models import ProcessedVideo, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="inline",
@@ -368,7 +368,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_audio_player_basic(self):
         """Test basic audio player rendering."""
-        from enhanced_models import ProcessedAudio, MediaModifiers
+        from models import ProcessedAudio, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="inline",
@@ -393,7 +393,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_audio_player_with_positioning(self):
         """Test audio player rendering with positioning."""
-        from enhanced_models import ProcessedAudio, MediaModifiers
+        from models import ProcessedAudio, MediaModifiers
         
         modifiers = MediaModifiers(
             placement="right",
@@ -415,7 +415,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_code_block_basic(self):
         """Test basic code block rendering."""
-        from enhanced_models import ProcessedCodeBlock
+        from models import ProcessedCodeBlock
         
         code_block = ProcessedCodeBlock(
             content="def hello():\n    print('Hello, World!')",
@@ -435,7 +435,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_code_block_no_highlighting(self):
         """Test code block rendering without line highlighting."""
-        from enhanced_models import ProcessedCodeBlock
+        from models import ProcessedCodeBlock
         
         code_block = ProcessedCodeBlock(
             content="console.log('test');",
@@ -453,7 +453,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_code_block_multiple_highlighted_lines(self):
         """Test code block rendering with multiple highlighted lines."""
-        from enhanced_models import ProcessedCodeBlock
+        from models import ProcessedCodeBlock
         
         code_block = ProcessedCodeBlock(
             content="line 1\nline 2\nline 3\nline 4",
@@ -471,7 +471,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_inline_images_single(self):
         """Test rendering single inline image."""
-        from enhanced_models import ProcessedImage, ImageModifiers
+        from models import ProcessedImage, ImageModifiers
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -496,7 +496,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_inline_images_with_fill_scaling(self):
         """Test rendering inline image with fill scaling."""
-        from enhanced_models import ProcessedImage, ImageModifiers
+        from models import ProcessedImage, ImageModifiers
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -517,7 +517,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_inline_images_with_percentage_scaling(self):
         """Test rendering inline image with percentage scaling."""
-        from enhanced_models import ProcessedImage, ImageModifiers
+        from models import ProcessedImage, ImageModifiers
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -538,7 +538,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_inline_images_with_corner_radius(self):
         """Test rendering inline image with corner radius."""
-        from enhanced_models import ProcessedImage, ImageModifiers
+        from models import ProcessedImage, ImageModifiers
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -560,7 +560,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_image_grid_two_columns(self):
         """Test rendering image grid with two columns."""
-        from enhanced_models import ProcessedImage, ImageModifiers, ImageGrid
+        from models import ProcessedImage, ImageModifiers, ImageGrid
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -594,7 +594,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_image_grid_three_columns(self):
         """Test rendering image grid with three columns."""
-        from enhanced_models import ProcessedImage, ImageModifiers, ImageGrid
+        from models import ProcessedImage, ImageModifiers, ImageGrid
         
         modifiers = ImageModifiers(
             placement="inline",
@@ -619,7 +619,7 @@ class TestEnhancedTemplateEngineMedia(unittest.TestCase):
     
     def test_render_image_grid_empty(self):
         """Test rendering empty image grid."""
-        from enhanced_models import ImageGrid
+        from models import ImageGrid
         
         grid = ImageGrid(images=[], columns=1)
         result = self.engine.render_image_grid(grid)
@@ -650,7 +650,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_math_formula_display(self):
         """Test rendering display math formula."""
-        from enhanced_models import MathFormula
+        from models import MathFormula
         
         formula = MathFormula(
             content="E = mc^2",
@@ -667,7 +667,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_math_formula_inline(self):
         """Test rendering inline math formula."""
-        from enhanced_models import MathFormula
+        from models import MathFormula
         
         formula = MathFormula(
             content="x^2 + y^2 = z^2",
@@ -684,7 +684,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_math_formula_with_special_characters(self):
         """Test rendering math formula with special characters."""
-        from enhanced_models import MathFormula
+        from models import MathFormula
         
         formula = MathFormula(
             content="\\sum_{i=1}^{n} x_i < \\infty",
@@ -699,7 +699,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_math_formula_unknown_type(self):
         """Test rendering math formula with unknown type."""
-        from enhanced_models import MathFormula
+        from models import MathFormula
         
         formula = MathFormula(
             content="a + b = c",
@@ -767,7 +767,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_footer_basic(self):
         """Test basic slide footer rendering."""
-        from enhanced_models import DecksetConfig, SlideConfig
+        from models import DecksetConfig, SlideConfig
         
         config = DecksetConfig(footer="**Footer Text** with *emphasis*")
         slide_config = SlideConfig()
@@ -780,7 +780,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_footer_hidden(self):
         """Test slide footer rendering when hidden."""
-        from enhanced_models import DecksetConfig, SlideConfig
+        from models import DecksetConfig, SlideConfig
         
         config = DecksetConfig(footer="Footer Text")
         slide_config = SlideConfig(hide_footer=True)
@@ -791,7 +791,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_footer_no_footer(self):
         """Test slide footer rendering with no footer configured."""
-        from enhanced_models import DecksetConfig, SlideConfig
+        from models import DecksetConfig, SlideConfig
         
         config = DecksetConfig(footer=None)
         slide_config = SlideConfig()
@@ -802,7 +802,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_footer_empty_footer(self):
         """Test slide footer rendering with empty footer."""
-        from enhanced_models import DecksetConfig, SlideConfig
+        from models import DecksetConfig, SlideConfig
         
         config = DecksetConfig(footer="")
         slide_config = SlideConfig()
@@ -813,7 +813,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_number_basic(self):
         """Test basic slide number rendering."""
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
         
         config = DecksetConfig(slide_numbers=True, slide_count=False)
         
@@ -826,7 +826,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_number_with_count(self):
         """Test slide number rendering with total count."""
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
         
         config = DecksetConfig(slide_numbers=True, slide_count=True)
         
@@ -841,7 +841,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_number_disabled(self):
         """Test slide number rendering when disabled."""
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
         
         config = DecksetConfig(slide_numbers=False)
         
@@ -851,7 +851,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_number_first_slide(self):
         """Test slide number rendering for first slide."""
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
         
         config = DecksetConfig(slide_numbers=True, slide_count=True)
         
@@ -862,7 +862,7 @@ class TestEnhancedTemplateEngineFormulasAndMetadata(unittest.TestCase):
     
     def test_render_slide_number_last_slide(self):
         """Test slide number rendering for last slide."""
-        from enhanced_models import DecksetConfig
+        from models import DecksetConfig
         
         config = DecksetConfig(slide_numbers=True, slide_count=True)
         

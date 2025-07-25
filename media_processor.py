@@ -9,7 +9,7 @@ import re
 import os
 from typing import List, Optional
 from urllib.parse import urlparse
-from enhanced_models import (
+from models import (
     ProcessedImage, ProcessedVideo, ProcessedAudio, ImageModifiers, MediaModifiers,
     ImageGrid, SlideContext, MediaProcessingError, MediaProcessorInterface
 )

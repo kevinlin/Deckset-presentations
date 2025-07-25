@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from models import PresentationInfo, PresentationProcessingError
-from enhanced_models import (
+from models import (
     ProcessedSlide, EnhancedPresentation, DecksetConfig, SlideConfig,
     SlideContext, DecksetParsingError, MediaProcessingError, SlideProcessingError
 )

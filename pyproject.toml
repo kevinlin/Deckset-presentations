@@ -9,6 +9,11 @@ dependencies = [
     "markdown>=3.8.2",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/yourusername/deckset-presentations"
 Repository = "https://github.com/yourusername/deckset-presentations"
@@ -16,3 +21,24 @@ Repository = "https://github.com/yourusername/deckset-presentations"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "models.py",
+    "scanner.py", 
+    "deckset_parser.py",
+    "slide_processor.py",
+    "generator.py",
+    "main.py",
+    "file_manager.py",
+    "enhanced_processor.py",
+    "enhanced_templates.py",
+    "code_processor.py",
+    "math_processor.py",
+    "media_processor.py",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]

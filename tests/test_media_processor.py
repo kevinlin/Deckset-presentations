@@ -11,7 +11,7 @@ import tempfile
 import shutil
 from unittest.mock import Mock, patch, MagicMock
 from media_processor import MediaProcessor
-from enhanced_models import (
+from models import (
     ProcessedImage, ProcessedVideo, ProcessedAudio, ImageModifiers, MediaModifiers,
     ImageGrid, SlideContext, DecksetConfig, SlideConfig, MediaProcessingError
 )

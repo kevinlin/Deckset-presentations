@@ -6,7 +6,7 @@ Tests code block processing, syntax highlighting, and line highlighting features
 
 import pytest
 from code_processor import CodeProcessor
-from enhanced_models import HighlightConfig, ProcessedCodeBlock, DecksetParsingError
+from models import HighlightConfig, ProcessedCodeBlock, DecksetParsingError
 
 
 class TestCodeProcessor:
