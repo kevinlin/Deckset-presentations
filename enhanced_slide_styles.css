@@ -1,0 +1,1633 @@
+/*
+Enhanced Deckset Slide Styles
+Comprehensive CSS framework for Deckset-compatible presentations
+*/
+
+/* ===== BASE SLIDE STYLING ===== */
+
+/* Root variables for consistent theming */
+:root {
+    --slide-width: 100%;
+    --slide-max-width: 1200px;
+    --slide-min-height: 100vh;
+    --slide-padding: 2rem;
+    --slide-gap: 2rem;
+    --slide-border-radius: 0.75rem;
+    --slide-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+    /* Typography */
+    --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    
+    /* Colors */
+    --color-background: #ffffff;
+    --color-text: #1f2937;
+    --color-text-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-accent: #3b82f6;
+    
+    /* Responsive breakpoints */
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+}
+
+/* Base slide container */
+.slide {
+    position: relative;
+    width: var(--slide-width);
+    max-width: var(--slide-max-width);
+    min-height: var(--slide-min-height);
+    margin: 0 auto var(--slide-gap);
+    padding: var(--slide-padding);
+    background: var(--color-background);
+    border-radius: var(--slide-border-radius);
+    box-shadow: var(--slide-shadow);
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-family-base);
+    color: var(--color-text);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Slide content area */
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Single column layout (default) */
+.slide-content.single-column {
+    align-items: center;
+    text-align: center;
+}
+
+.slide-content.single-column .content-area {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ===== COLUMN LAYOUT SYSTEM ===== */
+
+/* Multi-column layout */
+.slide-content.columns {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--slide-gap);
+    text-align: left;
+}
+
+.column {
+    flex: 1;
+    min-width: 0; /* Prevent flex item overflow */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Column content alignment */
+.column .content-area {
+    flex: 1;
+}
+
+/* Two column layout */
+.slide-content.columns.two-columns .column {
+    flex-basis: 50%;
+}
+
+/* Three column layout */
+.slide-content.columns.three-columns .column {
+    flex-basis: 33.333%;
+}
+
+/* Four column layout */
+.slide-content.columns.four-columns .column {
+    flex-basis: 25%;
+}
+
+/* ===== FIT TEXT SCALING ===== */
+
+/* Fit text base styling */
+.fit-text {
+    font-size: clamp(1.5rem, 8vw, 6rem);
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    word-wrap: break-word;
+    hyphens: auto;
+    display: block;
+    width: 100%;
+}
+
+/* Fit text in headings */
+h1.fit-text {
+    font-size: clamp(2rem, 10vw, 8rem);
+}
+
+h2.fit-text {
+    font-size: clamp(1.75rem, 8vw, 6rem);
+}
+
+h3.fit-text {
+    font-size: clamp(1.5rem, 6vw, 4rem);
+}
+
+/* ===== AUTOSCALE FUNCTIONALITY ===== */
+
+/* Autoscale container */
+.autoscale-container {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.autoscale-content {
+    transform-origin: center center;
+    transition: transform 0.3s ease;
+}
+
+/* Autoscale text sizing */
+.autoscale-text {
+    font-size: clamp(0.875rem, 2.5vw, 1.25rem);
+    line-height: 1.6;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Large screens (desktop) */
+@media (min-width: 1280px) {
+    :root {
+        --slide-padding: 3rem;
+        --slide-gap: 3rem;
+    }
+    
+    .slide {
+        min-height: 90vh;
+    }
+}
+
+/* Medium screens (tablet landscape) */
+@media (max-width: 1024px) {
+    :root {
+        --slide-padding: 1.5rem;
+        --slide-gap: 1.5rem;
+    }
+    
+    .slide {
+        min-height: 80vh;
+    }
+    
+    .fit-text {
+        font-size: clamp(1.25rem, 6vw, 4rem);
+    }
+}
+
+/* Small screens (tablet portrait) */
+@media (max-width: 768px) {
+    :root {
+        --slide-padding: 1rem;
+        --slide-gap: 1rem;
+        --slide-min-height: 70vh;
+    }
+    
+    /* Stack columns vertically on mobile */
+    .slide-content.columns {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .column {
+        flex-basis: auto;
+    }
+    
+    /* Adjust fit text for mobile */
+    .fit-text {
+        font-size: clamp(1rem, 5vw, 3rem);
+        line-height: 1.2;
+    }
+    
+    h1.fit-text {
+        font-size: clamp(1.5rem, 7vw, 4rem);
+    }
+    
+    h2.fit-text {
+        font-size: clamp(1.25rem, 6vw, 3.5rem);
+    }
+    
+    h3.fit-text {
+        font-size: clamp(1.125rem, 5vw, 2.5rem);
+    }
+}
+
+/* Extra small screens (mobile) */
+@media (max-width: 640px) {
+    :root {
+        --slide-padding: 0.75rem;
+        --slide-gap: 0.75rem;
+        --slide-min-height: 60vh;
+    }
+    
+    .slide {
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .slide-content.single-column {
+        text-align: left;
+        align-items: flex-start;
+    }
+    
+    .fit-text {
+        font-size: clamp(0.875rem, 4vw, 2rem);
+        line-height: 1.3;
+    }
+}
+
+/* ===== SLIDE NAVIGATION AND METADATA ===== */
+
+/* Slide footer */
+.slide-footer {
+    position: absolute;
+    bottom: var(--slide-padding);
+    left: var(--slide-padding);
+    right: var(--slide-padding);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    z-index: 2;
+}
+
+/* Slide number */
+.slide-number {
+    position: absolute;
+    bottom: var(--slide-padding);
+    right: var(--slide-padding);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    z-index: 2;
+}
+
+/* Hide footer and slide numbers on small screens if needed */
+@media (max-width: 640px) {
+    .slide-footer,
+    .slide-number {
+        font-size: 0.75rem;
+        bottom: 0.5rem;
+    }
+    
+    .slide-footer {
+        left: 0.5rem;
+        right: 0.5rem;
+    }
+    
+    .slide-number {
+        right: 0.5rem;
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* Focus indicators */
+.slide:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .autoscale-content {
+        transition: none;
+    }
+    
+    .fit-text {
+        animation: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --color-background: #ffffff;
+        --color-text: #000000;
+        --color-border: #000000;
+    }
+    
+    .slide {
+        border: 2px solid var(--color-border);
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+    :root {
+        --slide-padding: 1rem;
+        --slide-gap: 0;
+        --slide-shadow: none;
+    }
+    
+    .slide {
+        page-break-after: always;
+        page-break-inside: avoid;
+        min-height: 100vh;
+        margin: 0;
+        box-shadow: none;
+        border: 1px solid var(--color-border);
+    }
+    
+    .slide:last-child {
+        page-break-after: auto;
+    }
+    
+    /* Hide interactive elements in print */
+    .slide-footer,
+    .slide-number {
+        display: none;
+    }
+    
+    /* Ensure text is readable in print */
+    .fit-text {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Force column stacking in print for readability */
+    .slide-content.columns {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-background: #1f2937;
+        --color-text: #f9fafb;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #60a5fa;
+    }
+    
+    .slide {
+        background: var(--color-background);
+        color: var(--color-text);
+    }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Text alignment utilities */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* Spacing utilities */
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-8 { margin-bottom: 2rem; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-8 { margin-top: 2rem; }
+
+/* Flexbox utilities */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-center { justify-content: center; }
+.justify-start { justify-content: flex-start; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+
+/* Width utilities */
+.w-full { width: 100%; }
+.w-1\/2 { width: 50%; }
+.w-1\/3 { width: 33.333%; }
+.w-2\/3 { width: 66.667%; }
+
+/* Height utilities */
+.h-full { height: 100%; }
+.min-h-full { min-height: 100%; }
+/* =
+==== IMAGE AND MEDIA STYLING ===== */
+
+/* ===== BACKGROUND IMAGES ===== */
+
+/* Base background image styling */
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: -1;
+}
+
+/* Background image positioning */
+.background-image.left {
+    width: 50%;
+    right: auto;
+}
+
+.background-image.right {
+    left: 50%;
+    width: 50%;
+}
+
+/* Background image scaling modes */
+.background-image.fit {
+    object-fit: contain;
+    background: var(--color-background);
+}
+
+.background-image.fill {
+    object-fit: cover;
+}
+
+/* Background image filters */
+.background-image.filtered::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.background-image.original::after {
+    display: none;
+}
+
+/* ===== INLINE IMAGES ===== */
+
+/* Base inline image styling */
+.inline-image {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Inline image positioning */
+.inline-image.left {
+    float: left;
+    margin: 0 2rem 1rem 0;
+    max-width: 50%;
+}
+
+.inline-image.right {
+    float: right;
+    margin: 0 0 1rem 2rem;
+    max-width: 50%;
+}
+
+/* Inline image scaling */
+.inline-image.fill {
+    width: 100%;
+    max-width: 100%;
+}
+
+.inline-image.fit {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    margin: 1rem auto;
+    display: block;
+}
+
+/* Percentage-based scaling */
+.inline-image[data-scale="10%"] { max-width: 10%; }
+.inline-image[data-scale="20%"] { max-width: 20%; }
+.inline-image[data-scale="30%"] { max-width: 30%; }
+.inline-image[data-scale="40%"] { max-width: 40%; }
+.inline-image[data-scale="50%"] { max-width: 50%; }
+.inline-image[data-scale="60%"] { max-width: 60%; }
+.inline-image[data-scale="70%"] { max-width: 70%; }
+.inline-image[data-scale="80%"] { max-width: 80%; }
+.inline-image[data-scale="90%"] { max-width: 90%; }
+
+/* ===== IMAGE GRID LAYOUTS ===== */
+
+/* Base image grid */
+.image-grid {
+    display: grid;
+    gap: 1rem;
+    margin: 1rem 0;
+    align-items: start;
+}
+
+/* Grid layouts by number of images */
+.image-grid.grid-1 {
+    grid-template-columns: 1fr;
+}
+
+.image-grid.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.image-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.image-grid.grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.image-grid.grid-5,
+.image-grid.grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.image-grid.grid-7,
+.image-grid.grid-8,
+.image-grid.grid-9 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Image grid items */
+.image-grid .grid-image {
+    width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-grid .grid-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== IMAGE EFFECTS ===== */
+
+/* Corner radius effects */
+.corner-radius-small {
+    border-radius: 0.25rem;
+}
+
+.corner-radius-medium {
+    border-radius: 0.5rem;
+}
+
+.corner-radius-large {
+    border-radius: 1rem;
+}
+
+.corner-radius-xl {
+    border-radius: 1.5rem;
+}
+
+.corner-radius-full {
+    border-radius: 50%;
+}
+
+/* Custom corner radius */
+.corner-radius-custom {
+    border-radius: var(--corner-radius, 0.5rem);
+}
+
+/* Image filters */
+.image-filtered {
+    filter: brightness(0.7) contrast(1.1);
+}
+
+.image-original {
+    filter: none;
+}
+
+.image-grayscale {
+    filter: grayscale(100%);
+}
+
+.image-sepia {
+    filter: sepia(100%);
+}
+
+.image-blur {
+    filter: blur(2px);
+}
+
+/* ===== VIDEO STYLING ===== */
+
+/* Base video player styling */
+.video-player {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Video positioning */
+.video-player.left {
+    float: left;
+    margin: 0 2rem 1rem 0;
+    max-width: 50%;
+}
+
+.video-player.right {
+    float: right;
+    margin: 0 0 1rem 2rem;
+    max-width: 50%;
+}
+
+/* Video scaling */
+.video-player.fit {
+    max-height: 70vh;
+    object-fit: contain;
+    background: var(--color-background);
+}
+
+.video-player.fill {
+    width: 100%;
+    height: 60vh;
+    object-fit: cover;
+}
+
+/* Video controls styling */
+.video-player video {
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+.video-player video::-webkit-media-controls-panel {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* YouTube/Vimeo iframe styling */
+.video-embed {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.video-embed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-embed.left {
+    float: left;
+    margin: 0 2rem 1rem 0;
+    max-width: 50%;
+}
+
+.video-embed.right {
+    float: right;
+    margin: 0 0 1rem 2rem;
+    max-width: 50%;
+}
+
+/* ===== AUDIO STYLING ===== */
+
+/* Base audio player styling */
+.audio-player {
+    width: 100%;
+    max-width: 100%;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.audio-player audio {
+    width: 100%;
+    height: 3rem;
+    outline: none;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+}
+
+/* Audio positioning */
+.audio-player.left {
+    float: left;
+    margin: 0 2rem 1rem 0;
+    max-width: 50%;
+}
+
+.audio-player.right {
+    float: right;
+    margin: 0 0 1rem 2rem;
+    max-width: 50%;
+}
+
+/* Hidden audio (for background music) */
+.audio-player.hide {
+    display: none;
+}
+
+/* Custom audio controls */
+.audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.audio-controls button {
+    padding: 0.5rem;
+    border: none;
+    background: var(--color-accent);
+    color: white;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.audio-controls button:hover {
+    background: color-mix(in srgb, var(--color-accent) 80%, black);
+}
+
+.audio-controls .progress {
+    flex: 1;
+    height: 0.25rem;
+    background: var(--color-border);
+    border-radius: 0.125rem;
+    overflow: hidden;
+}
+
+.audio-controls .progress-bar {
+    height: 100%;
+    background: var(--color-accent);
+    transition: width 0.1s ease;
+}
+
+/* ===== RESPONSIVE MEDIA STYLES ===== */
+
+/* Tablet and mobile adjustments */
+@media (max-width: 1024px) {
+    .background-image.left,
+    .background-image.right {
+        width: 100%;
+        left: 0;
+    }
+    
+    .inline-image.left,
+    .inline-image.right {
+        float: none;
+        margin: 1rem 0;
+        max-width: 100%;
+    }
+    
+    .video-player.left,
+    .video-player.right,
+    .video-embed.left,
+    .video-embed.right,
+    .audio-player.left,
+    .audio-player.right {
+        float: none;
+        margin: 1rem 0;
+        max-width: 100%;
+    }
+}
+
+/* Mobile-specific media adjustments */
+@media (max-width: 768px) {
+    .image-grid.grid-2,
+    .image-grid.grid-3,
+    .image-grid.grid-4,
+    .image-grid.grid-5,
+    .image-grid.grid-6,
+    .image-grid.grid-7,
+    .image-grid.grid-8,
+    .image-grid.grid-9 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .video-player.fill {
+        height: 40vh;
+    }
+    
+    .video-embed {
+        padding-bottom: 75%; /* Adjust aspect ratio for mobile */
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 640px) {
+    .image-grid.grid-2,
+    .image-grid.grid-3,
+    .image-grid.grid-4,
+    .image-grid.grid-5,
+    .image-grid.grid-6,
+    .image-grid.grid-7,
+    .image-grid.grid-8,
+    .image-grid.grid-9 {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .inline-image {
+        margin: 0.5rem 0;
+    }
+    
+    .video-player,
+    .video-embed,
+    .audio-player {
+        margin: 0.5rem 0;
+    }
+    
+    .video-player.fill {
+        height: 30vh;
+    }
+}
+
+/* ===== PRINT MEDIA STYLES ===== */
+
+@media print {
+    /* Ensure images print well */
+    .background-image {
+        position: static;
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin-bottom: 1rem;
+    }
+    
+    .inline-image {
+        max-width: 100% !important;
+        float: none !important;
+        margin: 0.5rem 0 !important;
+        box-shadow: none !important;
+        border: 1px solid var(--color-border);
+    }
+    
+    .image-grid {
+        display: block;
+    }
+    
+    .image-grid .grid-image {
+        display: block;
+        margin: 0.5rem 0;
+        max-width: 100%;
+        box-shadow: none;
+        border: 1px solid var(--color-border);
+    }
+    
+    /* Hide video and audio in print */
+    .video-player,
+    .video-embed,
+    .audio-player,
+    .audio-controls {
+        display: none;
+    }
+    
+    /* Show placeholder for media in print */
+    .video-player::after,
+    .video-embed::after,
+    .audio-player::after {
+        content: '[Video/Audio content - view online]';
+        display: block;
+        padding: 2rem;
+        text-align: center;
+        border: 2px dashed var(--color-border);
+        color: var(--color-text-muted);
+        font-style: italic;
+    }
+}
+
+/* ===== DARK MODE MEDIA ADJUSTMENTS ===== */
+
+@media (prefers-color-scheme: dark) {
+    .inline-image,
+    .grid-image {
+        box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06);
+    }
+    
+    .video-player,
+    .video-embed {
+        box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06);
+    }
+    
+    .audio-player audio {
+        background: var(--color-background);
+        border-color: var(--color-border);
+    }
+    
+    .audio-controls {
+        background: var(--color-background);
+        border-color: var(--color-border);
+    }
+}/*
+ ===== CODE BLOCK STYLING ===== */
+
+/* Base code block styling */
+.code-block {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    overflow: hidden;
+    font-family: var(--font-family-mono);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Code block header (language label) */
+.code-block-header {
+    background: #e9ecef;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Code content container */
+.code-content {
+    padding: 1rem;
+    overflow-x: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Code content without scrolling */
+.code-content.no-scroll {
+    overflow: visible;
+    max-height: none;
+}
+
+/* Individual code lines */
+.code-line {
+    display: block;
+    padding: 0.125rem 0;
+    margin: 0;
+    position: relative;
+    white-space: pre;
+    word-wrap: break-word;
+}
+
+/* Line numbers */
+.code-block.with-line-numbers .code-content {
+    padding-left: 3rem;
+}
+
+.code-line::before {
+    content: attr(data-line);
+    position: absolute;
+    left: -2.5rem;
+    width: 2rem;
+    text-align: right;
+    color: #6c757d;
+    font-size: 0.75rem;
+    user-select: none;
+    opacity: 0.7;
+}
+
+/* ===== CODE HIGHLIGHTING ===== */
+
+/* Highlighted lines */
+.code-line.highlighted {
+    background: rgba(255, 235, 59, 0.2);
+    border-left: 3px solid #ffc107;
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    margin-right: -1rem;
+    padding-right: 1rem;
+}
+
+.code-line.highlighted::before {
+    left: -2rem;
+    font-weight: 600;
+    color: #f57c00;
+}
+
+/* Multiple highlight styles */
+.code-line.highlight-primary {
+    background: rgba(33, 150, 243, 0.1);
+    border-left: 3px solid #2196f3;
+}
+
+.code-line.highlight-secondary {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 3px solid #4caf50;
+}
+
+.code-line.highlight-warning {
+    background: rgba(255, 152, 0, 0.1);
+    border-left: 3px solid #ff9800;
+}
+
+.code-line.highlight-error {
+    background: rgba(244, 67, 54, 0.1);
+    border-left: 3px solid #f44336;
+}
+
+/* All lines highlighted */
+.code-block.highlight-all .code-line {
+    background: rgba(255, 235, 59, 0.1);
+}
+
+/* ===== SYNTAX HIGHLIGHTING COLORS ===== */
+
+/* Light theme syntax highlighting */
+.hljs {
+    background: transparent;
+    color: #24292e;
+}
+
+.hljs-keyword {
+    color: #d73a49;
+    font-weight: 600;
+}
+
+.hljs-string {
+    color: #032f62;
+}
+
+.hljs-comment {
+    color: #6a737d;
+    font-style: italic;
+}
+
+.hljs-function {
+    color: #6f42c1;
+    font-weight: 600;
+}
+
+.hljs-number {
+    color: #005cc5;
+}
+
+.hljs-built_in {
+    color: #e36209;
+}
+
+.hljs-variable {
+    color: #e36209;
+}
+
+.hljs-type {
+    color: #d73a49;
+}
+
+.hljs-class {
+    color: #6f42c1;
+}
+
+.hljs-attribute {
+    color: #6f42c1;
+}
+
+.hljs-tag {
+    color: #22863a;
+}
+
+.hljs-name {
+    color: #22863a;
+}
+
+.hljs-selector-id,
+.hljs-selector-class {
+    color: #6f42c1;
+}
+
+.hljs-property {
+    color: #005cc5;
+}
+
+.hljs-value {
+    color: #032f62;
+}
+
+/* ===== MATHEMATICAL FORMULA STYLING ===== */
+
+/* Base math container */
+.math-container {
+    margin: 1rem 0;
+    position: relative;
+}
+
+/* Display math (block) */
+.math-display {
+    text-align: center;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.math-display .MathJax {
+    font-size: 1.2em !important;
+}
+
+/* Inline math */
+.math-inline {
+    display: inline;
+    margin: 0 0.125rem;
+}
+
+.math-inline .MathJax {
+    font-size: 1em !important;
+}
+
+/* Math formula overflow handling */
+.math-overflow {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    padding: 0.5rem 0;
+}
+
+.math-overflow::-webkit-scrollbar {
+    height: 6px;
+}
+
+.math-overflow::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.math-overflow::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.math-overflow::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Math error handling */
+.math-error {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border-left: 3px solid #dc3545;
+    font-family: var(--font-family-mono);
+    font-size: 0.875rem;
+}
+
+.math-error::before {
+    content: "Math Error: ";
+    font-weight: 600;
+}
+
+/* ===== FOOTNOTES STYLING ===== */
+
+/* Footnotes container */
+.footnotes {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.footnotes h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.5rem 0;
+}
+
+/* Individual footnote */
+.footnote {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.footnote-ref {
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-right: 0.5rem;
+}
+
+.footnote-content {
+    display: inline;
+}
+
+/* Footnote references in text */
+.footnote-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: super;
+    font-weight: 600;
+}
+
+.footnote-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== SPEAKER NOTES STYLING ===== */
+
+/* Speaker notes container (hidden by default) */
+.speaker-notes {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 1rem;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.speaker-notes.visible {
+    transform: translateY(0);
+}
+
+.speaker-notes h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffc107;
+}
+
+.speaker-notes p {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.speaker-notes p:last-child {
+    margin-bottom: 0;
+}
+
+/* Speaker notes toggle button */
+.speaker-notes-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    z-index: 1001;
+}
+
+.speaker-notes-toggle:hover {
+    background: color-mix(in srgb, var(--color-accent) 80%, black);
+    transform: scale(1.05);
+}
+
+.speaker-notes-toggle:active {
+    transform: scale(0.95);
+}
+
+/* ===== RESPONSIVE CODE AND MATH STYLES ===== */
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+    .code-block {
+        font-size: 0.8125rem;
+    }
+    
+    .code-content {
+        padding: 0.75rem;
+        max-height: 60vh;
+    }
+    
+    .math-display .MathJax {
+        font-size: 1.1em !important;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .code-block {
+        font-size: 0.75rem;
+        margin: 0.75rem 0;
+    }
+    
+    .code-content {
+        padding: 0.5rem;
+        max-height: 50vh;
+    }
+    
+    .code-block.with-line-numbers .code-content {
+        padding-left: 2.5rem;
+    }
+    
+    .code-line::before {
+        left: -2rem;
+        width: 1.5rem;
+        font-size: 0.6875rem;
+    }
+    
+    .math-display {
+        padding: 0.75rem;
+        margin: 1rem 0;
+    }
+    
+    .math-display .MathJax {
+        font-size: 1em !important;
+    }
+    
+    .footnotes {
+        font-size: 0.8125rem;
+    }
+    
+    .speaker-notes {
+        padding: 0.75rem;
+        max-height: 50vh;
+    }
+    
+    .speaker-notes-toggle {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 640px) {
+    .code-block {
+        font-size: 0.6875rem;
+        border-radius: 0.25rem;
+    }
+    
+    .code-content {
+        padding: 0.5rem;
+        max-height: 40vh;
+    }
+    
+    .math-display {
+        padding: 0.5rem;
+        margin: 0.75rem 0;
+    }
+    
+    .footnotes {
+        font-size: 0.75rem;
+        padding-top: 0.75rem;
+    }
+    
+    .speaker-notes {
+        padding: 0.5rem;
+        max-height: 40vh;
+    }
+}
+
+/* ===== PRINT STYLES FOR CODE AND MATH ===== */
+
+@media print {
+    .code-block {
+        background: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+    }
+    
+    .code-content {
+        overflow: visible !important;
+        max-height: none !important;
+        padding: 0.75rem !important;
+    }
+    
+    .code-line.highlighted {
+        background: #fff3cd !important;
+        border-left: 2px solid #856404 !important;
+    }
+    
+    .math-display {
+        background: transparent !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .math-overflow {
+        overflow: visible !important;
+    }
+    
+    .footnotes {
+        border-top: 1px solid #000 !important;
+        color: #000 !important;
+    }
+    
+    /* Hide interactive elements */
+    .speaker-notes,
+    .speaker-notes-toggle {
+        display: none !important;
+    }
+    
+    /* Show math errors clearly in print */
+    .math-error {
+        background: #f8d7da !important;
+        color: #721c24 !important;
+        border-left: 3px solid #721c24 !important;
+    }
+}
+
+/* ===== DARK MODE CODE AND MATH STYLES ===== */
+
+@media (prefers-color-scheme: dark) {
+    .code-block {
+        background: #1e1e1e;
+        border-color: #374151;
+        color: #d4d4d4;
+    }
+    
+    .code-block-header {
+        background: #374151;
+        color: #d1d5db;
+        border-bottom-color: #4b5563;
+    }
+    
+    .code-line::before {
+        color: #9ca3af;
+    }
+    
+    .code-line.highlighted {
+        background: rgba(255, 235, 59, 0.15);
+        border-left-color: #ffc107;
+    }
+    
+    /* Dark theme syntax highlighting */
+    .hljs {
+        color: #d4d4d4;
+    }
+    
+    .hljs-keyword {
+        color: #569cd6;
+    }
+    
+    .hljs-string {
+        color: #ce9178;
+    }
+    
+    .hljs-comment {
+        color: #6a9955;
+    }
+    
+    .hljs-function {
+        color: #dcdcaa;
+    }
+    
+    .hljs-number {
+        color: #b5cea8;
+    }
+    
+    .hljs-built_in {
+        color: #4ec9b0;
+    }
+    
+    .hljs-variable {
+        color: #9cdcfe;
+    }
+    
+    .hljs-type {
+        color: #4ec9b0;
+    }
+    
+    .hljs-class {
+        color: #4ec9b0;
+    }
+    
+    .hljs-attribute {
+        color: #92c5f8;
+    }
+    
+    .hljs-tag {
+        color: #569cd6;
+    }
+    
+    .hljs-name {
+        color: #92c5f8;
+    }
+    
+    .hljs-selector-id,
+    .hljs-selector-class {
+        color: #d7ba7d;
+    }
+    
+    .hljs-property {
+        color: #9cdcfe;
+    }
+    
+    .hljs-value {
+        color: #ce9178;
+    }
+    
+    /* Dark mode math styling */
+    .math-display {
+        background: rgba(55, 65, 81, 0.3);
+    }
+    
+    .math-error {
+        background: rgba(220, 53, 69, 0.2);
+        border-left-color: #dc3545;
+    }
+    
+    /* Dark mode footnotes */
+    .footnotes {
+        border-top-color: var(--color-border);
+    }
+    
+    .footnote-ref,
+    .footnote-link {
+        color: var(--color-accent);
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .code-block {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    .code-line.highlighted {
+        background: #ffff00;
+        border-left: 4px solid #000;
+    }
+    
+    .math-display {
+        border: 1px solid #000;
+    }
+    
+    .footnotes {
+        border-top: 2px solid #000;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .speaker-notes {
+        transition: none;
+    }
+    
+    .speaker-notes-toggle {
+        transition: none;
+    }
+    
+    .code-overflow {
+        scroll-behavior: auto;
+    }
+}
+
+/* Focus indicators for accessibility */
+.code-block:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.footnote-link:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+.speaker-notes-toggle:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
