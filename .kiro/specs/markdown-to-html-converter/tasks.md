@@ -53,14 +53,14 @@
   - Create unit tests for video/audio processing and modifiers
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 
-- [ ] 4. Implement enhanced slide processor
-- [ ] 4.1 Create SlideProcessor class with column support
+- [x] 4. Implement enhanced slide processor
+- [x] 4.1 Create SlideProcessor class with column support
   - Implement process_slide() for individual slide processing
   - Implement process_columns() to handle [.column] directives
   - Create unit tests for slide processing and column layout
   - _Requirements: 6.1, 6.2, 6.3, 6.5_
 
-- [ ] 4.2 Implement background image and autoscale processing
+- [x] 4.2 Implement background image and autoscale processing
   - Implement process_background_image() for slide backgrounds
   - Implement apply_autoscale() for text scaling when content overflows
   - Create unit tests for background processing and autoscaling
