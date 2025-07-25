@@ -360,12 +360,23 @@
 
 /* Fit text styling */
 .fit-text {
-    font-size: clamp(1.5rem, 8vw, 4rem);
     font-weight: 700;
     line-height: 1.1;
     text-align: center;
     display: block;
     margin: 1rem 0;
+    /* Initial responsive font size - JavaScript will optimize this further */
+    font-size: clamp(2rem, 12vw, 8rem);
+    /* Allow text to scale up much larger than before */
+    max-width: 100%;
+    /* Prevent text from overflowing horizontally */
+    overflow: hidden;
+    /* Allow word breaking for very long words */
+    word-break: break-word;
+    /* Ensure text fits within container */
+    box-sizing: border-box;
+    /* Smooth transitions when JavaScript adjusts the size */
+    transition: font-size 0.2s ease-out;
 }
 
 /* Responsive design */

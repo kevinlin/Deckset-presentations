@@ -22,6 +22,7 @@ class EnhancedSlideViewer {
         this.setupResponsiveFeatures();
         this.initializeHighlighting();
         this.initializeMathJax();
+        this.setupFitText();
         
         // Show first slide
         this.showSlide(0);
@@ -163,6 +164,88 @@ class EnhancedSlideViewer {
         
         // Initial adjustment
         this.adjustForViewport();
+    }
+    
+    setupFitText() {
+        // Scale all fit text elements initially
+        this.scaleAllFitText();
+        
+        // Re-scale on window resize
+        window.addEventListener('resize', () => {
+            this.scaleAllFitText();
+        });
+        
+        // Re-scale when slides change (in case of dynamic content)
+        const observer = new MutationObserver(() => {
+            this.scaleAllFitText();
+        });
+        
+        // Observe changes to slide content
+        this.slides.forEach(slide => {
+            observer.observe(slide, { childList: true, subtree: true });
+        });
+    }
+    
+    scaleAllFitText() {
+        const fitElements = document.querySelectorAll('.fit-text');
+        fitElements.forEach(element => {
+            this.scaleFitText(element);
+        });
+    }
+    
+    scaleFitText(element) {
+        if (!element || !element.parentElement) {
+            console.warn('scaleFitText: Invalid element or missing parent');
+            return;
+        }
+        
+        const container = element.parentElement;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        if (containerWidth <= 0) {
+            console.warn('scaleFitText: Container width is 0 or negative');
+            return;
+        }
+        
+        console.log(`Scaling fit text: "${element.textContent.substring(0, 20)}..." in container ${containerWidth}px wide`);
+        
+        // Start with a large font size and scale down until it fits
+        let fontSize = Math.min(containerWidth / 8, 120); // Start with reasonable max
+        element.style.fontSize = fontSize + 'px';
+        
+        // Binary search for optimal font size
+        let minSize = 12;
+        let maxSize = Math.min(containerWidth / 2, 200);
+        let iterations = 0;
+        const maxIterations = 20;
+        
+        while (minSize < maxSize && iterations < maxIterations) {
+            fontSize = Math.floor((minSize + maxSize) / 2);
+            element.style.fontSize = fontSize + 'px';
+            
+            // Check if text fits horizontally
+            if (element.scrollWidth <= containerWidth * 0.95) { // 5% margin
+                minSize = fontSize + 1;
+            } else {
+                maxSize = fontSize - 1;
+            }
+            
+            iterations++;
+        }
+        
+        // Use the largest size that fits
+        fontSize = maxSize;
+        element.style.fontSize = fontSize + 'px';
+        
+        // Ensure minimum readability
+        if (fontSize < 16) {
+            fontSize = 16;
+            element.style.fontSize = fontSize + 'px';
+        }
+        
+        console.log(`Final font size: ${fontSize}px after ${iterations} iterations`);
+        return fontSize;
     }
     
     initializeHighlighting() {

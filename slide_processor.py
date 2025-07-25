@@ -6,11 +6,14 @@ background images, code blocks, math formulas, and autoscaling.
 """
 
 import re
+import logging
 from typing import List, Optional
 from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ProcessedCodeBlock, MathFormula,
     DecksetConfig, SlideConfig, SlideContext, SlideProcessingError, SlideProcessorInterface
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SlideProcessor(SlideProcessorInterface):
@@ -44,7 +47,7 @@ class SlideProcessor(SlideProcessorInterface):
             from deckset_parser import DecksetParser
             parser = DecksetParser()
             slide.slide_config = parser.parse_slide_commands(slide_content)
-            
+
             # Process speaker notes and footnotes
             content_without_notes, notes = parser.process_speaker_notes(slide_content)
             content_without_footnotes, footnotes = parser.process_footnotes(content_without_notes)

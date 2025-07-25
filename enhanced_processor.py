@@ -43,33 +43,24 @@ class EnhancedPresentationProcessor:
             presentation_info: Information about the presentation to process
             
         Returns:
-            EnhancedPresentation with all Deckset features processed
+            EnhancedPresentation with processed slides and configuration
             
         Raises:
             PresentationProcessingError: If processing fails
         """
-        logger.info(f"Processing enhanced presentation: {presentation_info.title}")
+        logger.info(f"Enhanced processor: Starting to process presentation {presentation_info.title}")
         
+        # Read the markdown file
         try:
-            # Read markdown content
             with open(presentation_info.markdown_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-        except (IOError, OSError) as e:
+        except (FileNotFoundError, IOError, UnicodeDecodeError) as e:
             raise PresentationProcessingError(
                 f"Failed to read markdown file {presentation_info.markdown_path}: {e}",
                 context={
                     "presentation_title": presentation_info.title,
                     "markdown_path": presentation_info.markdown_path,
-                    "error_type": type(e).__name__
-                }
-            )
-        except UnicodeDecodeError as e:
-            raise PresentationProcessingError(
-                f"Failed to decode markdown file {presentation_info.markdown_path}: {e}",
-                context={
-                    "presentation_title": presentation_info.title,
-                    "markdown_path": presentation_info.markdown_path,
-                    "encoding_error": str(e)
+                    "processing_stage": "file_reading"
                 }
             )
         
@@ -161,7 +152,6 @@ class EnhancedPresentationProcessor:
         for i, slide_content in enumerate(slide_contents):
             try:
                 slide_index = i + 1
-                logger.debug(f"Processing slide {slide_index}")
                 
                 # Create slide context
                 slide_context = SlideContext(
@@ -234,9 +224,11 @@ class EnhancedPresentationProcessor:
     def _process_slide_code_blocks(self, content: str, original_content: str) -> tuple:
         """Process code blocks with syntax highlighting and line emphasis."""
         try:
-            # Process code blocks using the correct method
+            # Process code blocks using the processed content, not the original
+            # The original_content is only used if we need to extract code block directives
+            # that might have been removed during earlier processing
             cleaned_content, code_blocks = self.code_processor.process_code_block_with_deckset_directive(
-                original_content, 
+                content,  # Use the processed content, not original_content
                 default_language=""
             )
             
