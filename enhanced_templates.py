@@ -320,21 +320,53 @@ class EnhancedTemplateEngine:
         # In a full implementation, this would use a proper markdown library
         html = content
         
-        # Convert headers
+        # Convert headers first (before paragraph processing)
         html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
         html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
         html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+        html = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', html, flags=re.MULTILINE)
         
         # Convert emphasis
         html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
         html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
+        html = re.sub(r'_(.+?)_', r'<em>\1</em>', html)
+        html = re.sub(r'__(.+?)__', r'<strong>\1</strong>', html)
         
-        # Convert line breaks
-        html = html.replace('\n\n', '</p><p>')
-        html = f'<p>{html}</p>'
+        # Convert inline code
+        html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
+        
+        # Split into paragraphs, but preserve headers and other block elements
+        lines = html.split('\n')
+        result_lines = []
+        current_paragraph = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                # Empty line - end current paragraph
+                if current_paragraph:
+                    result_lines.append(f'<p>{" ".join(current_paragraph)}</p>')
+                    current_paragraph = []
+            elif line.startswith('<h') or line.startswith('<ul>') or line.startswith('<ol>') or line.startswith('<pre>'):
+                # Block element - end current paragraph and add block element
+                if current_paragraph:
+                    result_lines.append(f'<p>{" ".join(current_paragraph)}</p>')
+                    current_paragraph = []
+                result_lines.append(line)
+            else:
+                # Regular text line - add to current paragraph
+                current_paragraph.append(line)
+        
+        # Handle any remaining paragraph
+        if current_paragraph:
+            result_lines.append(f'<p>{" ".join(current_paragraph)}</p>')
+        
+        # Join all lines
+        html = '\n'.join(result_lines)
         
         # Clean up empty paragraphs
         html = re.sub(r'<p></p>', '', html)
+        html = re.sub(r'<p>\s*</p>', '', html)
         
         return html
     

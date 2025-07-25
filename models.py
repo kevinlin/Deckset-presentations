@@ -52,7 +52,7 @@ class GeneratorConfig:
     slides_dir: str = "slides"
     fallback_image: str = "slides/redacted.png"
     exclude_folders: List[str] = field(default_factory=lambda: [
-        '.git', '.kiro', 'node_modules', 'Examples', '__pycache__', '.pytest_cache'
+        '.git', '.kiro', 'node_modules', '__pycache__', '.pytest_cache'
     ])
 
 
