@@ -1,0 +1,30 @@
+{
+  "name": "deckset-presentations",
+  "version": "0.1.0",
+  "description": "A tool for generating presentations using Markdown and Jinja2 templates",
+  "scripts": {
+    "test:js": "jest tests/test_enhanced_slide_viewer.js",
+    "test:js:watch": "jest tests/test_enhanced_slide_viewer.js --watch",
+    "test:js:coverage": "jest tests/test_enhanced_slide_viewer.js --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jsdom": "^23.0.1",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/jest.setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.js"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "collectCoverageFrom": [
+      "docs/assets/js/**/*.js"
+    ]
+  }
+}
