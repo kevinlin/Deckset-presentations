@@ -3,6 +3,12 @@
 {% block title %}{{ presentation.info.title }} - Deckset Presentations{% endblock %}
 {% block meta_description %}{{ presentation.info.title }} - A presentation with {{ presentation.slides|length }} slides{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="../code_highlighting_styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+{% endblock %}
+
 {% block nav_links %}
 {{ super() }}
 <a href="/presentations/" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">All Presentations</a>
@@ -139,6 +145,10 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize syntax highlighting
+    if (typeof hljs !== 'undefined') {
+        hljs.highlightAll();
+    }
     // Slide navigation
     const slides = document.querySelectorAll('.slide');
     const prevButton = document.getElementById('prev-slide');

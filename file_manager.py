@@ -69,6 +69,38 @@ class FileManager:
         
         self.logger.info(f"Successfully set up output directory structure in {output_dir}")
         
+        # Copy template assets (CSS files)
+        self.copy_template_assets()
+        
+    def copy_template_assets(self) -> None:
+        """
+        Copy template assets (CSS files) to the output directory.
+        
+        Copies:
+        - code_highlighting_styles.css to output root
+        - enhanced_slide_styles.css to output root (if exists)
+        """
+        output_dir = Path(self.config.output_dir)
+        
+        # List of CSS files to copy from templates directory
+        css_files = [
+            "code_highlighting_styles.css",
+            "enhanced_slide_styles.css"
+        ]
+        
+        for css_file in css_files:
+            source_path = Path("templates") / css_file
+            dest_path = output_dir / css_file
+            
+            if source_path.exists():
+                try:
+                    shutil.copy2(source_path, dest_path)
+                    self.logger.debug(f"Copied CSS file: {source_path} -> {dest_path}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy CSS file {css_file}: {e}")
+            else:
+                self.logger.warning(f"CSS file not found: {source_path}")
+        
     def ensure_fallback_image(self) -> None:
         """
         Ensure the fallback image exists in the output directory.

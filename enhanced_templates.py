@@ -469,36 +469,11 @@ class EnhancedTemplateEngine:
         if not code_block:
             return ""
         
-        css_classes = ["code-block"]
-        
-        # Add language class for syntax highlighting
-        if code_block.language:
-            css_classes.append(f"language-{code_block.language}")
-        
-        # Process code content with line highlighting
-        lines = code_block.content.split('\n')
-        processed_lines = []
-        
-        for i, line in enumerate(lines, 1):
-            line_classes = ["code-line"]
-            
-            # Add highlight class if line is highlighted
-            if i in code_block.highlighted_lines:
-                line_classes.append("highlighted")
-            
-            # Add line number if enabled
-            line_number = f'<span class="line-number">{i}</span>' if code_block.line_numbers else ''
-            
-            processed_lines.append(
-                f'<span class="{" ".join(line_classes)}">{line_number}{self._escape_html(line)}</span>'
-            )
-        
-        code_content = '\n'.join(processed_lines)
-        class_attr = f'class="{" ".join(css_classes)}"'
-        
+        # The CodeProcessor already generates the complete HTML with proper CSS classes
+        # We just need to wrap it in a container for consistent styling
         return f"""
             <div class="code-container">
-                <pre {class_attr}><code>{code_content}</code></pre>
+                {code_block.content}
             </div>
         """
     
