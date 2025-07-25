@@ -167,6 +167,9 @@ class EnhancedTemplateEngine:
         css_classes = ["background-image"]
         styles = []
         
+        # Add the background image URL first
+        styles.append(f"background-image: url('{image.web_path}')")
+        
         # Add placement classes
         if image.modifiers.placement in ["left", "right"]:
             css_classes.append(image.modifiers.placement)
@@ -188,12 +191,12 @@ class EnhancedTemplateEngine:
         if image.modifiers.corner_radius:
             styles.append(f"border-radius: {image.modifiers.corner_radius}px")
         
-        style_attr = f'style="{"; ".join(styles)}"' if styles else ""
+        # Combine all styles into a single style attribute
+        style_attr = f'style="{"; ".join(styles)}"'
         class_attr = f'class="{" ".join(css_classes)}"'
         
         return f"""
             <div {class_attr} {style_attr}
-                 style="background-image: url('{image.web_path}'); {'; '.join(styles)}"
                  aria-label="{self._escape_html(image.alt_text)}">
             </div>
         """
