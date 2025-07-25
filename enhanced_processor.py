@@ -195,6 +195,10 @@ class EnhancedPresentationProcessor:
     ) -> ProcessedSlide:
         """Apply additional enhanced processing to a slide."""
         try:
+            # Process code blocks from original content first, before SlideProcessor transforms them
+            original_content_cleaned, code_blocks = self._process_slide_code_blocks(original_content, original_content)
+            slide.code_blocks = code_blocks
+            
             # Process emoji shortcodes in content
             slide.content = self.deckset_parser.process_emoji_shortcodes(slide.content)
             
@@ -208,11 +212,7 @@ class EnhancedPresentationProcessor:
             slide.content, math_formulas = self.math_processor.process_math_formulas(slide.content)
             slide.math_formulas = math_formulas
             
-            # Process code blocks with enhanced highlighting
-            slide.content, code_blocks = self._process_slide_code_blocks(slide.content, original_content)
-            slide.code_blocks = code_blocks
-            
-            # Process media elements
+            # Process media elements (use original content to find media references)
             slide = self._process_slide_media(slide, original_content, context)
             
             return slide
