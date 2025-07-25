@@ -248,6 +248,7 @@ class EnhancedPresentationProcessor:
         try:
             # Extract media references from original content
             media_references = self._extract_media_references(original_content)
+            processed_media_refs = []
             
             # Process each media reference
             for media_ref in media_references:
@@ -260,24 +261,64 @@ class EnhancedPresentationProcessor:
                             slide.background_image = processed_image
                         else:
                             slide.inline_images.append(processed_image)
+                        
+                        processed_media_refs.append(media_ref)
                             
                     elif self._is_video_reference(media_ref):
                         processed_video = self.media_processor.process_video(media_ref, context)
                         slide.videos.append(processed_video)
+                        processed_media_refs.append(media_ref)
                         
                     elif self._is_audio_reference(media_ref):
                         processed_audio = self.media_processor.process_audio(media_ref, context)
                         slide.audio.append(processed_audio)
+                        processed_media_refs.append(media_ref)
                         
                 except MediaProcessingError as e:
                     logger.warning(f"Failed to process media reference '{media_ref}': {e}")
                     continue
+            
+            # Remove processed media references from slide content
+            for media_ref in processed_media_refs:
+                # Remove the media reference and any surrounding paragraph tags
+                slide.content = self._remove_media_reference_from_content(slide.content, media_ref)
             
             return slide
             
         except Exception as e:
             logger.warning(f"Failed to process slide media: {e}")
             return slide
+    
+    def _remove_media_reference_from_content(self, content: str, media_ref: str) -> str:
+        """Remove a processed media reference from slide content."""
+        import re
+        
+        # Escape special regex characters in the media reference
+        escaped_ref = re.escape(media_ref)
+        
+        # Pattern to match the media reference with optional surrounding whitespace and paragraph tags
+        patterns = [
+            # Media reference on its own line (most common for background images)
+            rf'^\s*{escaped_ref}\s*$',
+            # Media reference in a paragraph
+            rf'<p>\s*{escaped_ref}\s*</p>',
+            # Media reference with surrounding whitespace
+            rf'\s*{escaped_ref}\s*',
+            # Just the media reference itself
+            escaped_ref
+        ]
+        
+        # Try each pattern and remove the first match
+        for pattern in patterns:
+            if re.search(pattern, content, re.MULTILINE):
+                content = re.sub(pattern, '', content, count=1, flags=re.MULTILINE)
+                break
+        
+        # Clean up any empty lines or paragraphs left behind
+        content = re.sub(r'\n\s*\n\s*\n', '\n\n', content)  # Remove multiple blank lines
+        content = re.sub(r'<p>\s*</p>', '', content)  # Remove empty paragraphs
+        
+        return content.strip()
     
     def _extract_media_references(self, content: str) -> List[str]:
         """Extract all media references from slide content."""

@@ -368,6 +368,66 @@ Right column content
         # assert isinstance(result.global_footnotes, dict)
         pass
 
+    def test_background_image_content_cleanup(self):
+        """Test that background images are removed from slide content after processing."""
+        # Create test presentation with background image
+        presentation_path = os.path.join(self.test_presentation_dir, "bg-image-test")
+        os.makedirs(presentation_path, exist_ok=True)
+        
+        # Create test image file
+        test_image = os.path.join(presentation_path, "background.jpg")
+        with open(test_image, 'w') as f:
+            f.write("fake image content")
+        
+        # Create markdown with background image syntax
+        markdown_content = """# Background Image Test
+
+Fidelity realized that information from their broker-dealers could be routed to the wrong trader, or simply lost when the parties hung up their phones.
+
+It wanted such communications to be replaced with machine-readable data
+
+![](background.jpg)
+
+This content should appear after the background image is processed.
+"""
+        
+        markdown_file = os.path.join(presentation_path, "bg-image-test.md")
+        with open(markdown_file, 'w') as f:
+            f.write(markdown_content)
+        
+        # Create PresentationInfo for the test
+        from models import PresentationInfo
+        test_presentation_info = PresentationInfo(
+            folder_name="bg-image-test",
+            folder_path=presentation_path,
+            markdown_path=markdown_file,
+            title="bg-image-test",
+            last_modified=None
+        )
+        
+        # Process the presentation
+        processor = EnhancedPresentationProcessor()
+        
+        result = processor.process_presentation(test_presentation_info)
+        
+        assert result is not None, "Presentation should be processed successfully"
+        assert len(result.slides) == 1, "Should have exactly one slide"
+        
+        slide = result.slides[0]
+        
+        # Verify background image was processed
+        assert slide.background_image is not None, "Background image should be processed"
+        assert slide.background_image.src_path.endswith("background.jpg"), "Background image path should be correct"
+        assert slide.background_image.modifiers.placement == "background", "Should be background placement"
+        
+        # Verify the image reference was removed from slide content
+        assert "![](background.jpg)" not in slide.content, "Image reference should be removed from content"
+        assert "<p>![](background.jpg)</p>" not in slide.content, "Image reference in paragraph should be removed"
+        
+        # Verify the rest of the content is still there
+        assert "Fidelity realized that information" in slide.content, "Original content should remain"
+        assert "This content should appear after" in slide.content, "Content after image should remain"
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
