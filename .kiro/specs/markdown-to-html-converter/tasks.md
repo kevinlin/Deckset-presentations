@@ -66,14 +66,14 @@
   - Create unit tests for background processing and autoscaling
   - _Requirements: 2.1, 2.2, 7.5_
 
-- [ ] 5. Implement code highlighting processor
-- [ ] 5.1 Create CodeProcessor class with syntax highlighting
+- [x] 5. Implement code highlighting processor
+- [x] 5.1 Create CodeProcessor class with syntax highlighting
   - Implement process_code_block() with language-specific highlighting
   - Implement apply_syntax_highlighting() using highlight.js integration
   - Create unit tests for code block processing and syntax highlighting
   - _Requirements: 4.1, 4.6, 4.7_
 
-- [ ] 5.2 Implement line highlighting and emphasis features
+- [x] 5.2 Implement line highlighting and emphasis features
   - Implement parse_highlight_directive() for [.code-highlight: N] parsing
   - Implement apply_line_highlighting() to highlight specific lines
   - Create unit tests for line highlighting functionality
