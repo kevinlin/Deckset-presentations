@@ -1,0 +1,42 @@
+---
+description: General Project Guidelines
+globs:
+alwaysApply: true
+---
+# General Project Guidelines
+
+## Tech Stack
+- Python 3
+- venv virtual environement (`.venv`)
+- UV for dependency management (`pyproject.toml`)
+
+## Hosting and CI/CD
+- Hosted on GitHub: https://github.com/kevinlin/Deckset-presentations
+- Automated build and deployment with GitHub Actions: `.github/workflows/generate-website.yml`
+
+## Code Style
+- Keep code simple and readable
+- Use meaningful variable and function names
+- Add appropriate comments to explain complex logic
+- Follow the official style guide for each language
+
+## Project Structure
+- Keep the project structure clear, following modular principles
+- Related features should be placed in the same directory
+- Use appropriate directory names that reflect their contents
+
+## General Development Principles
+- Write testable code
+- Avoid duplicate code (DRY principle)
+- Prefer existing libraries and tools, avoid reinventing the wheel
+- Consider code maintainability and scalability
+
+## Response Language
+- Always reply to users in English
+
+## Rule File Description
+This project uses the following rule files:
+- general: General guidelines (this file)
+- python: Python development guidelines
+- documentation: Documentation guidelines
+- git: Git commit guidelines

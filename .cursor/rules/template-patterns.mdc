@@ -4,36 +4,28 @@ globs: "templates/**/*.html,templates/**/*.css,templates/**/*.js"
 
 # Template & UI Patterns
 
-## Jinja2 Template Structure
+## Template Structure
 
-### Base Template Pattern
-The project uses [templates/base.html](mdc:templates/base.html) as the foundation:
+### Enhanced Template Engine
+The project uses hardcoded Jinja2 templates in `enhanced_templates.py` for rendering:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Deckset Presentations{% endblock %}</title>
-    <!-- Common head elements -->
-</head>
-<body>
-    {% block content %}{% endblock %}
-</body>
-</html>
+- **Slide Templates**: Individual slide HTML is generated using string templates
+- **Presentation Pages**: Complete presentation HTML with navigation and styling
+- **Homepage**: Presentation listing with search and responsive design
+
+### Template Rendering Pattern
+```python
+# In enhanced_templates.py
+def render_slide(self, slide, config):
+    template = self.env.from_string(self.slide_template)
+    return template.render(slide=slide, config=config)
 ```
 
-### Template Inheritance
-```html
-{% extends "base.html" %}
-
-{% block title %}{{ presentation.title }}{% endblock %}
-
-{% block content %}
-<!-- Page-specific content -->
-{% endblock %}
-```
+### Key Template Features
+- Full Deckset markdown compatibility
+- Responsive design with Tailwind CSS
+- Background images and media support
+- Code highlighting and math formulas
 
 ## CSS Framework & Styling
 
