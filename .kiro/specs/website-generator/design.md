@@ -287,25 +287,6 @@ docs/                           # GitHub Pages output directory
     └── ...
 ```
 
-### Source Code Structure
-
-```
-├── scanner.py                  # Repository scanning logic
-├── processor.py                # Markdown processing logic
-├── generator.py                # HTML generation logic
-├── templates.py                # Template management
-├── models.py                   # Data models
-├── main.py                     # Enhanced main script
-├── requirements.txt            # Python dependencies
-├── templates/
-│   ├── presentation.html       # Individual presentation template
-│   ├── homepage.html          # Homepage template
-│   └── base.html              # Base template with common elements
-└── .github/
-    └── workflows/
-        └── generate-website.yml # GitHub Actions workflow
-```
-
 ## Template Design
 
 ### Styling Framework
