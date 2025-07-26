@@ -154,13 +154,6 @@ class SlideProcessor(SlideProcessorInterface):
         # Remove highlight directives and code blocks from content            
         return self.code_block_pattern.sub('', self.code_highlight_pattern.sub('', slide_content))
     
-    def process_math_formulas(self, slide_content: str) -> str:
-        """Process mathematical formulas. (Stub - handled by enhanced processor)"""
-        # This is a stub implementation to satisfy the interface requirement.
-        # The actual math processing is handled by the enhanced processor
-        # to create proper MathFormula objects.
-        return slide_content
-    
     def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str:
         """Apply autoscale to slide content."""
         try:

@@ -400,11 +400,6 @@ class SlideProcessorInterface(ABC):
         pass
     
     @abstractmethod
-    def process_math_formulas(self, slide_content: str) -> str:
-        """Process mathematical formulas."""
-        pass
-    
-    @abstractmethod
     def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str:
         """Apply autoscale to slide content."""
         pass
