@@ -134,19 +134,19 @@ class TestPresentationScanner:
         """Test extracting presentation title from markdown file."""
         scanner = PresentationScanner(config)
 
-        # Should extract title from header
+        # Should extract title from filename (new behavior)
         title = scanner.extract_presentation_title(
             os.path.join(test_repo, "presentation1", "presentation1.md")
         )
-        assert title == "Presentation 1"
+        assert title == "Presentation1"
 
-        # Should fallback to folder name when no header (default behavior)
+        # Should format hyphenated filenames (new behavior)
         title = scanner.extract_presentation_title(
             os.path.join(
                 test_repo, "presentation-with-hyphen", "presentation-with-hyphen.md"
             )
         )
-        assert title == "presentation-with-hyphen"
+        assert title == "Presentation With Hyphen"
 
     def test_extract_presentation_title_with_filename_fallback(self, test_repo, config):
         """Test extracting presentation title with filename fallback for multiple presentations scenario."""
@@ -161,7 +161,7 @@ class TestPresentationScanner:
         with open(test_file1, 'w', encoding='utf-8') as f:
             f.write("# Deckset Basics\n\nContent here")
         
-        # Should extract title from header (not filename)
+        # Should now extract title from filename (new behavior)
         title = scanner.extract_presentation_title(test_file1, use_filename_fallback=True)
         assert title == "Deckset Basics"
         
@@ -170,9 +170,9 @@ class TestPresentationScanner:
         with open(test_file2, 'w', encoding='utf-8') as f:
             f.write("Some content without header")
         
-        # Should use filename fallback and remove numeric prefix
+        # Should use filename and remove numeric prefix with title case
         title = scanner.extract_presentation_title(test_file2, use_filename_fallback=True)
-        assert title == "Working with images"
+        assert title == "Working With Images"
         
         # Test file with complex numeric prefix
         test_file3 = os.path.join(examples_dir, "100 Advanced Topics.md")
@@ -197,28 +197,28 @@ class TestPresentationScanner:
         with open(test_file5, 'w', encoding='utf-8') as f:
             f.write("---\ntitle: Custom Title from Frontmatter\n---\n\nContent here")
         
-        # Should prefer frontmatter title over filename
+        # Should now use filename (ignoring frontmatter in new behavior)
         title = scanner.extract_presentation_title(test_file5, use_filename_fallback=True)
-        assert title == "Custom Title from Frontmatter"
+        assert title == "Big Text"
 
     def test_format_filename_as_title(self, config):
         """Test the filename formatting logic."""
         scanner = PresentationScanner(config)
         
-        # Test numeric prefix removal
-        assert scanner._format_filename_as_title("10 Deckset basics") == "Deckset basics"
-        assert scanner._format_filename_as_title("20 Working with images") == "Working with images"
+        # Test numeric prefix removal and title case formatting
+        assert scanner._format_filename_as_title("10 Deckset basics") == "Deckset Basics"
+        assert scanner._format_filename_as_title("20 Working with images") == "Working With Images"
         assert scanner._format_filename_as_title("100 Advanced Topics") == "Advanced Topics"
         assert scanner._format_filename_as_title("5 Quick Start") == "Quick Start"
         
-        # Test files without numeric prefix
+        # Test files without numeric prefix (with title case formatting)
         assert scanner._format_filename_as_title("Special Presentation") == "Special Presentation"
-        assert scanner._format_filename_as_title("presentation-name") == "presentation-name"
-        assert scanner._format_filename_as_title("README") == "README"
+        assert scanner._format_filename_as_title("presentation-name") == "Presentation Name"
+        assert scanner._format_filename_as_title("README") == "Readme"
         
         # Test edge cases
         assert scanner._format_filename_as_title("10") == "10"  # Just number
-        assert scanner._format_filename_as_title("10 ") == "10 "  # Number with space but no content
+        assert scanner._format_filename_as_title("10 ") == "10 "  # Number with space but no content - returns original
         assert scanner._format_filename_as_title("") == ""  # Empty string
 
     def test_multiple_presentations_folder_title_extraction(self, test_repo, config):
@@ -247,13 +247,13 @@ class TestPresentationScanner:
         folder_path = Path(examples_dir)
         assert scanner._has_multiple_independent_presentations(folder_path)
         
-        # Test title extraction for each file
+        # Test title extraction for each file (now filename-based)
         expected_titles = {
             "10 Deckset basics.md": "Deckset Basics",
-            "20 Working with images.md": "Working with images", 
-            "30 Big text.md": "[fit] Do you like your text really",
-            "40 Education.md": "Education Template",
-            "50 Tables.md": "Using Tables in Deckset",
+            "20 Working with images.md": "Working With Images", 
+            "30 Big text.md": "Big Text",
+            "40 Education.md": "Education",
+            "50 Tables.md": "Tables",
         }
         
         for filename, expected_title in expected_titles.items():

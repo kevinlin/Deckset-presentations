@@ -119,3 +119,12 @@
   - Ensure navigation paths automatically adjust based on presentation nesting depth
   - Update requirements.md and design.md to reflect homepage sorting and navigation requirements
   - _Requirements: 4.7, 4.8_
+
+- [x] 16. Implement filename-based presentation titles
+  - Change title extraction from content-based to filename-based for all presentations
+  - Enhance _format_filename_as_title method to remove numeric prefixes, convert dashes/underscores to spaces, and apply title case
+  - Update extract_presentation_title method to always use filename formatting instead of content extraction
+  - Update all tests to reflect new filename-based title behavior and alphabetical sorting
+  - Run full test suite to ensure all 285 tests pass
+  - Update requirements.md, design.md, and tasks.md to document filename-based title extraction
+  - _Requirements: 1.8, 2.7_

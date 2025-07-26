@@ -50,13 +50,13 @@ class PresentationScanner:
 **Key Methods**:
 - `scan_presentations()`: Scans all folders in repository root directory, excluding system folders. Detects and handles both single-presentation folders and multiple-presentation folders (e.g., Examples)
 - `find_markdown_file()`: Implements priority logic - prefers file matching folder name, then first alphabetically
-- `extract_presentation_title()`: Extracts title from frontmatter, H1 headers, or appropriate fallback. Uses `use_filename_fallback` parameter to determine fallback behavior (folder name vs formatted filename)
+- `extract_presentation_title()`: Extracts title directly from markdown filename using formatting rules (remove numeric prefixes, convert dashes/underscores to spaces, apply title case). Legacy parameter `use_filename_fallback` is kept for compatibility but ignored.
 - `is_presentation_folder()`: Identifies folders containing markdown files as presentation folders
 - `_has_multiple_independent_presentations()`: Detects folders containing multiple independent presentations based on folder name patterns and markdown file structure
 - `_create_presentation_info_from_file()`: Creates presentation info for individual markdown files within multiple-presentation folders
-- `_format_filename_as_title()`: Formats filename as presentation title, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
+- `_format_filename_as_title()`: Formats filename as presentation title with comprehensive formatting: removes numeric prefixes (e.g., "30 Big text" → "Big Text"), converts dashes/underscores to spaces, and applies title case formatting
 
-**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.7, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename fallback instead of folder name fallback. This prevents ambiguity and provides predictable results for presentation authors. All presentations, regardless of whether they are single or multiple presentations in a folder, use the same EnhancedPresentationProcessor to ensure consistent feature support and output quality.
+**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.8, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename-based formatting. Title extraction now always uses the filename with comprehensive formatting rules (Requirement 1.8) rather than content-based extraction, providing consistent and predictable presentation titles that match the file organization structure. This prevents ambiguity and provides predictable results for presentation authors. All presentations, regardless of whether they are single or multiple presentations in a folder, use the same EnhancedPresentationProcessor to ensure consistent feature support and output quality.
 
 ### 2. Presentation Processor (`processor.py`)
 

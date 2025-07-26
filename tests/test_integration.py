@@ -440,8 +440,8 @@ Content for second example.
         with open(homepage, 'r', encoding='utf-8') as f:
             homepage_content = f.read()
         
-        # Should contain all presentation titles
-        assert "Single Presentation Test" in homepage_content
+        # Should contain all presentation titles (now filename-based)
+        assert "Single Presentation" in homepage_content
         assert "First Example" in homepage_content
         assert "Second Example" in homepage_content
 

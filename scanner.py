@@ -140,68 +140,30 @@ class PresentationScanner:
     
     def extract_presentation_title(self, markdown_path: str, use_filename_fallback: bool = False) -> str:
         """
-        Extract presentation title from markdown file or use appropriate fallback.
+        Extract presentation title from markdown filename.
         
         Args:
             markdown_path: Path to the markdown file
-            use_filename_fallback: If True, use markdown filename as fallback instead of folder name.
-                                 This is used for multiple presentations in a single folder.
+            use_filename_fallback: Legacy parameter, kept for compatibility but now ignored since we always use filename
             
         Returns:
-            Presentation title
+            Presentation title formatted from the filename
         """
         try:
-            with open(markdown_path, 'r', encoding='utf-8') as f:
-                content = f.read()
+            # Always use filename-based title extraction
+            return self._format_filename_as_title(Path(markdown_path).stem)
             
-            # Try to extract title from frontmatter if present
-            title = self._extract_title_from_frontmatter(content)
-            if title:
-                return title
-            
-            # Try to extract title from first header in content (may not be on first line)
-            lines = content.strip().split('\n')
-            for line in lines:
-                line = line.strip()
-                if line.startswith('#'):
-                    return line.lstrip('#').strip()
-            
-            # Fallback logic depends on context
-            if use_filename_fallback:
-                # For multiple presentations in one folder, use markdown filename
-                return self._format_filename_as_title(Path(markdown_path).stem)
-            else:
-                # For single presentations, use folder name
-                return Path(markdown_path).parent.name
-            
-        except (IOError, OSError, UnicodeDecodeError) as e:
-            # Fallback behavior depends on context
-            logger.warning(
-                f"Failed to extract title from {markdown_path}: {e}",
-                extra={
-                    "markdown_path": markdown_path,
-                    "error_type": type(e).__name__,
-                    "fallback_used": True
-                }
-            )
-            if use_filename_fallback:
-                return self._format_filename_as_title(Path(markdown_path).stem)
-            else:
-                return Path(markdown_path).parent.name
         except Exception as e:
-            # Unexpected error - log with more detail but still fallback
+            # Fallback to basic filename if formatting fails
             logger.error(
-                f"Unexpected error extracting title from {markdown_path}: {e}",
+                f"Failed to format filename as title for {markdown_path}: {e}",
                 extra={
                     "markdown_path": markdown_path,
                     "error_type": type(e).__name__,
                     "fallback_used": True
                 }
             )
-            if use_filename_fallback:
-                return self._format_filename_as_title(Path(markdown_path).stem)
-            else:
-                return Path(markdown_path).parent.name
+            return Path(markdown_path).stem
     
     def _extract_title_from_frontmatter(self, content: str) -> Optional[str]:
         """
@@ -492,9 +454,11 @@ class PresentationScanner:
         Format a markdown filename stem as a presentation title.
         
         This removes numeric prefixes and applies basic formatting:
-        - "10 Deckset basics" → "Deckset basics"
-        - "20 Working with images" → "Working with images"
-        - "presentation-name" → "presentation-name"
+        - "10 Deckset basics" → "Deckset Basics"
+        - "30 Big text" → "Big Text"
+        - "Docker Kubernetes 101" → "Docker Kubernetes 101"
+        - "fix-messaging" → "Fix Messaging"
+        - "01-fix-messaging" → "Fix Messaging"
         
         Args:
             filename_stem: The filename without extension
@@ -502,9 +466,17 @@ class PresentationScanner:
         Returns:
             Formatted title string
         """
-        # Remove leading numeric prefixes (like "10 ", "20 ", etc.)
-        # Pattern matches: optional digits, optional space, then captures the rest
-        match = re.match(r'^\d+\s*(.*)', filename_stem)
+        # Remove leading numeric prefixes (like "10 ", "20 ", "01-", etc.)
+        # Pattern matches: optional digits, optional separator (space or dash), then captures the rest
+        match = re.match(r'^\d+[-\s]*(.*)', filename_stem)
         if match and match.group(1):
-            return match.group(1)
-        return filename_stem
+            title = match.group(1)
+        else:
+            title = filename_stem
+        
+        # Apply title case formatting
+        # Replace dashes and underscores with spaces, then apply title case
+        title = re.sub(r'[-_]+', ' ', title)
+        title = title.title()
+        
+        return title

@@ -305,12 +305,12 @@ class TestWebPageGenerator:
             mock_render.assert_called_once()
             args, _ = mock_render.call_args
             
-            # Verify presentations are sorted by last_modified (newest first)
+            # Verify presentations are sorted alphabetically by title
             sorted_presentations = args[0]
             assert len(sorted_presentations) == 3
-            assert sorted_presentations[0].folder_name == "presentation3"
+            assert sorted_presentations[0].folder_name == "presentation1"
             assert sorted_presentations[1].folder_name == "presentation2"
-            assert sorted_presentations[2].folder_name == "presentation1"
+            assert sorted_presentations[2].folder_name == "presentation3"
             
             # Verify all presentations have preview images set (fallbacks)
             for presentation in sorted_presentations:

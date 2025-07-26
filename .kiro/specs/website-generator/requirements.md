@@ -19,6 +19,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 5. WHEN a folder contains multiple independent presentations (e.g., "Examples", "Demos", "Samples", "Tutorials") THEN the system SHALL treat each markdown file as a separate presentation
 6. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL use markdown filename as fallback instead of folder name, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
 7. WHEN processing any presentation (single or multiple) THEN the system SHALL use the same EnhancedPresentationProcessor and processing pipeline to ensure consistency
+8. WHEN extracting presentation titles THEN the system SHALL use the markdown filename instead of content extraction, applying formatting rules: remove numeric prefixes (e.g., "30 Big text" → "Big Text"), convert dashes/underscores to spaces, and apply title case formatting
 
 ### Requirement 2
 
@@ -32,7 +33,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 4. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
 5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a fallback "redacted.png" image
 6. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
-7. WHEN extracting presentation titles THEN the system SHALL prefer frontmatter title, then first H1 header, then appropriate fallback (folder name for single presentations, formatted filename for multiple presentations in one folder)
+7. WHEN extracting presentation titles THEN the system SHALL use the markdown filename with formatting rules applied (remove numeric prefixes, convert dashes/underscores to spaces, apply title case)
 8. WHEN generating presentation HTML THEN the system SHALL use correct relative asset paths based on presentation nesting depth (e.g., "../assets/file.css" for single presentations, "../../assets/file.css" for presentations in subdirectories like Examples)
 
 ### Requirement 3
