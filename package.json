@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "A tool for generating presentations using Markdown and Jinja2 templates",
   "scripts": {
-    "test:js": "jest tests/test_enhanced_slide_viewer.js",
-    "test:js:watch": "jest tests/test_enhanced_slide_viewer.js --watch",
-    "test:js:coverage": "jest tests/test_enhanced_slide_viewer.js --coverage"
+    "test:js": "jest tests/test_*.js",
+    "test:js:watch": "jest tests/test_*.js --watch",
+    "test:js:coverage": "jest tests/test_*.js --coverage"
   },
   "devDependencies": {
     "jest": "^29.7.0",
@@ -18,13 +18,14 @@
       "<rootDir>/tests/jest.setup.js"
     ],
     "testMatch": [
-      "**/tests/**/*.js"
+      "**/tests/test_*.js"
     ],
     "moduleFileExtensions": [
       "js"
     ],
     "collectCoverageFrom": [
-      "docs/assets/js/**/*.js"
+      "docs/assets/js/**/*.js",
+      "templates/assets/js/**/*.js"
     ]
   }
 }
