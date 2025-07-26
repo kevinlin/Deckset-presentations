@@ -129,7 +129,29 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 4. WHEN MathJax formulas have syntax errors THEN the system SHALL display the raw LaTeX and log warnings
 5. WHEN code highlighting fails THEN the system SHALL display unstyled code and continue processing
 
-### Requirement 10: Performance and Optimization
+### Requirement 10: Typography and Presentation Formatting
+
+**User Story:** As a presentation author, I want text and headers to be sized appropriately for presentation slides, so that content is readable and visually appealing at various viewing distances and screen sizes.
+
+#### Acceptance Criteria
+
+1. WHEN rendering slide content THEN the system SHALL use an 18px base font size for desktop presentations
+2. WHEN rendering headers THEN the system SHALL use a clear typographic hierarchy:
+   - H1: 3.5rem (63px) with font-weight 700
+   - H2: 2.75rem (49.5px) with font-weight 600  
+   - H3: 2.125rem (38.25px) with font-weight 600
+   - H4: 1.625rem (29.25px) with font-weight 500
+   - H5: 1.25rem (22.5px) with font-weight 500
+   - H6: 1.125rem (20.25px) with font-weight 500
+3. WHEN rendering paragraph text THEN it SHALL use 1.25rem (22.5px) font size with 1.6 line height
+4. WHEN rendering list items THEN they SHALL use 1.25rem (22.5px) font size with 1.6 line height
+5. WHEN rendering blockquotes THEN they SHALL use 1.375rem (24.75px) font size with italic styling
+6. WHEN rendering inline code THEN it SHALL use 1.125rem (20.25px) font size with monospace font
+7. WHEN viewing on tablets (max-width: 768px) THEN font sizes SHALL scale down proportionally with 16px base
+8. WHEN viewing on mobile (max-width: 480px) THEN font sizes SHALL scale down proportionally with 14px base
+9. WHEN using fit text THEN the system SHALL scale text to clamp(3rem, 15vw, 12rem) for optimal presentation sizing
+
+### Requirement 11: Performance and Optimization
 
 **User Story:** As a website visitor, I want presentations to load quickly and perform well, so that I have a smooth viewing experience.
 
@@ -141,7 +163,7 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 4. WHEN navigating between slides THEN transitions SHALL be smooth and responsive
 5. WHEN the website is accessed THEN it SHALL achieve good performance scores on web vitals metrics
 
-### Requirement 11: Template Maintainability
+### Requirement 12: Template Maintainability
 
 **User Story:** As a developer or designer, I want templates to be organized in separate files, so that I can easily maintain and update the presentation layout and styling.
 
