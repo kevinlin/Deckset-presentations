@@ -428,8 +428,14 @@ class DecksetWebsiteGenerator:
         template_dir = Path(self.config.template_dir)
         if not template_dir.exists():
             issues.append(f"Template directory does not exist: {template_dir}")
-        # Note: No longer checking for specific template files as the system
-        # uses hardcoded templates in enhanced_templates.py
+        else:
+            # Check for required templates
+            required_templates = ["homepage.html", "slide.html"]
+            for template in required_templates:
+                template_path = template_dir / template
+                if not template_path.exists():
+                    issues.append(f"Required template missing: {template}")
+
 
         # Check output directory parent exists
         output_dir = Path(self.config.output_dir)
