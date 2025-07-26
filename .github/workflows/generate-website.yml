@@ -20,9 +20,71 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Test job
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for last modified dates
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install UV (fast Python package installer)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Install Python dependencies
+        run: |
+          uv pip install --system -r <(uv pip compile pyproject.toml --extra dev)
+      
+      - name: Install JavaScript dependencies
+        run: npm install
+      
+      - name: Run Python tests
+        run: |
+          uv run pytest --verbose --tb=short --cov=. --cov-report=xml --cov-report=html --junitxml=pytest-results.xml
+        env:
+          PYTHONPATH: .
+      
+      - name: Run JavaScript tests
+        run: npm run test:js:coverage
+      
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test Results
+          path: pytest-results.xml
+          reporter: java-junit
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            pytest-results.xml
+            coverage.xml
+            htmlcov/
+            coverage/
+          retention-days: 30
+
   # Build job
   build:
     runs-on: ubuntu-latest
+    needs: test  # Only build if tests pass
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -76,7 +138,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [test, build]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
       - name: Deploy to GitHub Pages
@@ -86,7 +148,7 @@ jobs:
   # Notification job for failures
   notify-failure:
     runs-on: ubuntu-latest
-    needs: [build, deploy]
+    needs: [test, build, deploy]
     if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - name: Create issue on failure
@@ -108,9 +170,10 @@ jobs:
             
             **Next Steps:**
             1. Check the workflow logs for specific error messages
-            2. Verify that all presentation markdown files are valid
-            3. Ensure all referenced images exist in their respective folders
-            4. Test the generation locally with: \`python main.py --verbose\`
+            2. **For test failures:** Run tests locally with \`uv run pytest\` and \`npm run test:js\`
+            3. Verify that all presentation markdown files are valid
+            4. Ensure all referenced images exist in their respective folders
+            5. Test the generation locally with: \`python main.py --verbose\`
             
             This issue was automatically created by the GitHub Actions workflow.
             `;
