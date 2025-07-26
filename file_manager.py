@@ -79,7 +79,7 @@ class FileManager:
         Copies:
         - code_highlighting_styles.css to output root
         - slide_styles.css to output root (if exists)
-        - enhanced-slide-viewer.js to assets/js/ directory
+        - slide-viewer.js to assets/js/ directory
         - favicon.png and other icons to assets/ directory
         """
         output_dir = Path(self.config.output_dir)

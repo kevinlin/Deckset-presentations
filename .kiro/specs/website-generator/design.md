@@ -127,7 +127,7 @@ class DecksetWebsiteGenerator:
     def generate_single_presentation(self, folder_path: str, output_dir: str)
 ```
 
-### 6. Enhanced Slide Viewer (`enhanced-slide-viewer.js`)
+### 6. Enhanced Slide Viewer (`slide-viewer.js`)
 
 **Purpose**: Provide interactive presentation navigation with slide counter and notes toggle functionality
 

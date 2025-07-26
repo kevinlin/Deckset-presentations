@@ -136,7 +136,7 @@
   - Add proper initialization of notes toggle button with aria-pressed attribute for accessibility
   - Ensure presentation container gets js-enabled class for proper CSS styling when JavaScript is active
   - Create comprehensive test suite (test_navigation_functionality.js) covering slide counter, notes toggle, slide display, and button states
-  - Update enhanced-slide-viewer.js to handle all navigation functionality with proper error handling and logging
+  - Update slide-viewer.js to handle all navigation functionality with proper error handling and logging
   - Update slide_styles.css to properly hide/show slides based on JavaScript state
   - Update requirements.md, design.md, and tasks.md to document navigation enhancement requirements
   - _Requirements: 7.1-7.11_

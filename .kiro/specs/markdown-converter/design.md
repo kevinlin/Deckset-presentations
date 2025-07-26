@@ -308,7 +308,7 @@ templates/
 └── assets/
     ├── favicon.png
     └── js/
-        └── enhanced-slide-viewer.js
+        └── slide-viewer.js
 ```
 
 **Benefits**:

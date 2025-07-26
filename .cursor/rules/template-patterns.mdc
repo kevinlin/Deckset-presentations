@@ -68,7 +68,7 @@ def render_slide(self, slide, config):
 ## JavaScript Patterns
 
 ### Enhanced Slide Viewer
-Located in [templates/assets/js/enhanced-slide-viewer.js](mdc:templates/assets/js/enhanced-slide-viewer.js):
+Located in [templates/assets/js/slide-viewer.js](mdc:templates/assets/js/slide-viewer.js):
 
 ```javascript
 class EnhancedSlideViewer {
