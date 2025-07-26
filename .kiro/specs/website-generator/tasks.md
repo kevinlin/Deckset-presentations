@@ -94,3 +94,19 @@
   - Create comprehensive unit tests covering Examples folder scenarios and filename fallback behavior
   - Update requirements.md and design.md to reflect new title extraction logic
   - _Requirements: 1.5, 1.6, 2.7, 4.5, 4.6_
+
+- [x] 13. Verify processing consistency between single and multiple presentations
+  - Add unit tests to verify that both single and multiple presentations use the same EnhancedPresentationProcessor
+  - Create integration test to ensure both types produce identical enhanced features (MathJax, code highlighting, enhanced styles)
+  - Verify that all presentations go through the same _process_presentations pipeline in main.py
+  - Document processing consistency in requirements and design specifications
+  - _Requirements: 1.7_
+
+- [x] 14. Fix asset paths for presentations in subdirectories
+  - Implement _calculate_asset_path_prefix method in WebPageGenerator and EnhancedTemplateEngine to calculate correct relative paths
+  - Update asset path generation to use "../" for single presentations and "../../" for presentations in subdirectories like Examples
+  - Fix CSS and JavaScript asset path references in enhanced rendering templates
+  - Update FileManager to copy JavaScript assets to assets/js directory structure
+  - Create comprehensive integration test to verify asset paths are correct for both single and multiple presentations
+  - Update requirements.md and design.md to document asset path management requirements
+  - _Requirements: 2.8_

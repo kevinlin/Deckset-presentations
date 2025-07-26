@@ -893,37 +893,34 @@ class EnhancedTemplateEngine:
 
     def render_presentation(self, presentation, config=None, context=None):
         """
-        Render a complete presentation with all slides.
+        Render a complete presentation with enhanced features.
         
         Args:
-            presentation: ProcessedPresentation or EnhancedPresentation object
-            config: Optional configuration overrides
+            presentation: Presentation object
+            config: Optional configuration
             context: Optional additional context
             
         Returns:
-            Complete HTML for the presentation
+            Complete HTML string for the presentation
         """
         try:
-            # Extract presentation info and slides
+            # Extract presentation info
             if hasattr(presentation, 'info'):
                 info = presentation.info
-                slides = presentation.slides
-                presentation_config = getattr(presentation, 'config', config)
-            else:
-                # Fallback for basic ProcessedPresentation
-                info = presentation.info if hasattr(presentation, 'info') else presentation
                 slides = presentation.slides if hasattr(presentation, 'slides') else []
-                presentation_config = config
-                
-            if not presentation_config:
-                from models import DecksetConfig
-                presentation_config = DecksetConfig()
+            else:
+                # Handle legacy format
+                info = presentation
+                slides = getattr(presentation, 'slides', [])
             
-            # Render all slides
+            # Render each slide
             rendered_slides = []
             for slide in slides:
-                rendered_slide = self.render_slide(slide, presentation_config, len(slides))
-                rendered_slides.append(rendered_slide)
+                slide_html = self.render_slide(slide, config)
+                rendered_slides.append(slide_html)
+            
+            # Calculate asset path depth based on folder structure
+            asset_path_prefix = self._calculate_asset_path_prefix(info.folder_name if hasattr(info, 'folder_name') else getattr(info, 'name', ''))
             
             # Create the complete presentation HTML
             presentation_html = f"""
@@ -933,9 +930,9 @@ class EnhancedTemplateEngine:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{self._escape_html(info.title if hasattr(info, 'title') else 'Presentation')}</title>
-    <link rel="stylesheet" href="../assets/enhanced_slide_styles.css">
-    <link rel="stylesheet" href="../assets/code_highlighting_styles.css">
-    <script src="../assets/js/enhanced-slide-viewer.js" defer></script>
+    <link rel="stylesheet" href="{asset_path_prefix}assets/enhanced_slide_styles.css">
+    <link rel="stylesheet" href="{asset_path_prefix}assets/code_highlighting_styles.css">
+    <script src="{asset_path_prefix}assets/js/enhanced-slide-viewer.js" defer></script>
 </head>
 <body>
     <div class="presentation-container">
@@ -979,6 +976,28 @@ class EnhancedTemplateEngine:
 </body>
 </html>
             """
+
+    def _calculate_asset_path_prefix(self, folder_name: str) -> str:
+        """
+        Calculate the correct relative path prefix for assets based on presentation nesting.
+        
+        Args:
+            folder_name: The folder name/path for the presentation (e.g., "single-pres" or "Examples/10 Deckset basics")
+            
+        Returns:
+            Relative path prefix (e.g., "../" or "../../")
+        """
+        # Count the number of path separators to determine nesting depth
+        # Examples:
+        # "single-presentation" -> 0 separators -> "../" (presentations/single.html -> ../assets)
+        # "Examples/10 Deckset basics" -> 1 separator -> "../../" (presentations/Examples/file.html -> ../../assets)
+        path_parts = folder_name.split('/')
+        depth = len(path_parts)
+        
+        # We need depth "../" segments to go back to the root from the presentation file
+        # Single presentations: presentations/file.html -> ../ 
+        # Nested presentations: presentations/subfolder/file.html -> ../../
+        return "../" * depth
     
     def _render_slide_thumbnails(self, slides):
         """Render slide thumbnails for navigation."""

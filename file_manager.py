@@ -74,15 +74,16 @@ class FileManager:
         
     def copy_template_assets(self) -> None:
         """
-        Copy template assets (CSS files) to the output directory.
+        Copy template assets (CSS and JS files) to the output directory.
         
         Copies:
         - code_highlighting_styles.css to output root
         - enhanced_slide_styles.css to output root (if exists)
+        - enhanced-slide-viewer.js to assets/js/ directory
         """
         output_dir = Path(self.config.output_dir)
         
-        # List of CSS files to copy from templates directory
+        # List of CSS files to copy from templates directory to output root
         css_files = [
             "code_highlighting_styles.css",
             "enhanced_slide_styles.css"
@@ -101,6 +102,26 @@ class FileManager:
             else:
                 self.logger.warning(f"CSS file not found: {source_path}")
         
+        # Copy JavaScript files to assets/js directory
+        js_source_dir = Path("templates") / "assets" / "js"
+        js_dest_dir = output_dir / "assets" / "js"
+        
+        if js_source_dir.exists():
+            try:
+                # Ensure destination directory exists
+                js_dest_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Copy all JavaScript files
+                for js_file in js_source_dir.glob("*.js"):
+                    dest_path = js_dest_dir / js_file.name
+                    shutil.copy2(js_file, dest_path)
+                    self.logger.debug(f"Copied JS file: {js_file} -> {dest_path}")
+                    
+            except Exception as e:
+                self.logger.warning(f"Failed to copy JavaScript files: {e}")
+        else:
+            self.logger.warning(f"JavaScript source directory not found: {js_source_dir}")
+    
     def ensure_fallback_image(self) -> None:
         """
         Ensure the fallback image exists in the output directory.

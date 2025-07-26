@@ -424,27 +424,25 @@ class WebPageGenerator:
     
     def _render_enhanced_presentation(self, presentation) -> str:
         """
-        Render enhanced presentation with full Deckset features.
+        Render an enhanced presentation with all features enabled.
         
         Args:
-            presentation: EnhancedPresentation object
+            presentation: Enhanced presentation object with all processed data
             
         Returns:
-            Rendered HTML content
+            Complete HTML string for the presentation
         """
         try:
-            # Create base HTML structure for enhanced presentation
+            # Render all slides
             slides_html = []
-            
             for slide in presentation.slides:
-                slide_html = self.template_manager.render_slide(
-                    slide, 
-                    presentation.config, 
-                    len(presentation.slides)
-                )
+                slide_html = self.template_manager.render_slide(slide, presentation.config)
                 slides_html.append(slide_html)
             
-            # Combine slides into full presentation
+            # Calculate asset path depth based on folder structure
+            asset_path_prefix = self._calculate_asset_path_prefix(presentation.info.folder_name)
+            
+            # Create presentation HTML with dynamic asset paths
             presentation_html = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -452,7 +450,7 @@ class WebPageGenerator:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{presentation.info.title}</title>
-    <link rel="stylesheet" href="../enhanced_slide_styles.css">
+    <link rel="stylesheet" href="{asset_path_prefix}enhanced_slide_styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -473,7 +471,7 @@ class WebPageGenerator:
     
     <!-- Enhanced JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    <script src="../assets/js/enhanced-slide-viewer.js"></script>
+    <script src="{asset_path_prefix}assets/js/enhanced-slide-viewer.js"></script>
     
     <!-- MathJax Configuration -->
     <script>
@@ -489,6 +487,28 @@ class WebPageGenerator:
             self.logger.error(f"Failed to render enhanced presentation: {e}")
             # Fallback to basic rendering
             return self.template_manager.render_presentation(presentation, None)
+
+    def _calculate_asset_path_prefix(self, folder_name: str) -> str:
+        """
+        Calculate the correct relative path prefix for assets based on presentation nesting.
+        
+        Args:
+            folder_name: The folder name/path for the presentation (e.g., "single-pres" or "Examples/10 Deckset basics")
+            
+        Returns:
+            Relative path prefix (e.g., "../" or "../../")
+        """
+        # Count the number of path separators to determine nesting depth
+        # Examples:
+        # "single-presentation" -> 0 separators -> "../" (presentations/single.html -> ../assets)
+        # "Examples/10 Deckset basics" -> 1 separator -> "../../" (presentations/Examples/file.html -> ../../assets)
+        path_parts = folder_name.split('/')
+        depth = len(path_parts)
+        
+        # We need depth "../" segments to go back to the root from the presentation file
+        # Single presentations: presentations/file.html -> ../ 
+        # Nested presentations: presentations/subfolder/file.html -> ../../
+        return "../" * depth
     
     def _get_mathjax_config(self) -> str:
         """Get MathJax configuration for enhanced presentations."""

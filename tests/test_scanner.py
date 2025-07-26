@@ -286,3 +286,88 @@ class TestPresentationScanner:
         scanner = PresentationScanner(config)
         with pytest.raises(GeneratorError):
             scanner.scan_presentations("/path/that/does/not/exist")
+
+    def test_processing_consistency_between_single_and_multiple_presentations(self, test_repo, config):
+        """Test that single and multiple presentations use the same processing logic."""
+        from main import DecksetWebsiteGenerator
+        from enhanced_processor import EnhancedPresentationProcessor
+        
+        generator = DecksetWebsiteGenerator(config)
+        
+        # Create test folders for both scenarios
+        single_presentation_dir = os.path.join(test_repo, "single_presentation")
+        os.makedirs(single_presentation_dir, exist_ok=True)
+        
+        # Single presentation (folder name matches markdown file)
+        single_md_path = os.path.join(single_presentation_dir, "single_presentation.md")
+        with open(single_md_path, 'w', encoding='utf-8') as f:
+            f.write("# Single Presentation\n\nContent here\n\n---\n\n# Slide 2\n\nMore content")
+        
+        # Multiple presentations folder (Examples-like)
+        multiple_presentation_dir = os.path.join(test_repo, "Examples")
+        os.makedirs(multiple_presentation_dir, exist_ok=True)
+        
+        multi_md_path1 = os.path.join(multiple_presentation_dir, "01 First Example.md")
+        with open(multi_md_path1, 'w', encoding='utf-8') as f:
+            f.write("# First Example\n\nContent here\n\n---\n\n# Slide 2\n\nMore content")
+            
+        multi_md_path2 = os.path.join(multiple_presentation_dir, "02 Second Example.md")
+        with open(multi_md_path2, 'w', encoding='utf-8') as f:
+            f.write("# Second Example\n\nContent here\n\n---\n\n# Slide 2\n\nMore content")
+        
+        # Scan presentations
+        presentations = generator.scanner.scan_presentations(test_repo)
+        
+        # Find our test presentations
+        single_pres = None
+        multi_pres1 = None
+        multi_pres2 = None
+        
+        for pres in presentations:
+            if pres.title == "Single Presentation":
+                single_pres = pres
+            elif pres.title == "First Example":
+                multi_pres1 = pres
+            elif pres.title == "Second Example":
+                multi_pres2 = pres
+        
+        assert single_pres is not None, "Single presentation not found"
+        assert multi_pres1 is not None, "First multiple presentation not found"
+        assert multi_pres2 is not None, "Second multiple presentation not found"
+        
+        # Verify processor type is the same for all
+        assert isinstance(generator.processor, EnhancedPresentationProcessor)
+        
+        # Process all presentations
+        processed_single = generator.processor.process_presentation(single_pres)
+        processed_multi1 = generator.processor.process_presentation(multi_pres1)
+        processed_multi2 = generator.processor.process_presentation(multi_pres2)
+        
+        # Verify all use the same processing result type
+        from models import EnhancedPresentation
+        assert isinstance(processed_single, EnhancedPresentation)
+        assert isinstance(processed_multi1, EnhancedPresentation)
+        assert isinstance(processed_multi2, EnhancedPresentation)
+        
+        # Verify all have similar structure (slides, config, etc.)
+        assert hasattr(processed_single, 'slides')
+        assert hasattr(processed_single, 'config')
+        assert hasattr(processed_single, 'global_footnotes')
+        
+        assert hasattr(processed_multi1, 'slides')
+        assert hasattr(processed_multi1, 'config')
+        assert hasattr(processed_multi1, 'global_footnotes')
+        
+        assert hasattr(processed_multi2, 'slides')
+        assert hasattr(processed_multi2, 'config')
+        assert hasattr(processed_multi2, 'global_footnotes')
+        
+        # Verify both have processed slides correctly (both should have 2 slides)
+        assert len(processed_single.slides) == 2
+        assert len(processed_multi1.slides) == 2
+        assert len(processed_multi2.slides) == 2
+        
+        # Verify enhanced processing features are available for all
+        assert hasattr(processed_single.slides[0], 'slide_config')
+        assert hasattr(processed_multi1.slides[0], 'slide_config')
+        assert hasattr(processed_multi2.slides[0], 'slide_config')

@@ -56,7 +56,7 @@ class PresentationScanner:
 - `_create_presentation_info_from_file()`: Creates presentation info for individual markdown files within multiple-presentation folders
 - `_format_filename_as_title()`: Formats filename as presentation title, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
 
-**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.6, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename fallback instead of folder name fallback. This prevents ambiguity and provides predictable results for presentation authors.
+**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.7, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename fallback instead of folder name fallback. This prevents ambiguity and provides predictable results for presentation authors. All presentations, regardless of whether they are single or multiple presentations in a folder, use the same EnhancedPresentationProcessor to ensure consistent feature support and output quality.
 
 ### 2. Presentation Processor (`processor.py`)
 
@@ -91,11 +91,15 @@ class WebPageGenerator:
     def __init__(self, template_path: str)
     def generate_presentation_page(self, presentation: ProcessedPresentation, output_path: str)
     def generate_homepage(self, presentations: List[PresentationInfo], output_path: str)
+    def _calculate_asset_path_prefix(self, folder_name: str) -> str
 ```
 
 **Key Methods**:
 - `generate_presentation_page()`: Creates HTML page for a single presentation
 - `generate_homepage()`: Creates the main index page with presentation listings
+- `_calculate_asset_path_prefix()`: Calculates correct relative paths for CSS and JavaScript assets based on presentation nesting depth (e.g., "../" for single presentations, "../../" for presentations in subdirectories)
+
+**Asset Path Management**: The generator automatically calculates correct relative paths for CSS and JavaScript assets based on the presentation's folder structure. Single presentations use "../" to reference assets, while presentations in subdirectories (like Examples) use "../../" to go up the appropriate number of directory levels.
 
 ### 4. Template Manager (`templates.py`)
 

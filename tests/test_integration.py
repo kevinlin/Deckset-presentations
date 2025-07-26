@@ -322,3 +322,226 @@ class TestFileManagement:
             assert (test_output_dir / "presentations" / "presentation1.html").exists()
             assert (test_output_dir / "presentations" / "presentation2.html").exists()
             assert (test_output_dir / "index.html").exists()
+
+    def test_website_generation_with_mixed_single_and_multiple_presentations(self, tmp_path):
+        """Test that website generation works correctly with both single and multiple presentations."""
+        from main import DecksetWebsiteGenerator
+        from models import GeneratorConfig
+        
+        # Create configuration
+        config = GeneratorConfig()
+        generator = DecksetWebsiteGenerator(config)
+        
+        # Create test repository
+        test_repo = tmp_path / "test_repo"
+        test_repo.mkdir()
+        
+        # Create a single presentation folder
+        single_dir = test_repo / "single_presentation"
+        single_dir.mkdir()
+        single_md = single_dir / "single_presentation.md"
+        with open(single_md, 'w', encoding='utf-8') as f:
+            f.write("""# Single Presentation Test
+
+This is a single presentation.
+
+---
+
+# Slide 2
+
+More content here.
+
+^ Speaker notes for slide 2
+""")
+        
+        # Create a multiple presentations folder (Examples-like)
+        examples_dir = test_repo / "Examples"
+        examples_dir.mkdir()
+        
+        example1_md = examples_dir / "10 First Example.md"
+        with open(example1_md, 'w', encoding='utf-8') as f:
+            f.write("""# First Example
+
+This is the first example presentation.
+
+---
+
+# Example Slide 2
+
+Content for first example.
+
+^ Notes for first example
+""")
+        
+        example2_md = examples_dir / "20 Second Example.md"
+        with open(example2_md, 'w', encoding='utf-8') as f:
+            f.write("""# Second Example
+
+This is the second example presentation.
+
+---
+
+# Another Slide
+
+Content for second example.
+
+^ Notes for second example
+""")
+        
+        # Generate website
+        output_dir = test_repo / "output"
+        result = generator.generate_website(str(test_repo), str(output_dir))
+        
+        # Verify successful generation
+        assert result["success"] is True
+        assert result["presentations_found"] >= 3  # At least our 3 test presentations
+        assert result["presentations_processed"] >= 3
+        assert result["presentations_failed"] == 0
+        
+        # Verify output structure
+        presentations_dir = output_dir / "presentations"
+        assert presentations_dir.exists()
+        
+        # Check single presentation file
+        single_html = presentations_dir / "single_presentation.html"
+        assert single_html.exists()
+        
+        # Check multiple presentations files in subdirectory
+        examples_subdir = presentations_dir / "Examples"
+        assert examples_subdir.exists()
+        
+        example1_html = examples_subdir / "10 First Example.html"
+        example2_html = examples_subdir / "20 Second Example.html"
+        assert example1_html.exists()
+        assert example2_html.exists()
+        
+        # Verify content consistency - all should have enhanced features
+        with open(single_html, 'r', encoding='utf-8') as f:
+            single_content = f.read()
+        
+        with open(example1_html, 'r', encoding='utf-8') as f:
+            example1_content = f.read()
+        
+        with open(example2_html, 'r', encoding='utf-8') as f:
+            example2_content = f.read()
+        
+        # All should use the same template structure and enhanced features
+        for content, name in [(single_content, "single"), (example1_content, "example1"), (example2_content, "example2")]:
+            assert "presentation-container" in content, f"{name} missing presentation container"
+            assert "slide-content" in content, f"{name} missing slide content structure"
+            assert "enhanced_slide_styles.css" in content, f"{name} missing enhanced styles"
+            assert "MathJax" in content, f"{name} missing MathJax support"
+            assert "highlight.js" in content, f"{name} missing code highlighting"
+        
+        # Verify homepage lists all presentations
+        homepage = output_dir / "index.html"
+        assert homepage.exists()
+        
+        with open(homepage, 'r', encoding='utf-8') as f:
+            homepage_content = f.read()
+        
+        # Should contain all presentation titles
+        assert "Single Presentation Test" in homepage_content
+        assert "First Example" in homepage_content
+        assert "Second Example" in homepage_content
+
+    def test_asset_paths_for_subdirectory_presentations(self, tmp_path):
+        """Test that asset paths are correct for presentations in subdirectories like Examples."""
+        from main import DecksetWebsiteGenerator
+        from models import GeneratorConfig
+        
+        # Create test repository
+        test_repo = tmp_path / "test_repo"
+        test_repo.mkdir()
+        
+        # Create a single presentation folder
+        single_dir = test_repo / "single_presentation" 
+        single_dir.mkdir()
+        single_md = single_dir / "single_presentation.md"
+        with open(single_md, 'w', encoding='utf-8') as f:
+            f.write("""# Single Presentation
+            
+This is a single presentation.
+
+---
+
+## Slide 2
+
+Another slide.
+            """)
+        
+        # Create a multiple presentations folder (Examples-like)
+        examples_dir = test_repo / "Examples"
+        examples_dir.mkdir()
+        
+        example1_md = examples_dir / "10 First Example.md"
+        with open(example1_md, 'w', encoding='utf-8') as f:
+            f.write("""# First Example
+            
+This is the first example.
+
+---
+
+## Example Slide
+
+Example content.
+            """)
+        
+        example2_md = examples_dir / "20 Second Example.md"
+        with open(example2_md, 'w', encoding='utf-8') as f:
+            f.write("""# Second Example
+            
+This is the second example.
+
+---
+
+## Another Example
+
+More content.
+            """)
+        
+        # Generate website
+        config = GeneratorConfig()
+        generator = DecksetWebsiteGenerator(config)
+        output_dir = test_repo / "output"
+        result = generator.generate_website(str(test_repo), str(output_dir))
+        
+        assert result.get("success", False), f"Generation failed: {result.get('error', 'Unknown error')}"
+        
+        # Check that all presentations were generated
+        presentations_dir = output_dir / "presentations"
+        assert presentations_dir.exists()
+        
+        # Check single presentation
+        single_html = presentations_dir / "single_presentation.html"
+        assert single_html.exists()
+        
+        # Check multiple presentations in subdirectory
+        examples_subdir = presentations_dir / "Examples"
+        assert examples_subdir.exists()
+        
+        example1_html = examples_subdir / "10 First Example.html"
+        example2_html = examples_subdir / "20 Second Example.html"
+        assert example1_html.exists()
+        assert example2_html.exists()
+        
+        # Verify asset paths are correct
+        single_content = single_html.read_text(encoding='utf-8')
+        example1_content = example1_html.read_text(encoding='utf-8')
+        example2_content = example2_html.read_text(encoding='utf-8')
+        
+        # Single presentation should use "../" for assets (one level up)
+        assert 'href="../enhanced_slide_styles.css"' in single_content, "Single presentation should use ../enhanced_slide_styles.css"
+        assert 'src="../assets/js/enhanced-slide-viewer.js"' in single_content, "Single presentation should use ../assets/js/enhanced-slide-viewer.js"
+        
+        # Multiple presentations in subdirectory should use "../../" for assets (two levels up)
+        assert 'href="../../enhanced_slide_styles.css"' in example1_content, "Subdirectory presentation should use ../../enhanced_slide_styles.css"
+        assert 'src="../../assets/js/enhanced-slide-viewer.js"' in example1_content, "Subdirectory presentation should use ../../assets/js/enhanced-slide-viewer.js"
+        
+        assert 'href="../../enhanced_slide_styles.css"' in example2_content, "Subdirectory presentation should use ../../enhanced_slide_styles.css"
+        assert 'src="../../assets/js/enhanced-slide-viewer.js"' in example2_content, "Subdirectory presentation should use ../../assets/js/enhanced-slide-viewer.js"
+        
+        # Make sure we don't have incorrect paths
+        assert 'href="../enhanced_slide_styles.css"' not in example1_content, "Subdirectory presentation should not use ../enhanced_slide_styles.css"
+        assert 'href="../enhanced_slide_styles.css"' not in example2_content, "Subdirectory presentation should not use ../enhanced_slide_styles.css"
+        assert 'href="../../enhanced_slide_styles.css"' not in single_content, "Single presentation should not use ../../enhanced_slide_styles.css"

@@ -326,9 +326,7 @@ class DecksetWebsiteGenerator:
         """
         try:
             self.logger.info("Generating website pages...")
-            generation_stats = self.generator.generate_all_pages(
-                processed_presentations
-            )
+            generation_stats = self.generator.generate_all_pages(processed_presentations)
 
             self.stats["pages_generated"] = generation_stats.get("successful", 0)
 
