@@ -131,16 +131,12 @@ class EnhancedTemplateEngine:
     
     def render_slide(self, slide: ProcessedSlide, config: DecksetConfig, total_slides: int = 1) -> str:
         """Render a complete slide with full Deckset feature support."""
-        try:
-            template = self.env.from_string(self.slide_template)
-            return template.render(
-                slide=slide,
-                config=config,
-                total_slides=total_slides
-            )
-        except Exception as e:
-            # Fallback to minimal slide rendering
-            return self._render_fallback_slide(slide, config, str(e))
+        template = self.env.from_string(self.slide_template)
+        return template.render(
+            slide=slide,
+            config=config,
+            total_slides=total_slides
+        )
     
     def render_columns(self, columns: List[ColumnContent]) -> str:
         """Render multi-column layout."""
@@ -292,23 +288,6 @@ class EnhancedTemplateEngine:
                      alt="{self._escape_html(image.alt_text)}"
                      loading="lazy">
             </div>
-        """
-    
-    def _render_fallback_slide(self, slide: ProcessedSlide, config: DecksetConfig, error: str) -> str:
-        """Render a minimal fallback slide when template rendering fails."""
-        return f"""
-            <section class="slide slide-error" id="slide-{slide.index}">
-                <div class="slide-content">
-                    <div class="content-area">
-                        <h2>Slide {slide.index}</h2>
-                        <div class="error-message">Template rendering error: {self._escape_html(error)}</div>
-                        <div class="fallback-content">
-                            {self._escape_html(slide.content[:500])}
-                            {'...' if len(slide.content) > 500 else ''}
-                        </div>
-                    </div>
-                </div>
-            </section>
         """
     
     def _markdown_to_html(self, content: str) -> str:

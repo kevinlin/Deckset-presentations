@@ -255,16 +255,6 @@ class TestEnhancedTemplateEngine(unittest.TestCase):
         result = self.engine.render_slide(self.test_slide, self.test_config)
         
         self.assertIn('data-transition="fade"', result)
-    
-    def test_render_slide_fallback_on_error(self):
-        """Test fallback rendering when template fails."""
-        # Mock template to raise an exception
-        with patch.object(self.engine, 'slide_template', 'invalid {{ template'):
-            result = self.engine.render_slide(self.test_slide, self.test_config)
-            
-            self.assertIn('slide-error', result)
-            self.assertIn('Template rendering error', result)
-            self.assertIn('Test Slide', result)
 
 
 if __name__ == '__main__':
