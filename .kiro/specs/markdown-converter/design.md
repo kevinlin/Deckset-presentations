@@ -210,12 +210,17 @@ class MathFormula:
 
 ### 6. Enhanced Template Engine (`enhanced_templates.py`)
 
-**Purpose**: Render templates with full Deckset feature support
+**Purpose**: Render templates with full Deckset feature support using separate template files
+
+**Template Files**:
+- `templates/slide.html` - Main slide template with all Deckset features
+- `templates/homepage.html` - Homepage template for presentation listings
 
 **Interface**:
 ```python
 class EnhancedTemplateEngine:
     def render_slide(self, slide: ProcessedSlide, config: DecksetConfig) -> str
+    def render_homepage(self, presentations, context=None) -> str
     def render_columns(self, columns: List[ColumnContent]) -> str
     def render_background_image(self, image: ProcessedImage) -> str
     def render_inline_images(self, images: List[ProcessedImage]) -> str
@@ -287,6 +292,31 @@ class EnhancedPresentation:
 ```
 
 ## Template Design Enhancement
+
+### Template File Architecture
+
+The enhanced template system uses separate Jinja2 template files instead of hardcoded strings:
+
+**File Structure**:
+```
+templates/
+├── slide.html          # Main slide template
+├── homepage.html       # Homepage listing template
+├── base.html          # Base template (existing)
+├── enhanced_slide_styles.css
+├── code_highlighting_styles.css
+└── assets/
+    ├── favicon.png
+    └── js/
+        └── enhanced-slide-viewer.js
+```
+
+**Benefits**:
+- Better separation of concerns
+- Easier template maintenance and updates
+- Version control friendly
+- Designer-friendly template editing
+- Template inheritance and reuse capabilities
 
 ### Slide Template Structure
 

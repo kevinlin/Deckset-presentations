@@ -1,0 +1,71 @@
+<section class="slide" id="slide-{{ slide.index }}" 
+         data-transition="{{ slide.slide_config.slide_transition or config.slide_transition or 'none' }}"
+         {% if slide.slide_config.autoscale or config.autoscale %}data-autoscale="true"{% endif %}>
+    
+    <!-- Background Image -->
+    {% if slide.background_image %}
+        {{ render_background_image(slide.background_image) }}
+    {% endif %}
+    
+    <!-- Slide Content -->
+    <div class="slide-content {{ 'columns' if slide.columns else 'single-column' }}">
+        {% if slide.columns %}
+            {{ render_columns(slide.columns) }}
+        {% else %}
+            <div class="content-area">
+                {{ slide.content | markdown_to_html }}
+                {% if slide.inline_images %}
+                    {{ render_inline_images(slide.inline_images) }}
+                {% endif %}
+                {% if slide.videos %}
+                    {% for video in slide.videos %}
+                        {{ render_video_player(video) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.audio %}
+                    {% for audio in slide.audio %}
+                        {{ render_audio_player(audio) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.code_blocks %}
+                    {% for code_block in slide.code_blocks %}
+                        {{ render_code_block(code_block) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.math_formulas %}
+                    {% for formula in slide.math_formulas %}
+                        {{ render_math_formula(formula) }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Footnotes -->
+    {% if slide.footnotes %}
+        <div class="footnotes">
+            {{ render_footnotes(slide.footnotes) }}
+        </div>
+    {% endif %}
+    
+    <!-- Footer -->
+    {% if not slide.slide_config.hide_footer and config.footer %}
+        <div class="slide-footer">
+            {{ render_slide_footer(config, slide.slide_config) }}
+        </div>
+    {% endif %}
+    
+    <!-- Slide Number -->
+    {% if not slide.slide_config.hide_slide_numbers and config.slide_numbers %}
+        <div class="slide-number">
+            {{ render_slide_number(slide.index, total_slides, config) }}
+        </div>
+    {% endif %}
+    
+    <!-- Speaker Notes (hidden by default) -->
+    {% if slide.notes %}
+        <aside class="speaker-notes" style="display: none;">
+            {{ slide.notes | markdown_to_html }}
+        </aside>
+    {% endif %}
+</section> 

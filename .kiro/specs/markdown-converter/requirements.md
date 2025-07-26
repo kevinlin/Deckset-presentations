@@ -140,3 +140,15 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 3. WHEN viewing slides THEN images SHALL load progressively to improve perceived performance
 4. WHEN navigating between slides THEN transitions SHALL be smooth and responsive
 5. WHEN the website is accessed THEN it SHALL achieve good performance scores on web vitals metrics
+
+### Requirement 11: Template Maintainability
+
+**User Story:** As a developer or designer, I want templates to be organized in separate files, so that I can easily maintain and update the presentation layout and styling.
+
+#### Acceptance Criteria
+
+1. WHEN templates are needed THEN the system SHALL load them from separate Jinja2 template files
+2. WHEN updating slide layouts THEN changes SHALL be made in `templates/slide.html` file
+3. WHEN updating homepage layout THEN changes SHALL be made in `templates/homepage.html` file
+4. WHEN template files are modified THEN changes SHALL be immediately available without code changes
+5. WHEN templates are versioned THEN they SHALL be tracked in version control as separate files

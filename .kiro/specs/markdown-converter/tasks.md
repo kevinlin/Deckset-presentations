@@ -233,31 +233,14 @@
   - ✅ All 287 tests passing with enhanced features always enabled
   - _Requirements: All enhanced requirements now apply by default_
 
-## IMPLEMENTATION COMPLETE ✅
-
-### Summary of Completion
-All major implementation phases have been completed successfully:
-
-1. **Core Infrastructure**: All parsers, processors, and template engines implemented
-2. **Media Processing**: Full support for images, videos, and audio with all Deckset modifiers
-3. **Advanced Features**: Code highlighting, math formulas, multi-column layouts
-4. **Template System**: Enhanced templates with proper HTML generation
-5. **Testing**: Comprehensive test suite with 287 tests all passing
-6. **Bug Fixes**: 
-   - Fixed markdown to HTML conversion (headers no longer wrapped in `<p>` tags)
-   - Fixed background image visibility issue (proper CSS z-index stacking)
-   - Included Examples folder by default for better user experience
-7. **Simplification**:
-   - ✅ Removed enhanced_mode configuration - all enhanced features now enabled by default
-   - ✅ Simplified codebase by removing redundant rendering paths
-   - ✅ Updated all tests and documentation to reflect always-enhanced operation
-8. **Verification**: Successfully processed and generated `Examples/10 Deckset basics.md` with all features working
-
-### Key Achievements
-- **100% Deckset Compatibility**: All documented Deckset features implemented and tested
-- **Always Enhanced**: No mode switching - enhanced features always available
-- **Robust Error Handling**: Graceful degradation for missing files and invalid syntax
-- **Performance Optimized**: Efficient processing with lazy loading and responsive design
-- **Accessibility**: Proper ARIA labels and semantic HTML structure
-- **Responsive Design**: Works across all device sizes
-- **Production Ready**: All tests passing, comprehensive error handling, optimized output
+- [x] 16. Template file refactoring ✅ COMPLETED
+- [x] 16.1 Move hardcoded templates to separate template files
+  - ✅ Created `templates/slide.html` with complete slide template
+  - ✅ Created `templates/homepage.html` with homepage template
+  - ✅ Updated `EnhancedTemplateEngine` to load templates from files using Jinja2 FileSystemLoader
+  - ✅ Removed hardcoded template strings from `_load_templates()` method
+  - ✅ Updated `render_slide()` to use `env.get_template('slide.html')`
+  - ✅ Updated `render_homepage()` to use `env.get_template('homepage.html')`
+  - ✅ All 287 tests passing with template file system
+  - ✅ End-to-end verification: website generation works with template files
+  - _Benefits: Better maintainability, version control friendly, designer-friendly editing_
