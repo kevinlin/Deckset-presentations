@@ -27,8 +27,7 @@ def config():
     return GeneratorConfig(
         output_dir="test_output",
         template_dir="templates",
-        slides_dir="slides",
-        fallback_image="slides/redacted.png"
+        slides_dir="slides"
     )
 
 
@@ -174,8 +173,8 @@ class TestWebPageGenerator:
         # Execute
         generator._process_slide_images(processed_presentation)
         
-        # Verify fallback image is set for missing image
-        assert processed_presentation.slides[2].image_path == f"../{config.fallback_image}"
+        # Verify missing image path is cleared
+        assert processed_presentation.slides[2].image_path is None
         
         # Verify other slides have web paths
         assert processed_presentation.slides[0].image_path.startswith(f"../{config.slides_dir}/")
@@ -211,8 +210,8 @@ class TestWebPageGenerator:
         assert presentation_list[0].preview_image.startswith("../images/")
         assert presentation_list[0].preview_image.endswith("-preview.png")
         
-        # Verify fallback image is set for missing preview
-        assert presentation_list[1].preview_image == f"../{config.fallback_image}"
+        # Verify missing preview image is cleared
+        assert presentation_list[1].preview_image is None
 
     @patch('generator.WebPageGenerator.generate_presentation_page')
     @patch('generator.WebPageGenerator.generate_homepage')

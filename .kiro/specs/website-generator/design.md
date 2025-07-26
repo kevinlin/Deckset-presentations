@@ -216,7 +216,7 @@ class GeneratorConfig:
     output_dir: str = "docs"
     template_dir: str = "templates"
     slides_dir: str = "slides"
-    fallback_image: str = "slides/redacted.png"
+
     exclude_folders: List[str] = field(default_factory=lambda: ['.git', '.kiro', 'node_modules'])
 ```
 
@@ -251,7 +251,7 @@ class TemplateRenderingError(GeneratorError):
 
 **Error Recovery Mechanisms**:
 - Continue processing other presentations when one fails (Requirement 5.1)
-- Use fallback "redacted.png" images for missing slide images (Requirement 5.2)
+- Display placeholder UI for missing slide images (Requirement 5.2)
 - Display raw content or skip problematic slides when markdown parsing fails (Requirement 5.3)
 - Generate basic homepage with available presentations even if some fail (Requirement 5.4)
 - Provide clear error messages with context for debugging (Requirement 5.5)
@@ -334,7 +334,7 @@ docs/                           # GitHub Pages output directory
 │   │   ├── 1.png
 │   │   ├── 2.png
 │   │   └── ...
-│   └── redacted.png           # Fallback image
+
 ├── assets/                     # Static assets
 │   ├── css/
 │   │   └── styles.css
@@ -376,7 +376,7 @@ docs/                           # GitHub Pages output directory
 - Navigation between presentations with consistent styling (Requirement 3.5)
 - Navigation header with home page links using dynamic relative paths (Requirement 4.8)
 - Slide counter and progress indicator
-- Fallback image handling for missing slides (Requirement 2.4)
+- Placeholder UI for missing slides (Requirement 2.4)
 - Readable typography and spacing for text content (Requirement 3.4)
 - Print-friendly styles
 

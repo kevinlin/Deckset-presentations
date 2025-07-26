@@ -240,17 +240,15 @@ class WebPageGenerator:
         """
         Process slide images and ensure they have proper paths.
         
-        This method updates the image_path for each slide, handling fallbacks for missing images.
-        This is now a lightweight method that just updates paths - the actual copying
-        is handled by FileManager.copy_slide_images().
+        This method validates image paths and clears invalid ones.
+        The actual copying is handled by FileManager.copy_slide_images().
         
         Args:
             presentation: The presentation to process
         """
         for slide in presentation.slides:
-            # If the slide has no image path, set the fallback image
+            # If the slide has no image path, leave it as None
             if not slide.image_path:
-                slide.image_path = f"../{self.config.fallback_image}"
                 continue
                 
             # Check if the image exists (resolve relative to presentation folder)
@@ -263,7 +261,7 @@ class WebPageGenerator:
                 
             if not resolved_image_path.exists():
                 self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {resolved_image_path}")
-                slide.image_path = f"../{self.config.fallback_image}"
+                slide.image_path = None
                 continue
                 
             # Leave the image_path as-is for now - FileManager will handle the copying
@@ -311,7 +309,7 @@ class WebPageGenerator:
                 
                 if not image_path.exists():
                     self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
-                    presentation.preview_image = f"../{self.config.fallback_image}"
+                    presentation.preview_image = None
                     continue
                 
                 # Create a standardized preview image name
@@ -320,9 +318,7 @@ class WebPageGenerator:
                 
                 # Update the preview image path to use the web-accessible path
                 presentation.preview_image = f"../images/{preview_filename}"
-            else:
-                # Use fallback image if no preview is available
-                presentation.preview_image = f"../{self.config.fallback_image}"
+            # If no preview image is available, leave it as None (template will handle placeholder)
     
     def generate_all_pages(
         self, 
@@ -345,9 +341,8 @@ class WebPageGenerator:
         if output_dir is None:
             output_dir = self.config.output_dir
             
-        # Set up output directories and ensure fallback image exists
+        # Set up output directories
         self.file_manager.setup_output_directories()
-        self.file_manager.ensure_fallback_image()
             
         output_dir_path = Path(output_dir)
         presentations_dir = output_dir_path / "presentations"

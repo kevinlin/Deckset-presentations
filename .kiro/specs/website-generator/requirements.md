@@ -30,7 +30,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 2. WHEN extracting slide images THEN the system SHALL parse markdown image syntax (e.g., `![alt](filename.ext)`) from each slide's content to discover referenced images
 3. WHEN multiple images exist in a slide THEN the system SHALL use the first image found as the primary slide image
 4. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
-5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a fallback "redacted.png" image
+5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a placeholder UI element
 6. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
 7. WHEN extracting presentation titles THEN the system SHALL use the markdown filename with formatting rules applied (remove numeric prefixes, convert dashes/underscores to spaces, apply title case)
 8. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL include the folder name as a prefix with singularization (e.g., "Examples/10 Deckset basics.md" → "Example - Deckset Basics")
@@ -72,7 +72,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 #### Acceptance Criteria
 
 1. WHEN a presentation folder cannot be processed THEN the system SHALL log the error and continue with other presentations
-2. WHEN slide images are missing THEN the system SHALL use fallback images without failing
+2. WHEN slide images are missing THEN the system SHALL display placeholder UI without failing
 3. WHEN markdown parsing fails THEN the system SHALL display raw content or skip the problematic slide
 4. WHEN the homepage generation encounters errors THEN it SHALL still generate a basic homepage with available presentations
 5. WHEN file operations fail THEN the system SHALL provide clear error messages for debugging

@@ -4,7 +4,7 @@
   - Basic markdown processing with slide splitting using "---" separators (already implemented)
   - Speaker notes extraction for "^" prefixed content (already implemented)
   - Jinja2 template rendering with Tailwind CSS styling (already implemented)
-  - Fallback image handling for missing slides (already implemented in template)
+  - Placeholder UI for missing slides (already implemented in template)
   - _Requirements: 2.1, 2.2, 2.5, 3.1_
 
 - [x] 2. Set up project structure and core data models
@@ -55,7 +55,7 @@
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
 - [x] 8. Create file and asset management
-  - Create slides/redacted.png fallback image (referenced in template but missing)
+
   - Implement slide image copying from source folders to output directory
   - Create output directory structure management (docs/, slides/, assets/)
   - Implement file cleanup and organization for generated website

@@ -445,13 +445,7 @@ class DecksetWebsiteGenerator:
                 f"Output directory parent does not exist: {output_dir.parent}"
             )
 
-        # Check fallback image
-        fallback_path = Path(self.config.fallback_image)
-        if not fallback_path.exists():
-            # This is a warning, not an error, as we can create a placeholder
-            self.logger.warning(
-                f"Fallback image not found: {fallback_path} (will create placeholder)"
-            )
+
 
         return issues
 

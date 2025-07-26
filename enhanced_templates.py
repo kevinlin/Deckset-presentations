@@ -652,20 +652,35 @@ class EnhancedTemplateEngine:
             
             for presentation in presentations:
                 # Create presentation card compatible with existing styles
-                preview_image = presentation.preview_image or "images/fallback.png"
+                preview_image = presentation.preview_image
                 last_modified_str = ""
                 if hasattr(presentation, 'last_modified') and presentation.last_modified:
                     last_modified_str = f"<p>Updated: {presentation.last_modified.strftime('%Y-%m-%d')}</p>"
                 
-                presentation_cards.append(f"""
-                    <div class="presentation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-                        <a href="presentations/{presentation.folder_name}.html" class="block">
+                # Generate image or placeholder HTML
+                if preview_image:
+                    image_html = f"""
                             <div class="aspect-w-16 aspect-h-9">
                                 <img src="{preview_image}" 
                                      alt="Preview of {self._escape_html(presentation.title)}"
                                      class="w-full h-48 object-cover"
                                      loading="lazy">
-                            </div>
+                            </div>"""
+                else:
+                    image_html = f"""
+                            <div class="bg-gray-200 h-48 flex items-center justify-center">
+                                <div class="text-center text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p>No Preview</p>
+                                </div>
+                            </div>"""
+                
+                presentation_cards.append(f"""
+                    <div class="presentation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                        <a href="presentations/{presentation.folder_name}.html" class="block">{image_html}
                         </a>
                         
                         <div class="p-6">

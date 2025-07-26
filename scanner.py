@@ -311,6 +311,60 @@ class PresentationScanner:
             return str(sorted(image_files)[0])
         
         return None
+
+    def extract_first_image_from_markdown(self, markdown_path: str) -> Optional[str]:
+        """
+        Extract the first image reference from markdown content.
+        
+        Args:
+            markdown_path: Path to the markdown file
+            
+        Returns:
+            Path to the first image found in the content, or None if no images found
+        """
+        try:
+            with open(markdown_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Split content by slide separators to get the first slide
+            # Standard slide separators in Deckset
+            slide_separators = [
+                '---',
+                '\n---\n',
+                '---\n'
+            ]
+            
+            first_slide_content = content
+            for separator in slide_separators:
+                if separator in content:
+                    parts = content.split(separator, 1)
+                    if len(parts) > 1:
+                        first_slide_content = parts[0]
+                    break
+            
+            # Extract image references using regex pattern: ![alt](path)
+            import re
+            image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+            matches = image_pattern.findall(first_slide_content)
+            
+            if matches:
+                # Return the path of the first image found
+                first_image_path = matches[0][1]  # matches[0] is (alt_text, path)
+                
+                # Resolve relative to presentation folder
+                markdown_folder = Path(markdown_path).parent
+                if not Path(first_image_path).is_absolute():
+                    full_path = markdown_folder / first_image_path
+                    if full_path.exists():
+                        return str(full_path)
+                
+                return first_image_path
+            
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Failed to extract first image from {markdown_path}: {e}")
+            return None
     
     def _create_presentation_info(self, folder_path: Path) -> Optional[PresentationInfo]:
         """
@@ -327,7 +381,10 @@ class PresentationScanner:
             return None
         
         title = self.extract_presentation_title(markdown_path)
-        preview_image = self.find_preview_image(str(folder_path))
+        # First try to extract image from markdown content, then fallback to folder images
+        preview_image = self.extract_first_image_from_markdown(markdown_path)
+        if not preview_image:
+            preview_image = self.find_preview_image(str(folder_path))
         slide_count = self.count_slides(markdown_path)
         
         # Get last modified time
@@ -400,8 +457,10 @@ class PresentationScanner:
             markdown_name = markdown_file.stem
             unique_folder_name = f"{folder_path.name}/{markdown_name}"
             
-            # Look for preview image - first try markdown-specific, then any image in folder
-            preview_image = self._find_preview_image_for_file(folder_path, markdown_file)
+            # Look for preview image - first try markdown content, then markdown-specific, then any image in folder
+            preview_image = self.extract_first_image_from_markdown(str(markdown_file))
+            if not preview_image:
+                preview_image = self._find_preview_image_for_file(folder_path, markdown_file)
             if not preview_image:
                 preview_image = self.find_preview_image(str(folder_path))
             

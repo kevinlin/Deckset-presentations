@@ -78,8 +78,7 @@ def config(test_output_dir):
     return GeneratorConfig(
         output_dir=str(test_output_dir),
         template_dir="templates",
-        slides_dir="slides",
-        fallback_image="slides/redacted.png"
+        slides_dir="slides"
     )
 
 
@@ -167,15 +166,7 @@ class TestFileManagement:
         assert (test_output_dir / "assets" / "css").exists()
         assert (test_output_dir / "assets" / "js").exists()
     
-    def test_fallback_image_creation(self, config, test_output_dir):
-        """Test creation of fallback image."""
-        file_manager = FileManager(config)
-        file_manager.ensure_fallback_image()
-        
-        # Check that fallback image was created
-        fallback_path = test_output_dir / "slides" / "redacted.png"
-        assert fallback_path.exists()
-        assert fallback_path.stat().st_size > 0
+
     
     def test_slide_image_copying(self, config, presentations, test_output_dir):
         """Test copying of slide images."""
@@ -249,8 +240,7 @@ class TestFileManagement:
         # Set up directories
         file_manager.setup_output_directories()
         
-        # Ensure fallback image
-        file_manager.ensure_fallback_image()
+
         
         # Process all presentations
         for presentation in presentations:
@@ -269,8 +259,7 @@ class TestFileManagement:
         assert (test_output_dir / "images").exists()
         assert (test_output_dir / "assets").exists()
         
-        # Check fallback image
-        assert (test_output_dir / "slides" / "redacted.png").exists()
+
         
         # Check that paths were updated
         assert presentations[0].info.preview_image.startswith("../images/")
@@ -279,8 +268,8 @@ class TestFileManagement:
         # Check that slide paths were updated
         assert presentations[0].slides[0].image_path.startswith("../slides/")
         assert presentations[0].slides[1].image_path.startswith("../slides/")
-        assert presentations[1].slides[0].image_path == f"../{config.fallback_image}"
-        assert presentations[1].slides[1].image_path == f"../{config.fallback_image}"
+        assert presentations[1].slides[0].image_path is None
+        assert presentations[1].slides[1].image_path is None
     
     def test_integration_with_generator(self, config, presentations, test_output_dir, monkeypatch):
         """Test integration with WebPageGenerator."""
@@ -315,8 +304,7 @@ class TestFileManagement:
             assert (test_output_dir / "images").exists()
             assert (test_output_dir / "assets").exists()
             
-            # Check fallback image
-            assert (test_output_dir / "slides" / "redacted.png").exists()
+
             
             # Check HTML files
             assert (test_output_dir / "presentations" / "presentation1.html").exists()
