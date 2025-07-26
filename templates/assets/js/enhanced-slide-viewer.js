@@ -14,6 +14,12 @@ class EnhancedSlideViewer {
     }
     
     init() {
+        // Mark presentation container as JS-enabled
+        const container = document.querySelector('.presentation-container');
+        if (container) {
+            container.classList.add('js-enabled');
+        }
+        
         this.setupNavigation();
         this.setupKeyboardShortcuts();
         this.setupSlideCounter();
@@ -142,7 +148,15 @@ class EnhancedSlideViewer {
         const notesButton = document.getElementById('toggle-notes');
         if (notesButton) {
             notesButton.addEventListener('click', () => this.toggleNotes());
+            // Set initial aria-pressed state
+            notesButton.setAttribute('aria-pressed', 'false');
         }
+        
+        // Ensure notes are hidden initially
+        const notes = document.querySelectorAll('.speaker-notes');
+        notes.forEach(note => {
+            note.style.display = 'none';
+        });
     }
     
     setupAutoplay() {
@@ -270,9 +284,15 @@ class EnhancedSlideViewer {
     showSlide(index) {
         if (index < 0 || index >= this.totalSlides) return;
         
-        // Hide all slides
+        // Hide all slides using CSS classes
         this.slides.forEach((slide, i) => {
-            slide.style.display = i === index ? 'block' : 'none';
+            if (i === index) {
+                slide.classList.add('active');
+                slide.style.display = 'block'; // Fallback for older browsers
+            } else {
+                slide.classList.remove('active');
+                slide.style.display = 'none'; // Fallback for older browsers
+            }
         });
         
         this.currentSlide = index;
@@ -335,9 +355,11 @@ class EnhancedSlideViewer {
         
         const notesButton = document.getElementById('toggle-notes');
         if (notesButton) {
-            notesButton.textContent = this.notesVisible ? 'Hide Notes' : 'Show Notes';
+            notesButton.textContent = this.notesVisible ? 'Hide Notes' : 'Notes';
             notesButton.setAttribute('aria-pressed', this.notesVisible);
         }
+        
+        console.log(`Notes toggled: ${this.notesVisible ? 'shown' : 'hidden'} (${notes.length} note elements found)`);
     }
     
     toggleFullscreen() {

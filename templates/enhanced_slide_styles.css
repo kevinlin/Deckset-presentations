@@ -21,6 +21,16 @@
     margin-bottom: 2rem;
     overflow: hidden;
     position: relative;
+    display: none; /* Hidden by default, JavaScript will show the active slide */
+}
+
+.slide.active {
+    display: block;
+}
+
+/* For presentations that don't use JavaScript navigation, show all slides */
+.presentation-container:not(.js-enabled) .slide {
+    display: block;
 }
 
 /* Slide content layout */

@@ -128,3 +128,15 @@
   - Run full test suite to ensure all 285 tests pass
   - Update requirements.md, design.md, and tasks.md to document filename-based title extraction
   - _Requirements: 1.8, 2.7_
+
+- [x] 17. Fix and enhance presentation navigation functionality
+  - Fix slide counter not updating when navigating between slides by ensuring updateSlideCounter() method works correctly
+  - Fix Notes button not working by ensuring toggleNotes() method properly shows/hides speaker-notes elements
+  - Implement CSS-based slide display management using .active class and fallback inline styles for better compatibility
+  - Add proper initialization of notes toggle button with aria-pressed attribute for accessibility
+  - Ensure presentation container gets js-enabled class for proper CSS styling when JavaScript is active
+  - Create comprehensive test suite (test_navigation_functionality.js) covering slide counter, notes toggle, slide display, and button states
+  - Update enhanced-slide-viewer.js to handle all navigation functionality with proper error handling and logging
+  - Update enhanced_slide_styles.css to properly hide/show slides based on JavaScript state
+  - Update requirements.md, design.md, and tasks.md to document navigation enhancement requirements
+  - _Requirements: 7.1-7.11_

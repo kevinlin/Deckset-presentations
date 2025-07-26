@@ -86,3 +86,21 @@ This feature will create a dynamic website generator that converts Deckset prese
 3. WHEN the action runs THEN it SHALL generate the homepage with current presentations
 4. WHEN generation is complete THEN the action SHALL deploy the website to GitHub Pages or specified hosting
 5. IF generation fails THEN the action SHALL report clear error messages
+
+### Requirement 7
+
+**User Story:** As a presentation viewer, I want functional slide navigation with an accurate slide counter and notes toggle, so that I can navigate presentations effectively and view speaker notes when needed.
+
+#### Acceptance Criteria
+
+1. WHEN viewing a presentation THEN the slide counter SHALL display the current slide number and total slide count in the format "X / Y"
+2. WHEN navigating between slides using Previous/Next buttons OR keyboard arrows THEN the slide counter SHALL update in real-time to reflect the current slide
+3. WHEN clicking the Notes button THEN all speaker notes SHALL toggle between visible and hidden states
+4. WHEN notes are shown THEN the Notes button text SHALL change to "Hide Notes" and when hidden SHALL show "Notes"
+5. WHEN using keyboard navigation (N key) THEN the notes SHALL toggle visibility the same as clicking the Notes button
+6. WHEN navigating slides THEN only one slide SHALL be visible at a time, with all other slides hidden
+7. WHEN JavaScript is enabled THEN the presentation container SHALL be marked with 'js-enabled' class for proper CSS styling
+8. WHEN on the first slide THEN the Previous button SHALL be disabled
+9. WHEN on the last slide THEN the Next button SHALL be disabled
+10. WHEN on middle slides THEN both Previous and Next buttons SHALL be enabled
+11. WHEN toggling notes THEN the aria-pressed attribute SHALL be properly set for screen reader accessibility

@@ -85,7 +85,8 @@ describe('EnhancedSlideViewer', () => {
         const originalDocument = global.document;
         global.document = document;
         
-        EnhancedSlideViewer = require('../docs/assets/js/enhanced-slide-viewer.js');
+        const { EnhancedSlideViewer: ESV } = require('../docs/assets/js/enhanced-slide-viewer.js');
+        EnhancedSlideViewer = ESV;
     });
     
     afterEach(() => {

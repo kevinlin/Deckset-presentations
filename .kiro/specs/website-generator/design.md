@@ -125,6 +125,37 @@ class DecksetWebsiteGenerator:
     def generate_single_presentation(self, folder_path: str, output_dir: str)
 ```
 
+### 6. Enhanced Slide Viewer (`enhanced-slide-viewer.js`)
+
+**Purpose**: Provide interactive presentation navigation with slide counter and notes toggle functionality
+
+**Interface**:
+```javascript
+class EnhancedSlideViewer {
+    constructor()
+    init()
+    showSlide(index)
+    nextSlide()
+    previousSlide()
+    goToSlide(index)
+    updateSlideCounter()
+    updateNavigationButtons()
+    toggleNotes()
+    setupNavigation()
+    setupKeyboardShortcuts()
+    setupNotesToggle()
+}
+```
+
+**Key Features**:
+- Real-time slide counter updates (`updateSlideCounter()`) that shows current slide and total count in "X / Y" format
+- Notes visibility toggle (`toggleNotes()`) that shows/hides all speaker notes elements with proper button text updates
+- CSS-based slide display management using `.active` class and fallback inline styles
+- Keyboard navigation support (arrow keys, 'n' for notes toggle)
+- Navigation button state management (disabled states for first/last slides)
+- Accessibility features including ARIA attributes and screen reader announcements
+- Presentation container marking with 'js-enabled' class for proper CSS styling
+
 ## Data Models
 
 ### PresentationInfo
@@ -211,7 +242,7 @@ class TemplateRenderingError(GeneratorError):
 
 ## Testing Strategy
 
-**Note**: All tests are organized under the `tests/` directory following Python best practices, with test files named `test_*.py` for automatic discovery by pytest.
+**Note**: All tests are organized under the `tests/` directory following Python best practices, with test files named `test_*.py` for automatic discovery by pytest. JavaScript tests use Jest with JSDOM for browser environment simulation.
 
 ### Unit Tests
 
@@ -229,6 +260,14 @@ class TemplateRenderingError(GeneratorError):
    - Test HTML generation with mock data
    - Test template rendering with various data structures
    - Test error handling scenarios
+
+4. **JavaScript Navigation Tests** (`test_navigation_functionality.js`):
+   - Test slide counter updates with button and keyboard navigation
+   - Test notes toggle functionality with button clicks and keyboard shortcuts
+   - Test slide display management (only one slide visible at a time)
+   - Test navigation button states (disabled/enabled based on current slide)
+   - Test accessibility features (ARIA attributes, screen reader support)
+   - Test CSS class management for JavaScript-enabled presentations
 
 ### Integration Tests
 
