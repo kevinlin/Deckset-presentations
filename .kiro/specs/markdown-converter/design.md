@@ -6,366 +6,312 @@ This enhanced design implements a comprehensive Deckset-compatible markdown proc
 
 ## Architecture
 
-### Enhanced High-Level Architecture
+### High-Level Architecture
 
 ```mermaid
 graph TD
-    A[Repository Scanner] --> B[Deckset Markdown Parser]
-    B --> C[Slide Processor]
-    C --> D[Media Processor]
-    D --> E[Template Engine]
-    E --> F[Web Page Generator]
-    F --> G[Static Website]
-    H[MathJax Renderer] --> E
-    I[Syntax Highlighter] --> E
-    J[Image Optimizer] --> D
+    A[DecksetWebsiteGenerator] --> B[PresentationScanner]
+    A --> C[EnhancedPresentationProcessor]
+    A --> D[WebPageGenerator]
+    
+    B --> E[Repository Scanning]
+    
+    C --> F[DecksetParser]
+    C --> G[SlideProcessor]
+    C --> H[MediaProcessor]
+    C --> I[CodeProcessor]
+    C --> J[MathProcessor]
+    
+    D --> K[EnhancedTemplateEngine]
+    D --> L[FileManager]
+    
+    M[GeneratorConfig] --> A
+    N[models.py] --> A
+    N --> C
+    N --> D
 ```
 
-### Core Components Enhancement
+### Component Interaction Diagram
 
-1. **Deckset Markdown Parser**: New component for parsing Deckset-specific syntax
-2. **Slide Processor**: Enhanced to handle advanced layout features
-3. **Media Processor**: New component for video/audio/image processing
-4. **Template Engine**: Enhanced with Deckset feature support
-5. **Math Renderer**: Integration with MathJax for formula support
-6. **Syntax Highlighter**: Enhanced code highlighting with line emphasis
+The following diagram shows the detailed interaction between all components starting from `DecksetWebsiteGenerator` in `main.py`:
 
-## Components and Interfaces
+```mermaid
+sequenceDiagram
+    participant Main as main.py
+    participant DWG as DecksetWebsiteGenerator
+    participant Scanner as PresentationScanner
+    participant EPP as EnhancedPresentationProcessor
+    participant DP as DecksetParser
+    participant SP as SlideProcessor
+    participant MP as MediaProcessor
+    participant CP as CodeProcessor
+    participant MathP as MathProcessor
+    participant WPG as WebPageGenerator
+    participant ETE as EnhancedTemplateEngine
+    participant FM as FileManager
+    participant Models as models.py
 
-### 1. Enhanced Deckset Markdown Parser (`deckset_parser.py`)
+    Main->>DWG: __init__(config)
+    DWG->>Models: GeneratorConfig()
+    DWG->>Scanner: PresentationScanner(config)
+    DWG->>EPP: EnhancedPresentationProcessor()
+    EPP->>DP: DecksetParser()
+    EPP->>SP: SlideProcessor()
+    EPP->>MP: MediaProcessor()
+    EPP->>CP: CodeProcessor()
+    EPP->>MathP: MathProcessor()
+    DWG->>WPG: WebPageGenerator(config)
+    WPG->>ETE: EnhancedTemplateEngine(template_dir)
+    WPG->>FM: FileManager(config)
 
-**Purpose**: Parse Deckset-specific markdown syntax and global commands
-
-**Interface**:
-```python
-class DecksetParser:
-    def parse_global_commands(self, content: str) -> DecksetConfig
-    def parse_slide_commands(self, slide_content: str) -> SlideConfig
-    def extract_slide_separators(self, content: str) -> List[str]
-    def process_fit_headers(self, content: str, config: DecksetConfig) -> str
-    def process_speaker_notes(self, content: str) -> Tuple[str, str]
-    def process_footnotes(self, content: str) -> Tuple[str, Dict[str, str]]
-    def process_emoji_shortcodes(self, content: str) -> str
-    def detect_auto_slide_breaks(self, content: str, config: DecksetConfig) -> List[str]
+    Main->>DWG: generate_website(root_path)
+    DWG->>Scanner: scan_presentations(root_path)
+    Scanner-->>DWG: List[PresentationInfo]
+    
+    loop For each presentation
+        DWG->>EPP: process_presentation(presentation_info)
+        EPP->>DP: parse_global_config(content)
+        DP-->>EPP: DecksetConfig
+        EPP->>DP: extract_slides(content, config)
+        DP-->>EPP: List[slide_contents]
+        
+        loop For each slide
+            EPP->>SP: process_slide(slide_content, context)
+            SP-->>EPP: ProcessedSlide
+            EPP->>MP: process_slide_media(slide, content, context)
+            MP-->>EPP: Updated ProcessedSlide
+            EPP->>CP: process_slide_code_blocks(content)
+            CP-->>EPP: List[ProcessedCodeBlock]
+            EPP->>MathP: process_math_formulas(content)
+            MathP-->>EPP: List[MathFormula]
+        end
+        
+        EPP-->>DWG: EnhancedPresentation
+    end
+    
+    DWG->>WPG: generate_all_pages(processed_presentations)
+    
+    loop For each presentation
+        WPG->>FM: process_presentation_files(presentation)
+        FM-->>WPG: File processing results
+        WPG->>ETE: render_slide(slide, config)
+        ETE-->>WPG: HTML content
+    end
+    
+    WPG->>ETE: render_homepage(presentations)
+    ETE-->>WPG: Homepage HTML
+    WPG-->>DWG: Generation statistics
+    DWG-->>Main: Final results
 ```
+
+## Core Components
+
+### 1. Main Orchestrator (`main.py`)
+
+**DecksetWebsiteGenerator Class**: The main orchestrator that coordinates the entire website generation process.
 
 **Key Methods**:
-- `parse_global_commands()`: Extracts global settings like `slidenumbers: true`, `footer: text`
-- `parse_slide_commands()`: Processes slide-specific commands like `[.column]`, `[.background-image: file.jpg]`
-- `process_fit_headers()`: Handles `[fit]` modifier for auto-scaling headers and applies global `fit-headers` configuration
-- `process_speaker_notes()`: Separates speaker notes from slide content
-- `process_footnotes()`: Handles footnote references and definitions
-- `detect_auto_slide_breaks()`: Implements automatic slide breaks at heading levels
+- `__init__(config)`: Initializes all components (Scanner, EnhancedProcessor, WebPageGenerator)
+- `generate_website(root_path, output_dir)`: Main entry point orchestrating the full pipeline
+- `generate_single_presentation(folder_path, output_dir)`: Generates a single presentation
+- `_scan_presentations()`: Discovers presentations using the scanner
+- `_process_presentations()`: Processes each presentation with error handling
+- `_generate_website_pages()`: Generates HTML pages and handles file operations
 
-**Fit Headers Processing Details**:
-The `process_fit_headers()` method implements the Deckset fit header functionality in two phases:
+### 2. Repository Scanner (`scanner.py`)
 
-1. **Explicit Fit Processing**: Converts `# [fit] Title` syntax to `# Title {.fit}` markers
-2. **Global Configuration**: Applies `fit-headers: #, ##` configuration to automatically add `{.fit}` markers to all headers of specified levels
-3. **Template Integration**: The `{.fit}` markers are converted to `<h1 class="fit">Title</h1>` in HTML by the template engine
-4. **CSS/JavaScript Scaling**: The `.fit` class triggers dynamic font-size adjustment via CSS and JavaScript to fit the slide width
+**PresentationScanner Class**: Discovers presentation folders and identifies markdown files.
 
-### 2. Enhanced Media Processor (`media_processor.py`)
+**Key Methods**:
+- `scan_presentations(root_path)`: Scans for presentation folders
+- `is_presentation_folder(folder_path)`: Validates if a folder contains presentations
+- `_create_presentation_info(folder)`: Creates PresentationInfo objects
+- `_has_multiple_independent_presentations()`: Detects multi-presentation folders
 
-**Purpose**: Process images, videos, and audio with Deckset-specific features
+### 3. Enhanced Presentation Processor (`enhanced_processor.py`)
 
-**Interface**:
-```python
-class MediaProcessor:
-    def process_image(self, image_syntax: str, slide_context: SlideContext) -> ProcessedImage
-    def process_video(self, video_syntax: str, slide_context: SlideContext) -> ProcessedVideo
-    def process_audio(self, audio_syntax: str, slide_context: SlideContext) -> ProcessedAudio
-    def parse_image_modifiers(self, alt_text: str) -> ImageModifiers
-    def parse_media_modifiers(self, alt_text: str) -> MediaModifiers
-    def optimize_image_for_web(self, image_path: str, output_path: str) -> str
-    def create_image_grid(self, images: List[ProcessedImage]) -> ImageGrid
-```
+**EnhancedPresentationProcessor Class**: Orchestrates comprehensive Deckset markdown processing.
 
-**Image Processing Logic**:
-```python
-@dataclass
-class ImageModifiers:
-    placement: str  # 'background', 'inline', 'left', 'right'
-    scaling: str    # 'fit', 'fill', 'original', percentage
-    filter: str     # 'filtered', 'original'
-    corner_radius: Optional[int]
-    
-@dataclass
-class ProcessedImage:
-    src_path: str
-    web_path: str
-    modifiers: ImageModifiers
-    grid_position: Optional[Tuple[int, int]]
-```
+**Component Integration**:
+- **DecksetParser**: Parses Deckset-specific syntax and global commands
+- **SlideProcessor**: Handles slide content and layout processing
+- **MediaProcessor**: Processes images, videos, and audio with modifiers
+- **CodeProcessor**: Handles syntax highlighting and line emphasis
+- **MathProcessor**: Processes LaTeX math expressions
 
-**Video/Audio Processing**:
-```python
-@dataclass
-class MediaModifiers:
-    placement: str      # 'background', 'inline', 'left', 'right'
-    autoplay: bool
-    loop: bool
-    mute: bool
-    hide: bool
-    scaling: str        # 'fit', 'fill', percentage
-    
-@dataclass
-class ProcessedVideo:
-    src_path: str
-    web_path: str
-    modifiers: MediaModifiers
-    embed_type: str     # 'local', 'youtube', 'vimeo'
-    embed_url: Optional[str]
-```
+**Key Methods**:
+- `process_presentation(presentation_info)`: Main processing pipeline
+- `_parse_global_config(content)`: Extracts global Deckset configuration
+- `_extract_slides(content, config)`: Splits content into individual slides
+- `_process_slides(slide_contents, config, presentation_info)`: Processes each slide with all features
 
-### 3. Enhanced Slide Processor (`slide_processor.py`)
+### 4. Specialized Processors
 
-**Purpose**: Process individual slides with advanced layout features
+#### Deckset Parser (`deckset_parser.py`)
+- Parses global commands like `slidenumbers: true`, `footer: text`
+- Handles slide-specific commands like `[.background-image: file.jpg]`
+- Processes `[fit]` headers for auto-scaling
+- Extracts speaker notes and footnotes
+- Implements emoji shortcode processing
 
-**Interface**:
-```python
-class SlideProcessor:
-    def process_slide(self, slide_content: str, slide_index: int, config: DecksetConfig) -> ProcessedSlide
-    def process_columns(self, slide_content: str) -> List[ColumnContent]
-    def process_background_image(self, slide_content: str) -> Optional[ProcessedImage]
-    def process_code_blocks(self, slide_content: str) -> str
-    def process_math_formulas(self, slide_content: str) -> str
-    def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str
-```
+#### Slide Processor (`slide_processor.py`)
+- Processes individual slide content and layout
+- Handles multi-column layouts with `[.column]` syntax
+- Applies autoscaling and layout transformations
+- Manages slide-specific configurations
 
-**Column Processing**:
-```python
-@dataclass
-class ColumnContent:
-    index: int
-    content: str
-    width_percentage: float
-    
-@dataclass
-class ProcessedSlide:
-    index: int
-    content: str
-    notes: str
-    columns: List[ColumnContent]
-    background_image: Optional[ProcessedImage]
-    images: List[ProcessedImage]
-    videos: List[ProcessedVideo]
-    audio: List[ProcessedAudio]
-    code_blocks: List[CodeBlock]
-    math_formulas: List[MathFormula]
-    slide_config: SlideConfig
-```
+#### Media Processor (`media_processor.py`)
+- Processes images with placement modifiers (`![left]`, `![fit]`, `![background]`)
+- Handles video processing with autoplay, loop, and mute options
+- Manages audio files with playback controls
+- Creates image grids for multiple consecutive images
 
-### 4. Code Highlighting Processor (`code_processor.py`)
+#### Code Processor (`code_processor.py`)
+- Provides syntax highlighting for code blocks
+- Handles line emphasis and highlighting directives
+- Supports multiple programming languages
+- Integrates with Prism.js for web rendering
 
-**Purpose**: Handle advanced code highlighting with line emphasis
+#### Math Processor (`math_processor.py`)
+- Processes LaTeX math expressions (both inline and display)
+- Validates LaTeX syntax
+- Integrates with MathJax for web rendering
+- Handles both `$...$` and `$$...$$` syntax
 
-**Interface**:
-```python
-class CodeProcessor:
-    def process_code_block(self, code_content: str, language: str, highlight_config: str) -> ProcessedCodeBlock
-    def parse_highlight_directive(self, directive: str) -> HighlightConfig
-    def apply_syntax_highlighting(self, code: str, language: str) -> str
-    def apply_line_highlighting(self, code: str, highlight_config: HighlightConfig) -> str
-```
+### 5. Web Page Generator (`generator.py`)
 
-**Code Block Processing**:
-```python
-@dataclass
-class HighlightConfig:
-    highlighted_lines: Set[int]
-    highlight_type: str  # 'lines', 'all', 'none'
-    
-@dataclass
-class ProcessedCodeBlock:
-    content: str
-    language: str
-    highlighted_lines: Set[int]
-    line_numbers: bool
-```
+**WebPageGenerator Class**: Creates HTML pages and manages output generation.
 
-### 5. Math Formula Processor (`math_processor.py`)
-
-**Purpose**: Handle mathematical formulas with MathJax integration
-
-**Interface**:
-```python
-class MathProcessor:
-    def process_math_formulas(self, content: str) -> Tuple[str, List[MathFormula]]
-    def extract_display_math(self, content: str) -> List[MathFormula]
-    def extract_inline_math(self, content: str) -> List[MathFormula]
-    def validate_latex_syntax(self, latex: str) -> bool
-    def generate_mathjax_config(self) -> str
-```
-
-**Math Formula Handling**:
-```python
-@dataclass
-class MathFormula:
-    content: str
-    formula_type: str  # 'display', 'inline'
-    position: int
-    valid: bool
-```
+**Key Methods**:
+- `generate_all_pages(processed_presentations)`: Generates all presentation pages and homepage
+- `generate_presentation_page(presentation, output_path)`: Creates individual presentation HTML
+- `generate_homepage(presentations, output_path)`: Creates the main index page
+- `_render_enhanced_presentation(presentation)`: Renders presentations with full Deckset features
 
 ### 6. Enhanced Template Engine (`enhanced_templates.py`)
 
-**Purpose**: Render templates with full Deckset feature support using separate template files
+**EnhancedTemplateEngine Class**: Advanced HTML template rendering with full Deckset feature support.
 
 **Template Files**:
-- `templates/slide.html` - Main slide template with all Deckset features
-- `templates/homepage.html` - Homepage template for presentation listings
+- `templates/slide.html`: Main slide template with all Deckset features
+- `templates/homepage.html`: Homepage template for presentation listings
+- `templates/slide_styles.css`: Deckset-compatible styling
+- `templates/assets/js/slide-viewer.js`: Interactive slide navigation
 
-**Interface**:
+**Key Rendering Methods**:
+- `render_slide(slide, config)`: Renders individual slides with all features
+- `render_homepage(presentations)`: Renders the main homepage
+- `render_columns(columns)`: Handles multi-column layouts
+- `render_background_image(image)`: Processes background images
+- `render_video_player(video)`: Creates video players with controls
+- `render_code_block(code_block)`: Renders syntax-highlighted code
+- `render_math_formula(formula)`: Renders mathematical expressions
+
+### 7. File Manager (`file_manager.py`)
+
+**FileManager Class**: Handles file operations and asset management.
+
+**Key Methods**:
+- `process_presentation_files(presentation)`: Copies and optimizes presentation assets
+- `copy_media_files(src_dir, dest_dir)`: Handles media file copying
+- `optimize_images()`: Optimizes images for web delivery
+- `ensure_output_directory(path)`: Creates necessary output directories
+
+## Data Models
+
+All data models are defined in `models.py` with comprehensive type definitions:
+
+### Core Models
+- **PresentationInfo**: Metadata about discovered presentations
+- **ProcessedPresentation**: Fully processed presentation with slides
+- **Slide**: Individual slide with content and metadata
+- **GeneratorConfig**: Global generator configuration
+
+### Enhanced Models  
+- **EnhancedPresentation**: Comprehensive presentation with Deckset features
+- **ProcessedSlide**: Enhanced slide with media, code, math, and layout features
+- **DecksetConfig**: Global Deckset configuration settings
+- **SlideConfig**: Slide-specific configuration overrides
+
+### Media Models
+- **ProcessedImage**: Images with placement and scaling modifiers
+- **ProcessedVideo**: Videos with autoplay and control options
+- **ProcessedAudio**: Audio files with playback controls
+- **MediaModifiers**: Placement and playback configuration
+
+### Content Models
+- **ColumnContent**: Multi-column layout content
+- **ProcessedCodeBlock**: Syntax-highlighted code with line emphasis
+- **MathFormula**: LaTeX mathematical expressions
+- **ImageGrid**: Grid layouts for multiple images
+
+## Error Handling
+
+The system implements comprehensive error handling with custom exception classes:
+
+- **GeneratorError**: Base exception for all generator errors
+- **ScanningError**: Repository scanning failures
+- **PresentationProcessingError**: Presentation processing failures
+- **TemplateRenderingError**: Template rendering failures
+- **DecksetParsingError**: Deckset syntax parsing errors
+- **MediaProcessingError**: Media file processing errors
+- **SlideProcessingError**: Slide processing failures
+- **FileOperationError**: File system operation errors
+
+## Configuration and Extensibility
+
+### Generator Configuration
 ```python
-class EnhancedTemplateEngine:
-    def render_slide(self, slide: ProcessedSlide, config: DecksetConfig) -> str
-    def render_homepage(self, presentations, context=None) -> str
-    def render_columns(self, columns: List[ColumnContent]) -> str
-    def render_background_image(self, image: ProcessedImage) -> str
-    def render_inline_images(self, images: List[ProcessedImage]) -> str
-    def render_image_grid(self, images: List[ProcessedImage]) -> str
-    def render_video_player(self, video: ProcessedVideo) -> str
-    def render_audio_player(self, audio: ProcessedAudio) -> str
-    def render_code_block(self, code_block: ProcessedCodeBlock) -> str
-    def render_math_formula(self, formula: MathFormula) -> str
-    def render_footnotes(self, footnotes: Dict[str, str]) -> str
-    def render_slide_footer(self, config: DecksetConfig, slide_config: SlideConfig) -> str
-    def render_slide_number(self, slide_index: int, total_slides: int, config: DecksetConfig) -> str
+@dataclass
+class GeneratorConfig:
+    output_dir: str = "docs"
+    template_dir: str = "templates"
+    slides_dir: str = "slides"
+    exclude_folders: List[str] = field(default_factory=lambda: [
+        '.git', '.kiro', 'node_modules', '__pycache__', '.pytest_cache'
+    ])
 ```
 
-## Data Models Enhancement
-
-### Enhanced Configuration Models
-
+### Deckset Configuration
 ```python
 @dataclass
 class DecksetConfig:
-    # Global settings
     theme: Optional[str] = None
     autoscale: bool = False
     slide_numbers: bool = False
-    slide_count: bool = False
     footer: Optional[str] = None
     background_image: Optional[str] = None
-    build_lists: bool = False
-    slide_transition: Optional[str] = None
-    code_language: Optional[str] = None
     fit_headers: List[str] = field(default_factory=list)
-    slide_dividers: List[str] = field(default_factory=list)
-    
-@dataclass
-class SlideConfig:
-    # Slide-specific overrides
-    background_image: Optional[str] = None
-    hide_footer: bool = False
-    hide_slide_numbers: bool = False
-    autoscale: Optional[bool] = None
-    slide_transition: Optional[str] = None
-    columns: bool = False
+    # ... additional Deckset settings
 ```
 
-### Enhanced Slide Models
-
-```python
-@dataclass
-class EnhancedSlide:
-    index: int
-    content: str
-    notes: str
-    columns: List[ColumnContent]
-    background_image: Optional[ProcessedImage]
-    inline_images: List[ProcessedImage]
-    videos: List[ProcessedVideo]
-    audio: List[ProcessedAudio]
-    code_blocks: List[ProcessedCodeBlock]
-    math_formulas: List[MathFormula]
-    footnotes: Dict[str, str]
-    slide_config: SlideConfig
-    
-@dataclass
-class EnhancedPresentation:
-    info: PresentationInfo
-    slides: List[EnhancedSlide]
-    config: DecksetConfig
-    global_footnotes: Dict[str, str]
-```
-
-## Template Design Enhancement
-
-### Template File Architecture
-
-The enhanced template system uses separate Jinja2 template files instead of hardcoded strings:
-
-**File Structure**:
-```
-templates/
-├── slide.html          # Main slide template
-├── homepage.html       # Homepage listing template
-├── slide_styles.css
-├── code_highlighting_styles.css
-└── assets/
-    ├── favicon.png
-    └── js/
-        └── slide-viewer.js
-```
-
-**Benefits**:
-- Better separation of concerns
-- Easier template maintenance and updates
-- Version control friendly
-- Designer-friendly template editing
-- Template inheritance and reuse capabilities
-
-### Deckset-Specific Error Handling
-
-```python
-class DecksetParsingError(Exception):
-    """Errors specific to Deckset syntax parsing"""
-    def __init__(self, message: str, line_number: int = None, context: str = None):
-        self.line_number = line_number
-        self.context = context
-        super().__init__(message)
-
-class MediaProcessingError(Exception):
-    """Errors in media file processing"""
-    def __init__(self, message: str, media_path: str = None, media_type: str = None):
-        self.media_path = media_path
-        self.media_type = media_type
-        super().__init__(message)
-```
-
-### Graceful Degradation Strategy
-
-1. **Invalid Syntax**: Log warnings and render as plain text
-2. **Missing Media**: Use fallback placeholders and continue
-3. **Math Errors**: Display raw LaTeX with error indication
-4. **Code Highlighting Failures**: Show unstyled code
-5. **Template Errors**: Use minimal fallback templates
-
-This enhanced design provides comprehensive Deckset compatibility while maintaining the existing multi-presentation website structure, ensuring that users can leverage their full Deckset knowledge in a web environment.
+## Features Implementation Status
 
 **All Deckset Features Working Correctly:**
 - ✅ **Speaker Notes**: `^ This is a speaker note` syntax properly extracted and hidden
 - ✅ **Image Processing**: 
-  - Background images: `![](red.jpg)` → background with cover scaling (visibility issue fixed with proper z-index)
+  - Background images: `![](red.jpg)` → background with cover scaling
   - Positioned images: `![right](plant.jpg)` → inline image with right placement
   - Fit images: `![fit](presenter.jpg)` → background with fit scaling
 - ✅ **Code Blocks**: Syntax highlighting with proper `<pre><code>` structure
-- ✅ **Footer and Slide Numbers**: Global config `footer: © The Deckset Team` and `slidenumbers: true` working
+- ✅ **Footer and Slide Numbers**: Global config `footer: © Text` and `slidenumbers: true` working
 - ✅ **Video Processing**: `![autoplay](water.mov)` properly detected and processed
-- ✅ **Mathematical Formulas**: MathJax integration ready for `$$...$$` syntax
+- ✅ **Mathematical Formulas**: MathJax integration for `$$...$$` syntax
+- ✅ **Multi-column Layouts**: `[.column]` syntax for side-by-side content
+- ✅ **Fit Headers**: `[fit]` modifier for auto-scaling headers
+- ✅ **Emoji Shortcodes**: `:emoji:` syntax support
+- ✅ **Footnotes**: Footnote references and definitions
 - ✅ **Responsive Design**: All features work on mobile and desktop
 
 **Test Coverage:**
 - All 279 tests passing
 - Comprehensive coverage of all processors and templates
-- End-to-end testing with real Deckset presentation
+- End-to-end testing with real Deckset presentations
 - Integration testing between all components
 
 **Generated Output Quality:**
 - Clean, semantic HTML structure
 - Proper CSS classes for styling
 - Accessible markup with ARIA labels
-- Responsive design that works across devices
+- Responsive design across devices
 - Performance optimized with lazy loading for images
