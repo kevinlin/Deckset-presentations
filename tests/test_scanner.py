@@ -344,14 +344,14 @@ class TestPresentationScanner:
         for pres in presentations:
             if pres.title == "Single Presentation":
                 single_pres = pres
-            elif pres.title == "First Example":
+            elif pres.title == "Example - First Example":  # Updated to match new title format
                 multi_pres1 = pres
-            elif pres.title == "Second Example":
+            elif pres.title == "Example - Second Example":  # Updated to match new title format
                 multi_pres2 = pres
         
         assert single_pres is not None, "Single presentation not found"
-        assert multi_pres1 is not None, "First multiple presentation not found"
-        assert multi_pres2 is not None, "Second multiple presentation not found"
+        assert multi_pres1 is not None, f"First multiple presentation not found. Found titles: {[p.title for p in presentations]}"
+        assert multi_pres2 is not None, f"Second multiple presentation not found. Found titles: {[p.title for p in presentations]}"
         
         # Verify processor type is the same for all
         assert isinstance(generator.processor, EnhancedPresentationProcessor)

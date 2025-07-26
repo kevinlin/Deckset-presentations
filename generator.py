@@ -282,6 +282,10 @@ class WebPageGenerator:
         preview_dir.mkdir(parents=True, exist_ok=True)
         
         for presentation in presentations:
+            # Skip if preview image has already been processed by FileManager
+            # (indicated by web-accessible path starting with "../")
+            if presentation.preview_image and presentation.preview_image.startswith("../"):
+                continue
             # If no preview image is set, try to find the first slide image
             if not presentation.preview_image:
                 # Look for potential first slide image in the presentation folder
@@ -305,15 +309,25 @@ class WebPageGenerator:
             
             # Process the preview image if it exists
             if presentation.preview_image:
-                image_path = Path(presentation.preview_image)
+                # Convert relative path to absolute path for validation
+                if presentation.preview_image.startswith("../"):
+                    # This is a web-accessible path like "../images/filename"
+                    # Convert to actual file path: docs/images/filename
+                    actual_path = Path(self.config.output_dir) / presentation.preview_image.replace("../", "")
+                elif presentation.preview_image.startswith("images/"):
+                    # This is a homepage-adjusted path like "images/filename"
+                    # Convert to actual file path: docs/images/filename
+                    actual_path = Path(self.config.output_dir) / presentation.preview_image
+                else:
+                    actual_path = Path(presentation.preview_image)
                 
-                if not image_path.exists():
+                if not actual_path.exists():
                     self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
                     presentation.preview_image = None
                     continue
                 
                 # Create a standardized preview image name
-                preview_filename = f"{presentation.folder_name}-preview{image_path.suffix}"
+                preview_filename = f"{presentation.folder_name}-preview{actual_path.suffix}"
                 dest_path = preview_dir / preview_filename
                 
                 # Update the preview image path to use the web-accessible path

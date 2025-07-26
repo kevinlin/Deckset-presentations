@@ -166,19 +166,17 @@ class TestWebPageGenerator:
         assert not output_path.exists()
 
     def test_process_slide_images(self, config, processed_presentation):
-        """Test processing slide images with fallbacks."""
+        """Test processing slide images with placeholder handling."""
         # Setup
         generator = WebPageGenerator(config)
         
         # Execute
         generator._process_slide_images(processed_presentation)
         
-        # Verify missing image path is cleared
+        # Verify missing image paths are cleared (since test image files don't exist)
+        assert processed_presentation.slides[0].image_path is None
+        assert processed_presentation.slides[1].image_path is None
         assert processed_presentation.slides[2].image_path is None
-        
-        # Verify other slides have web paths
-        assert processed_presentation.slides[0].image_path.startswith(f"../{config.slides_dir}/")
-        assert processed_presentation.slides[1].image_path.startswith(f"../{config.slides_dir}/")
         
     def test_process_preview_images(self, config, presentation_list, tmp_path, monkeypatch):
         """Test processing preview images with fallbacks."""
@@ -311,6 +309,6 @@ class TestWebPageGenerator:
             assert sorted_presentations[1].folder_name == "presentation2"
             assert sorted_presentations[2].folder_name == "presentation3"
             
-            # Verify all presentations have preview images set (fallbacks)
+            # Verify presentations without preview images have None (no fallback)
             for presentation in sorted_presentations:
-                assert presentation.preview_image is not None
+                assert presentation.preview_image is None

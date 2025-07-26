@@ -659,9 +659,11 @@ class EnhancedTemplateEngine:
                 
                 # Generate image or placeholder HTML
                 if preview_image:
+                    # Fix relative path for homepage (remove ../ prefix)
+                    homepage_image_path = preview_image.replace("../", "") if preview_image.startswith("../") else preview_image
                     image_html = f"""
                             <div class="aspect-w-16 aspect-h-9">
-                                <img src="{preview_image}" 
+                                <img src="{homepage_image_path}" 
                                      alt="Preview of {self._escape_html(presentation.title)}"
                                      class="w-full h-48 object-cover"
                                      loading="lazy">

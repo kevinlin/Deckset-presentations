@@ -284,10 +284,20 @@ class FileManager:
         
         # Determine destination path
         preview_dir = Path(self.config.output_dir) / "images"
-        preview_dir.mkdir(parents=True, exist_ok=True)
         
-        preview_filename = f"{presentation.folder_name}-preview{source_path.suffix}"
-        dest_path = preview_dir / preview_filename
+        # For multiple presentations (e.g., Examples/10 Deckset basics), create subdirectory
+        if "/" in presentation.folder_name:
+            # Create subdirectory in images folder (e.g., images/Examples/)
+            subfolder = presentation.folder_name.split("/")[0]
+            preview_subdir = preview_dir / subfolder
+            preview_subdir.mkdir(parents=True, exist_ok=True)
+            preview_filename = f"{presentation.folder_name}-preview{source_path.suffix}"
+            dest_path = preview_dir / preview_filename
+        else:
+            # Single presentations go directly in images folder
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            preview_filename = f"{presentation.folder_name}-preview{source_path.suffix}"
+            dest_path = preview_dir / preview_filename
         
         # Copy the image
         try:
