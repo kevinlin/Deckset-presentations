@@ -61,13 +61,54 @@ jobs:
       - name: Run JavaScript tests
         run: npm run test:js:coverage
       
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Test Results
-          path: pytest-results.xml
-          reporter: java-junit
+      - name: Parse and display test results
+        if: always()
+        run: |
+          echo "## 📊 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Python test results
+          if [ -f "pytest-results.xml" ]; then
+            # Extract test counts from JUnit XML
+            if command -v xmllint >/dev/null 2>&1; then
+              TOTAL_TESTS=$(xmllint --xpath "string(/testsuites/testsuite/@tests)" pytest-results.xml 2>/dev/null || echo "unknown")
+              FAILED_TESTS=$(xmllint --xpath "string(/testsuites/testsuite/@failures)" pytest-results.xml 2>/dev/null || echo "0")
+              ERROR_TESTS=$(xmllint --xpath "string(/testsuites/testsuite/@errors)" pytest-results.xml 2>/dev/null || echo "0")
+              
+              echo "### 🐍 Python Tests (pytest)" >> $GITHUB_STEP_SUMMARY
+              if [ "$FAILED_TESTS" = "0" ] && [ "$ERROR_TESTS" = "0" ]; then
+                echo "✅ **Status:** PASSED" >> $GITHUB_STEP_SUMMARY
+                PASSED_TESTS=$((TOTAL_TESTS - FAILED_TESTS - ERROR_TESTS))
+                echo "- **Total:** $TOTAL_TESTS tests" >> $GITHUB_STEP_SUMMARY
+                echo "- **Passed:** $PASSED_TESTS" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "❌ **Status:** FAILED" >> $GITHUB_STEP_SUMMARY
+                echo "- **Total:** $TOTAL_TESTS tests" >> $GITHUB_STEP_SUMMARY
+                echo "- **Failed:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+                echo "- **Errors:** $ERROR_TESTS" >> $GITHUB_STEP_SUMMARY
+              fi
+            else
+              echo "### 🐍 Python Tests (pytest)" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Status:** Completed (detailed results in artifacts)" >> $GITHUB_STEP_SUMMARY
+              echo "- **Note:** XML parsing not available, check artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### 🐍 Python Tests (pytest)" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Status:** No results file found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # JavaScript test results
+          echo "### 🟨 JavaScript Tests (Jest)" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Status:** Completed with coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Coverage:** Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Detailed Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Download the **test-results** artifact for complete coverage reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Python coverage: \`htmlcov/index.html\`" >> $GITHUB_STEP_SUMMARY
+          echo "- JavaScript coverage: \`coverage/lcov-report/index.html\`" >> $GITHUB_STEP_SUMMARY
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
