@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Deckset Website Generator will transform the existing single-presentation converter into a comprehensive multi-presentation website generator. The system will scan the repository for presentation folders, convert each Deckset markdown file to a web page, and create a unified homepage for navigation. The architecture will be modular, extensible, and automated through GitHub Actions.
+The Deckset Website Generator is a comprehensive multi-presentation website generator that transforms Deckset markdown presentations into a unified website. The system scans the repository for presentation folders, processes each Deckset markdown file with full compatibility support, and generates a complete website with individual presentation pages and a homepage for navigation. The architecture is modular, extensible, and automated through GitHub Actions.
 
 ## Architecture
 
@@ -10,24 +10,129 @@ The Deckset Website Generator will transform the existing single-presentation co
 
 ```mermaid
 graph TD
-    A[Repository Scanner] --> B[Presentation Processor]
+    A[Repository Scanner] --> B[Enhanced Processor]
     B --> C[Web Page Generator]
     B --> D[Homepage Generator]
     C --> E[Static Website]
     D --> E
     F[GitHub Actions] --> A
-    G[Template Engine] --> C
+    G[Enhanced Template Engine] --> C
     G --> D
+    H[Specialized Processors] --> B
+    I[File Manager] --> C
 ```
 
 ### Core Components
 
-1. **Repository Scanner**: Discovers presentation folders and markdown files
-2. **Presentation Processor**: Parses markdown content and extracts slides/notes
-3. **Web Page Generator**: Creates individual presentation HTML pages
-4. **Homepage Generator**: Creates the main index page with presentation listings
-5. **Template Engine**: Manages HTML templates for consistent styling
-6. **GitHub Actions Workflow**: Automates the entire generation and deployment process
+1. **Repository Scanner** (`scanner.py`): Discovers presentation folders and markdown files
+2. **Enhanced Presentation Processor** (`enhanced_processor.py`): Orchestrates comprehensive Deckset markdown processing
+3. **Specialized Processors**: Handle specific Deckset features (media, code, math, slides)
+4. **Web Page Generator** (`generator.py`): Creates individual presentation HTML pages and homepage
+5. **Enhanced Template Engine** (`enhanced_templates.py`): Advanced HTML template rendering with Deckset feature support
+6. **File Manager** (`file_manager.py`): Handles file operations and asset management
+7. **GitHub Actions Workflow**: Automates the entire generation and deployment process
+
+### Python Class Interaction Diagram
+
+The following diagram shows the interaction between all Python classes starting from `main.py`:
+
+## Data Models
+
+All data models are defined in `models.py` and include both basic models for backward compatibility and enhanced models for comprehensive Deckset feature support.
+
+### Core Models
+
+#### PresentationInfo
+```python
+@dataclass
+class PresentationInfo:
+    folder_name: str
+    folder_path: str
+    markdown_path: str
+    title: str
+    preview_image: Optional[str] = None
+    slide_count: int = 0
+    last_modified: Optional[datetime] = None
+```
+
+#### ProcessedPresentation (Basic)
+```python
+@dataclass
+class ProcessedPresentation:
+    info: PresentationInfo
+    slides: List[Slide]
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+#### EnhancedPresentation
+```python
+@dataclass
+class EnhancedPresentation:
+    info: PresentationInfo
+    slides: List[ProcessedSlide]
+    global_config: DecksetConfig
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+### Configuration Models
+
+#### GeneratorConfig
+```python
+@dataclass
+class GeneratorConfig:
+    output_dir: str = "docs"
+    template_dir: str = "templates"
+    slides_dir: str = "slides"
+    exclude_folders: List[str] = field(default_factory=lambda: [
+        '.git', '.kiro', 'node_modules', '__pycache__', '.pytest_cache'
+    ])
+```
+
+#### DecksetConfig
+```python
+@dataclass
+class DecksetConfig:
+    theme: Optional[str] = None
+    autoscale: bool = False
+    slide_numbers: bool = False
+    slide_count: bool = False
+    footer: Optional[str] = None
+    background_image: Optional[str] = None
+    build_lists: bool = False
+    slide_transition: Optional[str] = None
+    code_language: Optional[str] = None
+    fit_headers: List[str] = field(default_factory=list)
+    slide_dividers: List[str] = field(default_factory=list)
+```
+
+### Processing Models
+
+#### ProcessedSlide
+```python
+@dataclass
+class ProcessedSlide:
+    index: int
+    content: str
+    notes: str = ""
+    config: SlideConfig = field(default_factory=SlideConfig)
+    columns: List[ColumnContent] = field(default_factory=list)
+    images: List[ProcessedImage] = field(default_factory=list)
+    videos: List[ProcessedVideo] = field(default_factory=list)
+    audio: List[ProcessedAudio] = field(default_factory=list)
+    code_blocks: List[ProcessedCodeBlock] = field(default_factory=list)
+    math_formulas: List[MathFormula] = field(default_factory=list)
+```
+
+#### ProcessedImage
+```python
+@dataclass
+class ProcessedImage:
+    src_path: str
+    web_path: str
+    alt_text: str
+    modifiers: ImageModifiers
+    dimensions: Optional[Tuple[int, int]] = None
+```
 
 ## Components and Interfaces
 
@@ -38,6 +143,7 @@ graph TD
 **Interface**:
 ```python
 class PresentationScanner:
+    def __init__(self, config: GeneratorConfig)
     def scan_presentations(self, root_path: str) -> List[PresentationInfo]
     def find_markdown_file(self, folder_path: str) -> Optional[str]
     def extract_presentation_title(self, markdown_path: str, use_filename_fallback: bool = False) -> str
@@ -48,358 +154,269 @@ class PresentationScanner:
 ```
 
 **Key Methods**:
-- `scan_presentations()`: Scans all folders in repository root directory, excluding system folders. Detects and handles both single-presentation folders and multiple-presentation folders (e.g., Examples)
+- `scan_presentations()`: Scans all folders in repository root directory, excluding system folders defined in config
 - `find_markdown_file()`: Implements priority logic - prefers file matching folder name, then first alphabetically
-- `extract_presentation_title()`: Extracts title directly from markdown filename using formatting rules (remove numeric prefixes, convert dashes/underscores to spaces, apply title case). Legacy parameter `use_filename_fallback` is kept for compatibility but ignored.
-- `_create_title_with_folder_name()`: Creates titles for multiple presentations that include the folder name as a prefix (e.g., "Examples/10 Deckset basics.md" → "Example - Deckset Basics")
-- `_singularize_folder_name()`: Converts plural folder names to singular for title display (e.g., "Examples" → "Example", "Demos" → "Demo")
+- `extract_presentation_title()`: Extracts title from markdown filename using formatting rules
 - `is_presentation_folder()`: Identifies folders containing markdown files as presentation folders
-- `_has_multiple_independent_presentations()`: Detects folders containing multiple independent presentations based on folder name patterns and markdown file structure
-- `_create_presentation_info_from_file()`: Creates presentation info for individual markdown files within multiple-presentation folders
-- `_format_filename_as_title()`: Formats filename as presentation title with comprehensive formatting: removes numeric prefixes (e.g., "30 Big text" → "Big Text"), converts dashes/underscores to spaces, and applies title case formatting
+- `_format_filename_as_title()`: Formats filename as presentation title with comprehensive formatting
 
-**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.9, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename-based formatting with folder name inclusion (Requirement 1.9). Title extraction now always uses the filename with comprehensive formatting rules (Requirement 1.8) rather than content-based extraction, and for multiple presentations includes the singularized folder name as a prefix, providing consistent and predictable presentation titles that clearly indicate their source folder. This prevents ambiguity and provides predictable results for presentation authors. All presentations, regardless of whether they are single or multiple presentations in a folder, use the same EnhancedPresentationProcessor to ensure consistent feature support and output quality.
+### 2. Enhanced Presentation Processor (`enhanced_processor.py`)
 
-### 2. Presentation Processor (`processor.py`)
-
-**Purpose**: Parse markdown content and extract structured slide data
+**Purpose**: Orchestrate comprehensive Deckset markdown processing with full feature support
 
 **Interface**:
 ```python
-class PresentationProcessor:
-    def process_presentation(self, markdown_path: str) -> ProcessedPresentation
-    def extract_slides(self, content: str) -> List[Slide]
-    def extract_notes(self, slide_content: str) -> str
-    def extract_metadata(self, content: str) -> Dict[str, Any]
-    def extract_slide_images(self, slide_content: str) -> List[str]
+class EnhancedPresentationProcessor:
+    def __init__(self)
+    def process_presentation(self, presentation_info: PresentationInfo) -> EnhancedPresentation
 ```
 
-**Key Methods**:
-- `process_presentation()`: Main processing pipeline for a single presentation
-- `extract_slides()`: Splits content by slide separators and processes each slide
-- `extract_notes()`: Extracts speaker notes marked with "^" prefix
-- `extract_metadata()`: Parses frontmatter for presentation configuration
-- `extract_slide_images()`: Parses markdown image syntax to discover referenced images
+**Key Components**:
+- Integrates `DecksetParser` for Deckset-specific syntax parsing
+- Uses `MediaProcessor` for image, video, and audio processing
+- Employs `SlideProcessor` for slide layout and content processing
+- Utilizes `CodeProcessor` for syntax highlighting and line emphasis
+- Leverages `MathProcessor` for LaTeX math formula processing
 
-**Image Discovery Logic**: The processor parses each slide's markdown content using regex patterns to find image references in the format `![alt-text](filename.ext)`. It extracts the filename and resolves the path relative to the presentation folder. When multiple images exist in a slide, the first image found is used as the primary slide image for web display.
+### 3. Deckset Parser (`deckset_parser.py`)
 
-### 3. Web Page Generator (`generator.py`)
+**Purpose**: Parse Deckset-specific markdown syntax and global commands
 
-**Purpose**: Generate HTML pages for individual presentations
+**Interface**:
+```python
+class DecksetParser:
+    def __init__(self)
+    def parse_content(self, content: str, base_path: str) -> ParsedContent
+    def parse_global_config(self, content: str) -> DecksetConfig
+    def split_slides(self, content: str) -> List[str]
+    def parse_slide_config(self, slide_content: str) -> SlideConfig
+    def extract_speaker_notes(self, slide_content: str) -> str
+```
+
+### 4. Specialized Processors
+
+#### Media Processor (`media_processor.py`)
+**Purpose**: Handle images, videos, and audio with Deckset-specific modifiers
+
+**Interface**:
+```python
+class MediaProcessor:
+    def __init__(self, base_path: str, output_path: str)
+    def process_image(self, image_syntax: str, slide_context: SlideContext) -> ProcessedImage
+    def process_video(self, video_syntax: str, slide_context: SlideContext) -> ProcessedVideo
+    def process_audio(self, audio_syntax: str, slide_context: SlideContext) -> ProcessedAudio
+```
+
+#### Slide Processor (`slide_processor.py`)
+**Purpose**: Handle individual slide processing with advanced layout features
+
+**Interface**:
+```python
+class SlideProcessor:
+    def __init__(self)
+    def process_slide(self, slide_content: str, slide_context: SlideContext) -> ProcessedSlide
+    def process_columns(self, content: str) -> List[ColumnContent]
+    def detect_autoscale_content(self, content: str) -> bool
+```
+
+#### Code Processor (`code_processor.py`)
+**Purpose**: Handle code syntax highlighting with line emphasis features
+
+**Interface**:
+```python
+class CodeProcessor:
+    def __init__(self)
+    def process_code_block(self, code_content: str, language: str, highlight_config: str) -> ProcessedCodeBlock
+    def parse_highlight_config(self, config_string: str) -> HighlightConfig
+```
+
+#### Math Processor (`math_processor.py`)
+**Purpose**: Process LaTeX mathematical formulas with MathJax integration
+
+**Interface**:
+```python
+class MathProcessor:
+    def __init__(self)
+    def process_math_formulas(self, content: str) -> List[MathFormula]
+    def validate_latex_syntax(self, formula: str) -> bool
+    def extract_display_math(self, content: str) -> List[Tuple[str, int]]
+    def extract_inline_math(self, content: str) -> List[Tuple[str, int]]
+```
+
+### 5. Web Page Generator (`generator.py`)
+
+**Purpose**: Generate HTML pages for individual presentations and homepage
 
 **Interface**:
 ```python
 class WebPageGenerator:
-    def __init__(self, template_path: str)
-    def generate_presentation_page(self, presentation: ProcessedPresentation, output_path: str)
-    def generate_homepage(self, presentations: List[PresentationInfo], output_path: str)
-    def _calculate_asset_path_prefix(self, folder_name: str) -> str
-```
-
-**Key Methods**:
-- `generate_presentation_page()`: Creates HTML page for a single presentation
-- `generate_homepage()`: Creates the main index page with presentation listings
-- `_calculate_asset_path_prefix()`: Calculates correct relative paths for CSS and JavaScript assets based on presentation nesting depth (e.g., "../" for single presentations, "../../" for presentations in subdirectories)
-
-**Asset Path Management**: The generator automatically calculates correct relative paths for CSS and JavaScript assets based on the presentation's folder structure. Single presentations use "../" to reference assets, while presentations in subdirectories (like Examples) use "../../" to go up the appropriate number of directory levels.
-
-### 4. Template Manager (`templates.py`)
-
-**Purpose**: Manage HTML templates and provide rendering utilities
-
-**Interface**:
-```python
-class TemplateManager:
-    def load_template(self, template_name: str) -> Template
-    def render_presentation(self, template: Template, data: Dict) -> str
-    def render_homepage(self, template: Template, data: Dict) -> str
-```
-
-### 5. Main Generator (`main.py`)
-
-**Purpose**: Orchestrate the entire generation process
-
-**Enhanced Interface**:
-```python
-class DecksetWebsiteGenerator:
     def __init__(self, config: GeneratorConfig)
-    def generate_website(self, output_dir: str = "docs")
-    def generate_single_presentation(self, folder_path: str, output_dir: str)
+    def generate_presentation_page(self, presentation: ProcessedPresentation, output_path: str) -> None
+    def generate_homepage(self, presentations: List[PresentationInfo], output_path: str) -> None
+    def generate_all_pages(self, processed_presentations: List[ProcessedPresentation]) -> Dict[str, Any]
 ```
 
-### 6. Enhanced Slide Viewer (`slide-viewer.js`)
+**Key Components**:
+- Uses `EnhancedTemplateEngine` for advanced template rendering
+- Integrates `FileManager` for file operations and asset management
+- Handles both individual presentation pages and homepage generation
 
-**Purpose**: Provide interactive presentation navigation with slide counter and notes toggle functionality
+### 6. Enhanced Template Engine (`enhanced_templates.py`)
+
+**Purpose**: Advanced HTML template rendering with full Deckset feature support
 
 **Interface**:
-```javascript
-class EnhancedSlideViewer {
-    constructor()
-    init()
-    showSlide(index)
-    nextSlide()
-    previousSlide()
-    goToSlide(index)
-    updateSlideCounter()
-    updateNavigationButtons()
-    toggleNotes()
-    setupNavigation()
-    setupKeyboardShortcuts()
-    setupNotesToggle()
-}
+```python
+class EnhancedTemplateEngine:
+    def __init__(self, template_dir: str)
+    def render_presentation_page(self, presentation: EnhancedPresentation) -> str
+    def render_homepage(self, presentations: List[PresentationInfo], metadata: Dict) -> str
+    def render_columns(self, columns: List[ColumnContent]) -> str
+    def render_background_image(self, image: ProcessedImage) -> str
 ```
 
 **Key Features**:
-- Real-time slide counter updates (`updateSlideCounter()`) that shows current slide and total count in "X / Y" format
-- Notes visibility toggle (`toggleNotes()`) that shows/hides all speaker notes elements with proper button text updates
-- CSS-based slide display management using `.active` class and fallback inline styles
-- Keyboard navigation support (arrow keys, 'n' for notes toggle)
-- Navigation button state management (disabled states for first/last slides)
-- Accessibility features including ARIA attributes and screen reader announcements
-- Presentation container marking with 'js-enabled' class for proper CSS styling
+- Jinja2-based template engine with custom filters and functions
+- Support for multi-column layouts, background images, and media embedding
+- Code highlighting integration with Pygments
+- Mathematical formula rendering with MathJax
+- Responsive design and mobile optimization
 
-### 7. Favicon and Branding Management (`file_manager.py`)
+### 7. File Manager (`file_manager.py`)
 
-**Purpose**: Handle favicon and icon asset management for professional Deckset branding
+**Purpose**: Handle file operations and asset management for the generated website
 
-**Key Methods**:
-- `_copy_favicon_assets()`: Copies favicon.png and other icon assets to output assets directory
-- Supports multiple favicon formats (PNG, ICO, Apple Touch Icons, PWA icons)
-- Integrates with template asset copying workflow
-- Provides proper error handling and logging for missing assets
-
-**Branding Features**:
-- Professional Deckset favicon display in browser tabs
-- Deckset logo icon in website header navigation
-- Cross-browser favicon support with multiple sizes and formats
-- Apple Touch Icon support for mobile devices
-- Progressive Web App (PWA) icon support for future enhancements
-
-## Data Models
-
-### PresentationInfo
+**Interface**:
 ```python
-@dataclass
-class PresentationInfo:
-    folder_name: str
-    folder_path: str
-    markdown_path: str
-    title: str
-    preview_image: Optional[str]
-    slide_count: int
-    last_modified: datetime
+class FileManager:
+    def __init__(self, config: GeneratorConfig)
+    def setup_output_directories(self) -> None
+    def copy_presentation_assets(self, presentation: ProcessedPresentation) -> None
+    def copy_template_assets(self) -> None
+    def copy_slide_images(self, presentation: ProcessedPresentation) -> None
 ```
 
-### Slide
+**Key Functions**:
+- Creates output directory structure
+- Copies presentation assets (images, videos, etc.)
+- Manages template assets (CSS, JavaScript, favicon)
+- Handles asset optimization and web-friendly formats
+
+### 8. Main Generator (`main.py`)
+
+**Purpose**: Orchestrate the entire generation process with comprehensive error handling
+
+**Interface**:
 ```python
-@dataclass
-class Slide:
-    index: int
-    content: str
-    notes: str
-    image_path: Optional[str]
+class DecksetWebsiteGenerator:
+    def __init__(self, config: Optional[GeneratorConfig] = None)
+    def generate_website(self, root_path: str = ".", output_dir: Optional[str] = None) -> Dict[str, Any]
+    def generate_single_presentation(self, folder_path: str, output_dir: Optional[str] = None) -> Dict[str, Any]
+    def validate_configuration(self) -> List[str]
 ```
 
-### ProcessedPresentation
-```python
-@dataclass
-class ProcessedPresentation:
-    info: PresentationInfo
-    slides: List[Slide]
-    metadata: Dict[str, Any]
-```
+**Key Features**:
+- Comprehensive error handling with graceful degradation
+- Statistics tracking for all generation phases
+- Configurable logging with file and console output
+- Command-line interface with validation and debugging options
+- Integration of all components in a coordinated workflow
 
-### GeneratorConfig
-```python
-@dataclass
-class GeneratorConfig:
-    output_dir: str = "docs"
-    template_dir: str = "templates"
-    slides_dir: str = "slides"
 
-    exclude_folders: List[str] = field(default_factory=lambda: ['.git', '.kiro', 'node_modules'])
-```
 
 ## Error Handling
 
-### Error Categories
-
-1. **File System Errors**: Missing files, permission issues, disk space
-2. **Parsing Errors**: Malformed markdown, invalid frontmatter
-3. **Template Errors**: Missing templates, rendering failures
-4. **Image Errors**: Missing slide images, invalid image formats
+The system implements comprehensive error handling with graceful degradation to ensure partial failures don't prevent website generation.
 
 ### Error Handling Strategy
 
-```python
-class GeneratorError(Exception):
-    """Base exception for generator errors"""
-    pass
-
-class PresentationProcessingError(GeneratorError):
-    """Errors during presentation processing"""
-    pass
-
-class TemplateRenderingError(GeneratorError):
-    """Errors during template rendering"""
-    pass
-```
-
-### Error Handling Strategy
-
-**Design Decision**: Implement graceful degradation to ensure partial failures don't prevent website generation (Requirement 5.1-5.5). The system prioritizes continuity over perfection.
+**Core Principle**: Graceful degradation ensures the website generation continues even when individual components fail.
 
 **Error Recovery Mechanisms**:
-- Continue processing other presentations when one fails (Requirement 5.1)
-- Display placeholder UI for missing slide images (Requirement 5.2)
-- Display raw content or skip problematic slides when markdown parsing fails (Requirement 5.3)
-- Generate basic homepage with available presentations even if some fail (Requirement 5.4)
-- Provide clear error messages with context for debugging (Requirement 5.5)
-- Log all errors with sufficient detail for troubleshooting
+- **Presentation Level**: Continue processing other presentations when one fails
+- **Slide Level**: Skip problematic slides while preserving presentation structure
+- **Media Level**: Display placeholder UI for missing or corrupt media files
+- **Template Level**: Fall back to basic rendering when advanced features fail
+- **File Level**: Continue with available files when some assets are missing
 
-**Design Rationale**: This approach ensures that the website remains functional even when individual presentations have issues, providing a better user experience and reducing maintenance overhead.
+**Logging and Debugging**:
+- Comprehensive logging with context information
+- Statistics tracking for all generation phases
+- Detailed error reporting with file paths and line numbers
+- Configurable log levels for development and production
 
 ## Testing Strategy
 
-**Note**: All tests are organized under the `tests/` directory following Python best practices, with test files named `test_*.py` for automatic discovery by pytest. JavaScript tests use Jest with JSDOM for browser environment simulation.
+All tests are organized under the `tests/` directory following Python best practices, with test files named `test_*.py` for automatic discovery by pytest. JavaScript tests use Jest with JSDOM for browser environment simulation.
 
-### Unit Tests
+### Test Categories
 
-1. **Scanner Tests**:
-   - Test folder discovery with various directory structures
-   - Test markdown file selection logic
-   - Test title extraction from different markdown formats
+#### Unit Tests
+- **Scanner Tests**: Folder discovery, markdown file selection, title extraction
+- **Parser Tests**: Deckset syntax parsing, global config, slide config
+- **Processor Tests**: Individual component processing (media, code, math, slides)
+- **Template Tests**: Template rendering, custom functions, error handling
+- **Generator Tests**: Page generation, asset management, file operations
 
-2. **Processor Tests**:
-   - Test slide splitting with various separator formats
-   - Test note extraction with different note formats
-   - Test metadata parsing with various frontmatter formats
+#### Integration Tests
+- **Enhanced Integration**: Full Deckset feature processing pipeline
+- **End-to-End**: Complete website generation workflow
+- **File System**: Directory structures, permissions, asset copying
+- **Error Handling**: Graceful degradation scenarios
 
-3. **Generator Tests**:
-   - Test HTML generation with mock data
-   - Test template rendering with various data structures
-   - Test error handling scenarios
-
-4. **JavaScript Navigation Tests** (`test_navigation_functionality.js`):
-   - Test slide counter updates with button and keyboard navigation
-   - Test notes toggle functionality with button clicks and keyboard shortcuts
-   - Test slide display management (only one slide visible at a time)
-   - Test navigation button states (disabled/enabled based on current slide)
-   - Test accessibility features (ARIA attributes, screen reader support)
-   - Test CSS class management for JavaScript-enabled presentations
-
-### Integration Tests
-
-1. **End-to-End Tests**:
-   - Test complete website generation with sample presentations
-   - Test GitHub Actions workflow with test repository
-   - Test generated website functionality in browser
-
-2. **File System Tests**:
-   - Test with various folder structures
-   - Test with missing files and permissions
-   - Test output directory creation and cleanup
-
-### Test Data Structure
-
-```
-tests/
-├── fixtures/
-│   ├── sample_presentations/
-│   │   ├── presentation1/
-│   │   │   ├── presentation1.md
-│   │   │   └── slides/
-│   │   └── presentation2/
-│   └── expected_outputs/
-├── test_scanner.py
-├── test_processor.py
-├── test_generator.py
-├── test_templates.py
-└── test_integration.py
-```
+#### JavaScript Tests
+- **Slide Viewer**: Navigation, keyboard shortcuts, state management
+- **Accessibility**: ARIA attributes, screen reader support
+- **Responsive**: Mobile navigation, touch interactions
 
 ## File Structure
+
+### Project Structure
+
+```
+Deckset-presentations/
+├── main.py                     # Main orchestrator
+├── models.py                   # Data models and configuration
+├── scanner.py                  # Repository scanner
+├── enhanced_processor.py       # Main presentation processor
+├── deckset_parser.py          # Deckset syntax parser
+├── slide_processor.py         # Slide layout processor
+├── media_processor.py         # Media handling processor
+├── code_processor.py          # Code highlighting processor
+├── math_processor.py          # Math formula processor
+├── enhanced_templates.py      # Advanced template engine
+├── generator.py               # Web page generator
+├── file_manager.py            # File operations manager
+├── templates/                 # HTML templates
+│   ├── homepage.html
+│   ├── slide.html
+│   └── assets/
+├── tests/                     # Comprehensive test suite
+└── docs/                      # Generated website output
+```
 
 ### Generated Website Structure
 
 ```
-docs/                           # GitHub Pages output directory
-├── index.html                  # Homepage with presentation listings
-├── presentations/              # Individual presentation pages
+docs/                          # GitHub Pages output directory
+├── index.html                 # Homepage with presentation listings
+├── presentations/             # Individual presentation pages
+│   ├── fix-messaging.html
 │   ├── docker-kubernetes-101.html
 │   ├── code-to-cloud-native.html
-│   └── ...
-├── slides/                     # Slide images (copied from source folders)
+│   └── examples-deckset-basics.html
+├── slides/                    # Slide images and media
+│   ├── fix-messaging/
 │   ├── docker-kubernetes-101/
-│   │   ├── 1.png
-│   │   ├── 2.png
-│   │   └── ...
-
-├── assets/                     # Static assets
+│   └── examples/
+├── assets/                    # Static assets
 │   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       └── main.js
-└── images/                     # Preview images for homepage
-    ├── docker-kubernetes-101-preview.png
-    └── ...
+│   │   ├── slide_styles.css
+│   │   └── code_highlighting_styles.css
+│   ├── js/
+│   │   └── slide-viewer.js
+│   └── favicon.png
+└── images/                    # Preview images for homepage
+    ├── fix-messaging-preview.png
+    └── docker-kubernetes-101-preview.png
 ```
-
-## Template Design
-
-### Styling Framework
-
-**Design Decision**: Use Tailwind CSS for consistent styling across all generated pages (Requirement 3.1). This provides:
-- Utility-first CSS approach for rapid development
-- Built-in responsive design capabilities
-- Consistent design system across all components
-- Easy customization and maintenance
-
-### Homepage Template Features
-
-- Grid layout of presentation cards with responsive breakpoints
-- Preview images from first slide with fallback placeholder handling (Requirement 4.2-4.3)
-- Presentation metadata display (title, slide count, last modified) (Requirement 4.5)
-- Mobile-responsive design that adapts to different screen sizes (Requirement 3.2)
-- Clickable presentation cards for navigation (Requirement 4.4)
-- Alphabetical sorting by title with case-insensitive comparison (Requirement 4.7)
-- Professional Deckset branding with favicon and logo icon (Requirement 4.9-4.10)
-- Cross-browser favicon support with multiple formats and sizes
-- Search/filter functionality (future enhancement)
-
-**Design Rationale**: The homepage serves as the primary entry point and must provide clear visual hierarchy and easy navigation. Preview images help users quickly identify presentations, while metadata provides context for selection. Alphabetical sorting ensures predictable presentation order regardless of creation or modification dates, making it easier for users to find specific presentations. Professional Deckset branding with favicon and logo creates a cohesive, branded experience that reflects the official Deckset application.
-
-### Presentation Template Enhancements
-
-- Responsive layout for slide images with proper sizing and borders (Requirement 3.3)
-- Speaker notes display with markdown-to-HTML conversion (Requirement 2.5)
-- Navigation between presentations with consistent styling (Requirement 3.5)
-- Navigation header with home page links using dynamic relative paths (Requirement 4.8)
-- Slide counter and progress indicator
-- Placeholder UI for missing slides (Requirement 2.4)
-- Readable typography and spacing for text content (Requirement 3.4)
-- Print-friendly styles
-
-**Design Rationale**: Individual presentation pages must balance visual slide content with textual notes, ensuring both are accessible and well-formatted across devices. The navigation header provides consistent access back to the homepage using relative paths that automatically adjust based on presentation nesting depth (e.g., "../index.html" for single presentations, "../../index.html" for nested presentations like Examples).
-
-## GitHub Actions Integration
-
-### Workflow Triggers
-
-- Push to main branch
-- Manual workflow dispatch
-- Scheduled runs (optional)
-
-### Workflow Steps
-
-1. **Setup Environment**: Install Python and dependencies
-2. **Generate Website**: Run the website generator
-3. **Deploy to GitHub Pages**: Publish generated content
-4. **Notify on Failure**: Send notifications for failed builds
-
-### Deployment Strategy
-
-- Use GitHub Pages for hosting
-- Deploy to `docs/` directory or `gh-pages` branch
-- Support custom domain configuration
-- Enable HTTPS by default
