@@ -16,6 +16,8 @@ This feature will create a dynamic website generator that converts Deckset prese
 2. WHEN a folder contains a markdown file THEN the system SHALL identify it as a presentation folder
 3. WHEN multiple markdown files exist in a folder THEN the system SHALL use the file with the same name as the folder or the first markdown file found
 4. IF no markdown file matches the folder name THEN the system SHALL use the first markdown file alphabetically
+5. WHEN a folder contains multiple independent presentations (e.g., "Examples", "Demos", "Samples", "Tutorials") THEN the system SHALL treat each markdown file as a separate presentation
+6. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL use markdown filename as fallback instead of folder name, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
 
 ### Requirement 2
 
@@ -29,6 +31,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 4. WHEN generating the web page THEN the system SHALL create HTML with slide images and corresponding notes
 5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a fallback "redacted.png" image
 6. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
+7. WHEN extracting presentation titles THEN the system SHALL prefer frontmatter title, then first H1 header, then appropriate fallback (folder name for single presentations, formatted filename for multiple presentations in one folder)
 
 ### Requirement 3
 
@@ -48,11 +51,12 @@ This feature will create a dynamic website generator that converts Deckset prese
 
 #### Acceptance Criteria
 
-1. WHEN generating the homepage THEN the system SHALL list all discovered presentations
+1. WHEN generating the homepage THEN the system SHALL list all discovered presentations (including multiple presentations from folders like Examples)
 2. WHEN displaying each presentation THEN the system SHALL show a preview image from the first slide
 3. WHEN a preview image is unavailable THEN the system SHALL display a placeholder image
 4. WHEN clicking on a presentation THEN the system SHALL navigate to the presentation's web page
-5. WHEN displaying presentation titles THEN the system SHALL use the folder name or extracted title from the markdown
+5. WHEN displaying presentation titles THEN the system SHALL use the extracted title (with proper filename-based fallback for multiple presentations in one folder)
+6. WHEN organizing presentations from multiple-presentation folders THEN the system SHALL create appropriate subdirectories (e.g., presentations/Examples/10 Deckset basics.html)
 
 ### Requirement 5
 

@@ -86,3 +86,11 @@
   - Add error notification and reporting for failed builds
   - Write workflow that triggers on main branch pushes
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+
+- [x] 12. Enhance title extraction for multiple presentations folders
+  - Modify extract_presentation_title method to support filename fallback for multiple presentations in single folder
+  - Add _format_filename_as_title method to remove numeric prefixes from filenames (e.g., "10 Deckset basics" → "Deckset basics")
+  - Update _create_presentation_info_from_file to use filename fallback for title extraction
+  - Create comprehensive unit tests covering Examples folder scenarios and filename fallback behavior
+  - Update requirements.md and design.md to reflect new title extraction logic
+  - _Requirements: 1.5, 1.6, 2.7, 4.5, 4.6_

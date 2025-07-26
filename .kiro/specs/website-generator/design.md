@@ -40,17 +40,23 @@ graph TD
 class PresentationScanner:
     def scan_presentations(self, root_path: str) -> List[PresentationInfo]
     def find_markdown_file(self, folder_path: str) -> Optional[str]
-    def extract_presentation_title(self, markdown_path: str) -> str
+    def extract_presentation_title(self, markdown_path: str, use_filename_fallback: bool = False) -> str
     def is_presentation_folder(self, folder_path: str) -> bool
+    def _has_multiple_independent_presentations(self, folder_path: Path) -> bool
+    def _create_presentation_info_from_file(self, folder_path: Path, markdown_file: Path) -> Optional[PresentationInfo]
+    def _format_filename_as_title(self, filename_stem: str) -> str
 ```
 
 **Key Methods**:
-- `scan_presentations()`: Scans all folders in repository root directory, excluding system folders
+- `scan_presentations()`: Scans all folders in repository root directory, excluding system folders. Detects and handles both single-presentation folders and multiple-presentation folders (e.g., Examples)
 - `find_markdown_file()`: Implements priority logic - prefers file matching folder name, then first alphabetically
-- `extract_presentation_title()`: Extracts title from markdown frontmatter or uses folder name as fallback
+- `extract_presentation_title()`: Extracts title from frontmatter, H1 headers, or appropriate fallback. Uses `use_filename_fallback` parameter to determine fallback behavior (folder name vs formatted filename)
 - `is_presentation_folder()`: Identifies folders containing markdown files as presentation folders
+- `_has_multiple_independent_presentations()`: Detects folders containing multiple independent presentations based on folder name patterns and markdown file structure
+- `_create_presentation_info_from_file()`: Creates presentation info for individual markdown files within multiple-presentation folders
+- `_format_filename_as_title()`: Formats filename as presentation title, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
 
-**Design Rationale**: The scanner implements specific file selection logic from Requirement 1.3-1.4, ensuring consistent behavior when multiple markdown files exist in a folder. This prevents ambiguity and provides predictable results for presentation authors.
+**Design Rationale**: The scanner implements specific file selection logic from Requirements 1.3-1.6, ensuring consistent behavior when multiple markdown files exist in a folder. For folders like "Examples" that contain multiple independent presentations, each markdown file is treated as a separate presentation with proper title extraction using filename fallback instead of folder name fallback. This prevents ambiguity and provides predictable results for presentation authors.
 
 ### 2. Presentation Processor (`processor.py`)
 
