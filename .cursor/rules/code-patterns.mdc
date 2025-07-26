@@ -1,0 +1,165 @@
+---
+globs: **/*.py
+alwaysApply: false
+---
+# Python Code Patterns & Conventions
+
+## Project Structure Patterns
+
+### Module Organization
+- **Models**: All data structures in [models.py](mdc:models.py) using `@dataclass`
+- **Interfaces**: Abstract base classes with `ABC` and `@abstractmethod` 
+- **Processors**: Separate modules for each processing concern
+- **Configuration**: Centralized in `GeneratorConfig` and `DecksetConfig` classes
+
+### Import Conventions
+```python
+# Standard library first
+import os
+import sys
+from pathlib import Path
+from typing import List, Optional, Dict, Any
+
+# Local imports last  
+from models import GeneratorConfig, PresentationInfo
+from scanner import PresentationScanner
+```
+
+## Data Models Patterns
+
+### Dataclass Usage
+```python
+@dataclass
+class ModelName:
+    """Clear docstring describing the model."""
+    required_field: str
+    optional_field: Optional[str] = None
+    list_field: List[str] = field(default_factory=list)
+    dict_field: Dict[str, Any] = field(default_factory=dict)
+```
+
+### Interface Definitions
+```python
+class ProcessorInterface(ABC):
+    """Interface for processor implementations."""
+    
+    @abstractmethod  
+    def process(self, data: InputType) -> OutputType:
+        """Process data with clear input/output types."""
+        pass
+```
+
+## Error Handling Patterns
+
+### Custom Exceptions
+- Inherit from `GeneratorError` base class
+- Use specific exception types: `ScanningError`, `ParsingError`, `ProcessingError`
+- Include context and actionable error messages
+
+### Error Processing
+```python
+try:
+    result = risky_operation()
+except SpecificError as e:
+    logger.error(f"Operation failed: {e}")
+    raise ProcessingError(f"Context: {e}") from e
+```
+
+## Processing Pipeline Patterns
+
+### Component Initialization
+```python
+class Processor:
+    def __init__(self, config: Optional[Config] = None):
+        self.config = config or Config()
+        self.logger = self._setup_logging()
+        # Initialize sub-components
+```
+
+### Result Processing
+```python
+def process_item(self, item: InputType) -> ProcessedType:
+    """Process single item with validation."""
+    try:
+        # Validate input
+        self._validate_input(item)
+        
+        # Process with error handling
+        result = self._internal_process(item)
+        
+        # Validate output
+        self._validate_output(result)
+        
+        return result
+    except Exception as e:
+        # Log and re-raise with context
+        raise ProcessingError(f"Failed to process {item}: {e}") from e
+```
+
+## Logging Patterns
+
+### Logger Setup
+```python
+def _setup_logging(self) -> logging.Logger:
+    """Set up component-specific logging."""
+    logger = logging.getLogger(self.__class__.__name__)
+    # Configure handlers if needed
+    return logger
+```
+
+### Logging Usage
+- Use `self.logger` for component logging
+- Include context in log messages
+- Use appropriate levels: `debug`, `info`, `warning`, `error`
+
+## Configuration Patterns
+
+### Config Management
+- Use `GeneratorConfig` for global settings
+- Use `DecksetConfig` for presentation-specific settings  
+- Support config merging and overrides
+- Validate configuration on initialization
+
+## File Processing Patterns
+
+### Path Handling
+```python
+# Use pathlib.Path for all file operations
+path = Path(file_path)
+if path.exists() and path.is_file():
+    # Process file
+```
+
+### Resource Management
+```python
+# Use context managers for file operations
+with open(path, 'r', encoding='utf-8') as f:
+    content = f.read()
+```
+
+## Testing Patterns
+
+### Test Structure
+- Use `pytest` framework
+- Follow `test_module_name.py` naming
+- Use `TestClassName` for test classes
+- Use `setup_method()` and `teardown_method()` for fixtures
+
+### Mock Usage
+```python
+from unittest.mock import Mock, patch, MagicMock
+
+@patch('module.external_dependency')
+def test_feature(self, mock_dependency):
+    mock_dependency.return_value = expected_result
+    # Test implementation
+```
+
+### Temp Directory Testing
+```python
+def setup_method(self):
+    self.temp_dir = tempfile.mkdtemp()
+    
+def teardown_method(self):
+    shutil.rmtree(self.temp_dir, ignore_errors=True)
+```

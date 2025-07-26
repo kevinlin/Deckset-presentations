@@ -1,0 +1,183 @@
+---
+globs: "tests/*.py,tests/*.js"
+---
+
+# Testing Conventions
+
+## Python Testing with pytest
+
+### Test Organization
+- **Integration Tests**: [test_integration.py](mdc:tests/test_integration.py), [test_end_to_end.py](mdc:tests/test_end_to_end.py)
+- **Component Tests**: One file per component (e.g., [test_scanner.py](mdc:tests/test_scanner.py))
+- **Enhanced Features**: [test_enhanced_integration.py](mdc:tests/test_enhanced_integration.py)
+
+### Test Class Structure
+```python
+class TestComponentName:
+    """Test suite for ComponentName functionality."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.temp_dir = tempfile.mkdtemp()
+        # Initialize test data
+        
+    def teardown_method(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+        
+    def test_specific_functionality(self):
+        """Test specific feature with descriptive name."""
+        # Arrange
+        # Act  
+        # Assert
+```
+
+### Fixture Patterns
+```python
+@pytest.fixture
+def test_repo(self):
+    """Create temporary repository structure."""
+    temp_dir = tempfile.mkdtemp()
+    # Set up directory structure
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
+```
+
+### Test Data Patterns
+```python
+def create_test_presentations(self):
+    """Create realistic test presentation data."""
+    # Create markdown content with Deckset syntax
+    markdown_content = """
+slidenumbers: true
+footer: Test Footer
+
+# Test Presentation
+---
+## Second Slide
+^ Speaker note
+    """
+    # Write to temp files
+```
+
+### Mocking Patterns
+```python
+@patch('module.external_service')
+def test_with_mock(self, mock_service):
+    mock_service.return_value = expected_result
+    # Test implementation
+    mock_service.assert_called_once_with(expected_args)
+```
+
+## JavaScript Testing with Jest
+
+### Test Structure
+```javascript
+describe('Component Name', () => {
+    beforeEach(() => {
+        // Set up DOM fixtures
+        document.body.innerHTML = '';
+        // Initialize test data
+    });
+    
+    afterEach(() => {
+        // Clean up
+        document.body.innerHTML = '';
+    });
+    
+    test('should describe expected behavior', () => {
+        // Arrange
+        // Act
+        // Assert
+    });
+});
+```
+
+### DOM Testing Patterns
+```javascript
+// Create test DOM elements
+const container = document.createElement('div');
+container.innerHTML = `<div class="slide-viewer">...</div>`;
+document.body.appendChild(container);
+
+// Test interactions
+const element = container.querySelector('.slide-viewer');
+expect(element).toBeTruthy();
+```
+
+### Async Testing
+```javascript
+test('should handle async operations', async () => {
+    const result = await asyncOperation();
+    expect(result).toBe(expected);
+});
+```
+
+## Test Coverage Expectations
+
+### Core Components
+- **Scanner**: Repository scanning, folder detection, markdown file discovery
+- **Parser**: Global commands, slide commands, syntax parsing
+- **Processors**: Media processing, code highlighting, math rendering
+- **Generator**: HTML generation, template rendering, homepage creation
+
+### Integration Points
+- **Pipeline Flow**: End-to-end processing from markdown to HTML
+- **Error Handling**: Exception propagation and error recovery
+- **Configuration**: Config loading, merging, validation
+
+### Edge Cases
+- **Empty Presentations**: No slides, missing files
+- **Invalid Syntax**: Malformed markdown, invalid commands
+- **File System Issues**: Permissions, missing directories
+
+## Test Data Management
+
+### Markdown Samples
+- Use realistic Deckset markdown with all supported features
+- Include global commands, slide commands, media references
+- Test both valid and invalid syntax variations
+
+### Media Files
+- Create minimal valid media files (JPEG headers, etc.)
+- Test various file formats and modifiers
+- Include missing file scenarios
+
+### Directory Structures
+- Create temporary directories that mirror real repository layouts
+- Test various folder naming conventions
+- Include edge cases (special characters, nested structures)
+
+## Running Tests
+
+### Python Tests
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_scanner.py
+
+# Run with coverage
+uv run pytest --cov=.
+```
+
+### JavaScript Tests  
+```bash
+# Run Jest tests
+npm test
+
+# Run specific test pattern
+npm test -- --testNamePattern="navigation"
+```
+
+## Test Documentation
+
+- Use descriptive test method names that explain the scenario
+- Include docstrings for complex test setups
+- Document test data creation and expected outcomes
+- Explain mock usage and why external dependencies are mocked
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,239 @@
+---
+description: Development workflow, tooling, and project setup guidelines
+alwaysApply: false
+---
+# Development Workflow
+
+## Package Management with uv
+
+This project uses **uv** as the modern Python package manager.
+
+### Project Setup
+```bash
+# Clone and set up environment
+git clone <repository-url>
+cd deckset-presentations
+
+# Install dependencies
+uv sync
+
+# Activate virtual environment  
+source .venv/bin/activate
+
+# Run the application
+uv run python main.py
+```
+
+### Dependency Management
+```bash
+# Add runtime dependency
+uv add package-name
+
+# Add development dependency  
+uv add --dev package-name
+
+# Update dependencies
+uv sync --upgrade
+
+# Check for outdated packages
+uv tree --outdated
+```
+
+## Project Configuration
+
+### pyproject.toml Structure
+See [pyproject.toml](mdc:pyproject.toml) for:
+- Project metadata and dependencies
+- Build system configuration (hatchling)
+- Development dependency groups
+- Package inclusion rules
+
+### Environment Variables
+```bash
+# Set output directory (optional)
+export DECKSET_OUTPUT_DIR="docs"
+
+# Set log level (optional)
+export DECKSET_LOG_LEVEL="INFO"
+```
+
+## Development Commands
+
+### Running the Application
+```bash
+# Basic run
+uv run python main.py
+
+# With custom output directory
+uv run python main.py --output-dir custom-output
+
+# With verbose logging
+uv run python main.py --verbose
+
+# Help and options
+uv run python main.py --help
+```
+
+### Testing
+```bash
+# Run all Python tests
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_scanner.py
+
+# Run with coverage
+uv run pytest --cov=. --cov-report=html
+
+# Run JavaScript tests
+npm test
+
+# Run specific JS test pattern
+npm test -- --testNamePattern="navigation"
+```
+
+## Code Quality
+
+### Linting and Formatting
+```bash
+# Format code (if configured)
+uv run black .
+
+# Sort imports (if configured) 
+uv run isort .
+
+# Type checking (if configured)
+uv run mypy .
+```
+
+### Pre-commit Hooks
+If using pre-commit:
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks manually
+pre-commit run --all-files
+```
+
+## Directory Structure Guidelines
+
+### Source Organization
+```
+deckset-presentations/
+├── main.py                 # Main entry point
+├── models.py              # Data structures
+├── scanner.py             # Repository scanning
+├── deckset_parser.py      # Markdown parsing
+├── enhanced_processor.py  # Processing pipeline
+├── *_processor.py         # Specialized processors
+├── generator.py           # HTML generation
+├── templates/             # Jinja2 templates
+├── tests/                 # Test suite
+└── [01-99]-*/            # Presentation folders
+```
+
+### Presentation Folder Structure
+```
+presentation-name/
+├── presentation-name.md   # Main markdown file
+├── image1.jpg            # Media assets
+├── image2.png
+└── video.mp4
+```
+
+## Git Workflow
+
+### Branch Naming
+- `feature/description` - New features
+- `fix/description` - Bug fixes  
+- `docs/description` - Documentation updates
+- `test/description` - Test improvements
+
+### Commit Messages
+Follow conventional commits:
+```
+feat: add support for video backgrounds
+fix: resolve image path resolution bug  
+docs: update API documentation
+test: add integration tests for scanner
+```
+
+## Debugging
+
+### Logging Configuration
+```python
+# Enable debug logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Component-specific logging
+logger = logging.getLogger('scanner')
+logger.setLevel(logging.DEBUG)
+```
+
+### Common Issues
+
+#### Presentation Not Found
+- Check folder structure matches expected pattern
+- Verify markdown file exists and is readable
+- Review exclude_folders configuration
+
+#### Template Rendering Errors
+- Validate Jinja2 template syntax
+- Check context variable availability
+- Review template inheritance chain
+
+#### Media Processing Issues
+- Verify image/video file formats
+- Check file permissions and accessibility
+- Review media modifier syntax
+
+## Performance Optimization
+
+### Development Tips
+- Use `--verbose` flag for detailed processing logs
+- Monitor memory usage with large presentations
+- Profile slow components with Python profiler
+
+### Production Considerations
+- Optimize image sizes before processing
+- Use CDN for large media files
+- Consider output directory cleanup strategies
+
+## VS Code / Cursor Integration
+
+### Recommended Extensions
+- Python extension for language support
+- Jinja2 extension for template syntax
+- Jest Runner for JavaScript test execution
+- GitLens for git integration
+
+### Workspace Settings
+Configure `.vscode/settings.json`:
+```json
+{
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "files.associations": {
+        "*.mdc": "markdown"
+    }
+}
+```
+
+## Deployment
+
+### GitHub Pages Deployment
+The generated `docs/` directory can be deployed to GitHub Pages:
+
+1. Push generated files to repository
+2. Enable GitHub Pages in repository settings
+3. Select `docs/` directory as source
+
+### Static Site Hosting
+Output is compatible with:
+- Netlify
+- Vercel  
+- AWS S3 + CloudFront
+- Any static hosting service
+

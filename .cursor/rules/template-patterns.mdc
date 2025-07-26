@@ -1,0 +1,241 @@
+---
+globs: "templates/**/*.html,templates/**/*.css,templates/**/*.js"
+---
+
+# Template & UI Patterns
+
+## Jinja2 Template Structure
+
+### Base Template Pattern
+The project uses [templates/base.html](mdc:templates/base.html) as the foundation:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Deckset Presentations{% endblock %}</title>
+    <!-- Common head elements -->
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>
+```
+
+### Template Inheritance
+```html
+{% extends "base.html" %}
+
+{% block title %}{{ presentation.title }}{% endblock %}
+
+{% block content %}
+<!-- Page-specific content -->
+{% endblock %}
+```
+
+## CSS Framework & Styling
+
+### Tailwind CSS Integration
+- Uses Tailwind CSS via CDN for responsive design
+- Custom utility classes for presentation-specific styling
+- Print styles for presentation printing
+
+### Responsive Design Patterns
+```css
+/* Mobile-first responsive breakpoints */
+@media (max-width: 640px) {
+    .slide-content {
+        @apply prose-sm;
+    }
+}
+
+/* Print optimizations */
+@media print {
+    .no-print {
+        display: none;
+    }
+    .page-break {
+        page-break-after: always;
+    }
+}
+```
+
+### Component-Specific Styles
+```css
+.slide-content {
+    @apply prose prose-lg max-w-none;
+}
+
+.slide-notes {
+    @apply text-gray-600 bg-gray-50 p-4 rounded-lg mt-4;
+}
+```
+
+## JavaScript Patterns
+
+### Enhanced Slide Viewer
+Located in [templates/assets/js/enhanced-slide-viewer.js](mdc:templates/assets/js/enhanced-slide-viewer.js):
+
+```javascript
+class EnhancedSlideViewer {
+    constructor(container) {
+        this.container = container;
+        this.init();
+    }
+    
+    init() {
+        this.setupNavigation();
+        this.setupKeyboardHandlers();
+        this.setupAccessibility();
+    }
+}
+```
+
+### Event Handling Patterns
+```javascript
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    switch(e.key) {
+        case 'ArrowRight':
+        case ' ':
+            this.nextSlide();
+            break;
+        case 'ArrowLeft':
+            this.previousSlide();
+            break;
+    }
+});
+```
+
+## Template Data Patterns
+
+### Presentation Context
+Templates receive rich context objects:
+
+```python
+context = {
+    'presentation': enhanced_presentation,
+    'slides': processed_slides,
+    'config': generator_config,
+    'deckset_config': deckset_config,
+    'media_files': processed_media,
+    'navigation': navigation_data
+}
+```
+
+### Slide Rendering
+```html
+{% for slide in slides %}
+<div class="slide" data-slide-index="{{ loop.index0 }}">
+    <div class="slide-content">
+        {{ slide.processed_content | safe }}
+    </div>
+    
+    {% if slide.notes %}
+    <div class="slide-notes">
+        <h4>Speaker Notes:</h4>
+        {{ slide.notes | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+```
+
+## Accessibility Patterns
+
+### ARIA Support
+```html
+<nav aria-label="Slide navigation">
+    <button aria-label="Previous slide" data-action="prev">←</button>
+    <span aria-live="polite">Slide {{ current_slide }} of {{ total_slides }}</span>
+    <button aria-label="Next slide" data-action="next">→</button>
+</nav>
+```
+
+### Keyboard Navigation
+- Arrow keys for slide navigation
+- Tab navigation for interactive elements  
+- Screen reader support for slide content
+
+### Focus Management
+```javascript
+// Ensure proper focus handling
+updateFocus() {
+    const currentSlide = this.getCurrentSlide();
+    if (currentSlide) {
+        currentSlide.focus();
+    }
+}
+```
+
+## Media Integration
+
+### Image Handling
+```html
+{% if slide.images %}
+    {% for image in slide.images %}
+    <img src="{{ image.web_path }}" 
+         alt="{{ image.alt_text }}"
+         class="{{ image.css_classes }}"
+         {% if image.modifiers.placement == 'background' %}
+         style="background-image: url('{{ image.web_path }}')"
+         {% endif %}>
+    {% endfor %}
+{% endif %}
+```
+
+### Video/Audio Support
+```html
+{% if slide.videos %}
+    {% for video in slide.videos %}
+    <video controls {% if video.autoplay %}autoplay{% endif %}>
+        <source src="{{ video.web_path }}" type="{{ video.mime_type }}">
+    </video>
+    {% endfor %}
+{% endif %}
+```
+
+## Performance Patterns
+
+### Asset Optimization
+- Favicon and icon management
+- Lazy loading for media content
+- Optimized CSS delivery
+
+### Caching Headers
+```html
+<meta name="cache-control" content="public, max-age=3600">
+```
+
+## Error Handling in Templates
+
+### Graceful Degradation
+```html
+{% if presentation.slides %}
+    <!-- Render slides -->
+{% else %}
+    <div class="error-message">
+        <p>No slides found in this presentation.</p>
+    </div>
+{% endif %}
+```
+
+### Missing Media Fallbacks
+```html
+<img src="{{ image.web_path }}" 
+     alt="{{ image.alt_text }}"
+     onerror="this.style.display='none'">
+```
+
+## Template Testing
+
+Templates are tested via:
+- [tests/test_enhanced_templates.py](mdc:tests/test_enhanced_templates.py) for Python template logic
+- [tests/test_enhanced_slide_viewer.js](mdc:tests/test_enhanced_slide_viewer.js) for JavaScript functionality
+- [tests/test_navigation_accessibility.js](mdc:tests/test_navigation_accessibility.js) for accessibility features
+description:
+globs:
+alwaysApply: false
+---

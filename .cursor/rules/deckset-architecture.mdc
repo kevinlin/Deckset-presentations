@@ -1,0 +1,51 @@
+---
+alwaysApply: false
+---
+# Deckset Presentations Project Architecture
+
+This project is a **Deckset-compatible Markdown to HTML presentation generator** that scans repositories for presentation folders and converts them into a responsive website.
+
+## Core Architecture Components
+
+The system follows a modular pipeline architecture:
+
+1. **Repository Scanner** ([scanner.py](mdc:scanner.py)) - Discovers presentation folders and markdown files
+2. **Deckset Parser** ([deckset_parser.py](mdc:deckset_parser.py)) - Parses Deckset-specific markdown syntax and global commands
+3. **Enhanced Processor** ([enhanced_processor.py](mdc:enhanced_processor.py)) - Orchestrates the complete processing pipeline
+4. **Specialized Processors**:
+   - **Slide Processor** ([slide_processor.py](mdc:slide_processor.py)) - Handles slide content and layout
+   - **Media Processor** ([media_processor.py](mdc:media_processor.py)) - Processes images, videos, and media modifiers
+   - **Code Processor** ([code_processor.py](mdc:code_processor.py)) - Handles syntax highlighting and line emphasis
+   - **Math Processor** ([math_processor.py](mdc:math_processor.py)) - Processes LaTeX math expressions
+5. **Template Engine** ([enhanced_templates.py](mdc:enhanced_templates.py)) - Manages HTML template rendering
+6. **Web Generator** ([generator.py](mdc:generator.py)) - Creates final HTML pages and homepage
+7. **Main Orchestrator** ([main.py](mdc:main.py)) - Coordinates the entire workflow
+
+## Data Flow
+
+```
+Repository → Scanner → Parser → Enhanced Processor → [Specialized Processors] → Template Engine → Web Generator → Static Website
+```
+
+## Key Data Models
+
+All data structures are defined in [models.py](mdc:models.py):
+
+- **PresentationInfo**: Metadata about discovered presentations
+- **ProcessedPresentation**: Fully processed presentation with slides
+- **DecksetConfig**: Global Deckset configuration settings  
+- **SlideConfig**: Slide-specific configuration overrides
+- **EnhancedPresentation**: Rich presentation with media and advanced features
+
+## Entry Points
+
+- **Main CLI**: [main.py](mdc:main.py) - `DecksetWebsiteGenerator` class
+- **Configuration**: [models.py](mdc:models.py) - `GeneratorConfig` class
+- **Templates**: [templates/](mdc:templates/) directory with Jinja2 templates
+
+## Dependencies
+
+- **uv**: Package manager (see [pyproject.toml](mdc:pyproject.toml))
+- **Jinja2**: Template rendering
+- **Markdown**: Basic markdown processing
+- **pytest**: Testing framework
