@@ -16,7 +16,7 @@
 
 - [x] 3. Implement repository scanner functionality
   - Create PresentationScanner class to discover presentation folders
-  - Implement folder scanning logic that excludes system directories (.git, .kiro, Examples, etc.)
+  - Implement folder scanning logic that excludes system directories (.git, .kiro, etc.)
   - Add markdown file detection and selection logic (prefer folder-named files)
   - Write unit tests for scanner functionality with various folder structures in tests/test_scanner.py
   - _Requirements: 1.1, 1.2, 1.3, 1.4_

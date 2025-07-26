@@ -679,10 +679,6 @@ This enhanced design provides comprehensive Deckset compatibility while maintain
      - Avoid wrapping headers and other block elements in paragraphs
      - Added support for inline code, multiple emphasis styles, and H4 headers
 
-2. **Examples Folder Exclusion** ✅ FIXED
-   - **Problem**: The `Examples` folder containing `10 Deckset basics.md` was excluded by default
-   - **Solution**: Removed `Examples` from the default `exclude_folders` list in `GeneratorConfig`
-
 ### Verification Results
 
 **All Deckset Features Working Correctly:**

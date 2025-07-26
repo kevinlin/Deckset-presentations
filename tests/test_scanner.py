@@ -23,7 +23,7 @@ class TestPresentationScanner:
     def config(self):
         """Create a test configuration."""
         return GeneratorConfig(
-            exclude_folders=[".git", ".kiro", "Examples", "node_modules", "__pycache__"]
+            exclude_folders=[".git", ".kiro", "node_modules", "__pycache__"]
         )
 
     @pytest.fixture
@@ -42,7 +42,6 @@ class TestPresentationScanner:
                 # Excluded folders
                 ".git",
                 ".kiro",
-                "Examples",
                 # Empty folder
                 "empty-folder",
                 # Folder with non-markdown files only
@@ -102,7 +101,6 @@ class TestPresentationScanner:
         # Excluded folders should not be included
         assert not any(p.folder_name == ".git" for p in presentations)
         assert not any(p.folder_name == ".kiro" for p in presentations)
-        assert not any(p.folder_name == "Examples" for p in presentations)
 
         # Empty folder should not be included
         assert not any(p.folder_name == "empty-folder" for p in presentations)
@@ -161,7 +159,6 @@ class TestPresentationScanner:
         # Should exclude specified folders
         assert not scanner.is_presentation_folder(os.path.join(test_repo, ".git"))
         assert not scanner.is_presentation_folder(os.path.join(test_repo, ".kiro"))
-        assert not scanner.is_presentation_folder(os.path.join(test_repo, "Examples"))
 
         # Should exclude folders without markdown files
         assert not scanner.is_presentation_folder(
