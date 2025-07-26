@@ -25,7 +25,7 @@ from file_manager import FileManager
 
 class WebPageGenerator:
     """Generates HTML pages for presentations and homepage."""
-    
+
     def __init__(self, config: GeneratorConfig):
         """
         Initialize the web page generator with configuration.
@@ -38,7 +38,7 @@ class WebPageGenerator:
         self.logger = logging.getLogger(__name__)
         self.logger.info("Using enhanced template engine")
         self.file_manager = FileManager(config)
-    
+
     def generate_presentation_page(
         self, 
         presentation: ProcessedPresentation, 
@@ -55,7 +55,7 @@ class WebPageGenerator:
             TemplateRenderingError: If page generation fails
         """
         self.logger.info(f"Generating presentation page for '{presentation.info.title}'")
-        
+
         try:
             # Create output directory if it doesn't exist
             output_path = Path(output_path)
@@ -70,10 +70,10 @@ class WebPageGenerator:
                         "directory": str(output_path.parent)
                     }
                 )
-            
-            # Note: Image processing is handled by FileManager.process_presentation_files() 
+
+            # Note: Image processing is handled by FileManager.process_presentation_files()
             # which is called in generate_all_pages() before this method
-            
+
             # Render the presentation using the template manager
             try:
                 if hasattr(presentation, 'config'):
@@ -91,7 +91,7 @@ class WebPageGenerator:
                         "template_error": str(e)
                     }
                 )
-            
+
             # Write the HTML file
             try:
                 with open(output_path, 'w', encoding='utf-8') as f:
@@ -105,9 +105,9 @@ class WebPageGenerator:
                         "content_length": len(html_content)
                     }
                 )
-                
+
             self.logger.info(f"Generated presentation page for '{presentation.info.title}' at {output_path}")
-                
+
         except (TemplateRenderingError, FileOperationError):
             # Re-raise our custom exceptions
             raise
@@ -129,7 +129,7 @@ class WebPageGenerator:
                     "unexpected_error": str(e)
                 }
             ) from e
-    
+
     def generate_homepage(
         self, 
         presentations: List[PresentationInfo], 
@@ -146,7 +146,7 @@ class WebPageGenerator:
             TemplateRenderingError: If homepage generation fails
         """
         self.logger.info(f"Generating homepage with {len(presentations)} presentations")
-        
+
         try:
             # Create output directory if it doesn't exist
             output_path = Path(output_path)
@@ -161,7 +161,7 @@ class WebPageGenerator:
                         "presentation_count": len(presentations)
                     }
                 )
-            
+
             # Process preview images for each presentation
             try:
                 self._process_preview_images(presentations)
@@ -174,17 +174,18 @@ class WebPageGenerator:
                     }
                 )
                 # Continue with generation even if preview processing fails
-            
+
             # Sort presentations by title alphabetically
             try:
                 sorted_presentations = sorted(
                     presentations,
-                    key=lambda p: p.title.lower() if p.title else ""
+                    key=lambda p: (p.last_modified if p.last_modified else p.title.lower()),
+                    reverse=True
                 )
             except Exception as e:
                 self.logger.warning(f"Failed to sort presentations, using original order: {e}")
                 sorted_presentations = presentations
-            
+
             # Render the homepage using the template manager
             try:
                 html_content = self.template_manager.render_homepage(sorted_presentations, None)
@@ -196,7 +197,7 @@ class WebPageGenerator:
                         "template_error": str(e)
                     }
                 )
-            
+
             # Write the HTML file
             try:
                 with open(output_path, 'w', encoding='utf-8') as f:
@@ -210,9 +211,9 @@ class WebPageGenerator:
                         "presentation_count": len(presentations)
                     }
                 )
-                
+
             self.logger.info(f"Generated homepage with {len(presentations)} presentations at {output_path}")
-                
+
         except (TemplateRenderingError, FileOperationError):
             # Re-raise our custom exceptions
             raise
@@ -234,7 +235,7 @@ class WebPageGenerator:
                     "unexpected_error": str(e)
                 }
             ) from e
-    
+
     def _process_slide_images(self, presentation: ProcessedPresentation) -> None:
         """
         Process slide images and ensure they have proper paths.
@@ -249,7 +250,7 @@ class WebPageGenerator:
             # If the slide has no image path, leave it as None
             if not slide.image_path:
                 continue
-                
+
             # Check if the image exists (resolve relative to presentation folder)
             image_path = Path(slide.image_path)
             if not image_path.is_absolute() and not str(image_path).startswith('/'):
@@ -257,15 +258,15 @@ class WebPageGenerator:
                 resolved_image_path = Path(presentation.info.folder_path) / image_path
             else:
                 resolved_image_path = image_path
-                
+
             if not resolved_image_path.exists():
                 self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {resolved_image_path}")
                 slide.image_path = None
                 continue
-                
+
             # Leave the image_path as-is for now - FileManager will handle the copying
             # and update the path to the web-accessible location
-    
+
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
         Process preview images for presentations.
@@ -279,7 +280,7 @@ class WebPageGenerator:
         # Create images directory for previews if it doesn't exist
         preview_dir = Path(self.config.output_dir) / "images"
         preview_dir.mkdir(parents=True, exist_ok=True)
-        
+
         for presentation in presentations:
             # Skip if preview image has already been processed by FileManager
             # (indicated by web-accessible path starting with "../")
@@ -291,21 +292,21 @@ class WebPageGenerator:
                 potential_images = list(Path(presentation.folder_path).glob("*.png")) + \
                                   list(Path(presentation.folder_path).glob("*.jpg")) + \
                                   list(Path(presentation.folder_path).glob("*.jpeg"))
-                
+
                 # Also check in a slides/ subdirectory if it exists
                 slides_dir = Path(presentation.folder_path) / "slides"
                 if slides_dir.exists():
                     potential_images.extend(list(slides_dir.glob("*.png")))
                     potential_images.extend(list(slides_dir.glob("*.jpg")))
                     potential_images.extend(list(slides_dir.glob("*.jpeg")))
-                
+
                 # Sort by name to try to get slide1.png or similar
                 potential_images.sort(key=lambda p: p.name)
-                
+
                 if potential_images:
                     # Use the first image found as preview
                     presentation.preview_image = str(potential_images[0])
-            
+
             # Process the preview image if it exists
             if presentation.preview_image:
                 # Convert relative path to absolute path for validation
@@ -319,20 +320,20 @@ class WebPageGenerator:
                     actual_path = Path(self.config.output_dir) / presentation.preview_image
                 else:
                     actual_path = Path(presentation.preview_image)
-                
+
                 if not actual_path.exists():
                     self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
                     presentation.preview_image = None
                     continue
-                
+
                 # Create a standardized preview image name
                 preview_filename = f"{presentation.folder_name}-preview{actual_path.suffix}"
                 dest_path = preview_dir / preview_filename
-                
+
                 # Update the preview image path to use the web-accessible path
                 presentation.preview_image = f"../images/{preview_filename}"
             # If no preview image is available, leave it as None (template will handle placeholder)
-    
+
     def generate_all_pages(
         self, 
         presentations: List[ProcessedPresentation],
@@ -353,20 +354,20 @@ class WebPageGenerator:
         """
         if output_dir is None:
             output_dir = self.config.output_dir
-            
+
         # Set up output directories
         self.file_manager.setup_output_directories()
-            
+
         output_dir_path = Path(output_dir)
         presentations_dir = output_dir_path / "presentations"
-        
+
         stats = {
             "total": len(presentations),
             "successful": 0,
             "failed": 0,
             "errors": []
         }
-        
+
         # Generate individual presentation pages
         presentation_infos = []
         for presentation in presentations:
@@ -377,14 +378,14 @@ class WebPageGenerator:
                     md_path = Path(presentation.info.markdown_path)
                     if md_path.exists():
                         presentation.info.last_modified = datetime.fromtimestamp(md_path.stat().st_mtime)
-                
+
                 # Set slide count if not already set
                 if presentation.info.slide_count == 0:
                     presentation.info.slide_count = len(presentation.slides)
-                
+
                 # Process files for this presentation (this handles image copying and path updates)
                 self.file_manager.process_presentation_files(presentation)
-                
+
                 # Generate the presentation page
                 output_path = presentations_dir / f"{presentation.info.folder_name}.html"
                 self.generate_presentation_page(presentation, output_path)
@@ -399,8 +400,8 @@ class WebPageGenerator:
                 stats["errors"].append(error_info)
                 self.logger.error(f"Failed to generate page for '{presentation.info.title}': {e}")
                 # Continue with other presentations despite errors
-        
-                    # Generate homepage - adjust preview image paths for root level
+
+                # Generate homepage - adjust preview image paths for root level
         try:
             # Create a copy of presentation_infos with adjusted paths for homepage
             homepage_presentation_infos = []
@@ -408,13 +409,13 @@ class WebPageGenerator:
                 # Create a copy to avoid modifying the original
                 from copy import copy
                 homepage_info = copy(presentation_info)
-                
+
                 # Adjust preview image paths for homepage (remove ../ prefix)
                 if homepage_info.preview_image and homepage_info.preview_image.startswith("../"):
                     homepage_info.preview_image = homepage_info.preview_image[3:]  # Remove "../"
-                
+
                 homepage_presentation_infos.append(homepage_info)
-            
+
             homepage_path = output_dir_path / "index.html"
             self.generate_homepage(homepage_presentation_infos, homepage_path)
         except Exception as e:
@@ -423,12 +424,12 @@ class WebPageGenerator:
                 "error": str(e)
             })
             self.logger.error(f"Failed to generate homepage: {e}")
-        
+
         # Clean up unused files
         self.file_manager.cleanup_output_directory(presentations)
-        
+
         return stats
-    
+
     def _render_enhanced_presentation(self, presentation) -> str:
         """
         Render an enhanced presentation with all features enabled.
@@ -445,10 +446,10 @@ class WebPageGenerator:
             for slide in presentation.slides:
                 slide_html = self.template_manager.render_slide(slide, presentation.config)
                 slides_html.append(slide_html)
-            
+
             # Calculate asset path depth based on folder structure
             asset_path_prefix = self._calculate_asset_path_prefix(presentation.info.folder_name)
-            
+
             # Create presentation HTML with dynamic asset paths
             presentation_html = f"""
 <!DOCTYPE html>
@@ -511,9 +512,9 @@ class WebPageGenerator:
 </body>
 </html>
             """
-            
+
             return presentation_html
-            
+
         except Exception as e:
             self.logger.error(f"Failed to render enhanced presentation: {e}")
             # Return a minimal error page instead of fallback
@@ -549,12 +550,12 @@ class WebPageGenerator:
         # "Examples/10 Deckset basics" -> 1 separator -> "../../" (presentations/Examples/file.html -> ../../assets)
         path_parts = folder_name.split('/')
         depth = len(path_parts)
-        
+
         # We need depth "../" segments to go back to the root from the presentation file
-        # Single presentations: presentations/file.html -> ../ 
+        # Single presentations: presentations/file.html -> ../
         # Nested presentations: presentations/subfolder/file.html -> ../../
         return "../" * depth
-    
+
     def _get_mathjax_config(self) -> str:
         """Get MathJax configuration for enhanced presentations."""
         try:

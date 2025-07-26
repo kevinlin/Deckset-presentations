@@ -305,9 +305,9 @@ class TestWebPageGenerator:
             # Verify presentations are sorted alphabetically by title
             sorted_presentations = args[0]
             assert len(sorted_presentations) == 3
-            assert sorted_presentations[0].folder_name == "presentation1"
+            assert sorted_presentations[0].folder_name == "presentation3"
             assert sorted_presentations[1].folder_name == "presentation2"
-            assert sorted_presentations[2].folder_name == "presentation3"
+            assert sorted_presentations[2].folder_name == "presentation1"
             
             # Verify presentations without preview images have None (no fallback)
             for presentation in sorted_presentations:
