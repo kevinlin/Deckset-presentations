@@ -35,7 +35,6 @@ class WebPageGenerator:
         """
         self.config = config
         self.template_manager = EnhancedTemplateEngine(config.template_dir)
-        self.enhanced_mode = True
         self.logger = logging.getLogger(__name__)
         self.logger.info("Using enhanced template engine")
         self.file_manager = FileManager(config)
@@ -77,12 +76,12 @@ class WebPageGenerator:
             
             # Render the presentation using the template manager
             try:
-                if self.enhanced_mode and hasattr(presentation, 'config'):
+                if hasattr(presentation, 'config'):
                     # Enhanced presentation with Deckset features
                     html_content = self._render_enhanced_presentation(presentation)
                 else:
-                    # Basic presentation rendering
-                    html_content = self.template_manager.render_presentation(presentation, None)
+                    # Basic presentation rendering using EnhancedTemplateEngine
+                    html_content = self._render_enhanced_presentation(presentation)
             except Exception as e:
                 raise TemplateRenderingError(
                     f"Failed to render template for presentation '{presentation.info.title}': {e}",
@@ -517,8 +516,22 @@ class WebPageGenerator:
             
         except Exception as e:
             self.logger.error(f"Failed to render enhanced presentation: {e}")
-            # Fallback to basic rendering
-            return self.template_manager.render_presentation(presentation, None)
+            # Return a minimal error page instead of fallback
+            return f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Error</title>
+</head>
+<body>
+    <h1>Presentation Rendering Error</h1>
+    <p>Error: {e}</p>
+    <p>Presentation: {presentation.info.title if hasattr(presentation, 'info') else 'Unknown'}</p>
+</body>
+</html>
+            """
 
     def _calculate_asset_path_prefix(self, folder_name: str) -> str:
         """

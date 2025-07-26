@@ -6,7 +6,6 @@ the entire website generation process, from scanning presentations to
 generating the final HTML output.
 """
 
-import os
 import sys
 import logging
 import argparse
@@ -47,7 +46,6 @@ class DecksetWebsiteGenerator:
         # Initialize components
         self.scanner = PresentationScanner(self.config)
         self.processor = EnhancedPresentationProcessor()
-        self.enhanced_mode = True
         self.logger.info("Using enhanced Deckset processor")
         self.generator = WebPageGenerator(self.config)
 

@@ -91,7 +91,7 @@ class TestWebPageGenerator:
         assert generator.config == config
         assert generator.template_manager is not None
 
-    @patch('enhanced_templates.EnhancedTemplateEngine.render_presentation')
+    @patch.object(WebPageGenerator, '_render_enhanced_presentation')
     def test_generate_presentation_page(self, mock_render, config, processed_presentation, tmp_path):
         """Test generating a presentation page."""
         # Setup
@@ -108,12 +108,12 @@ class TestWebPageGenerator:
             content = f.read()
             assert content == "<html>Test content</html>"
         
-        # Verify template manager was called correctly
+        # Verify render method was called correctly
         mock_render.assert_called_once()
         args, _ = mock_render.call_args
         assert args[0] == processed_presentation
 
-    @patch('enhanced_templates.EnhancedTemplateEngine.render_presentation')
+    @patch.object(WebPageGenerator, '_render_enhanced_presentation')
     def test_generate_presentation_page_error(self, mock_render, config, processed_presentation, tmp_path):
         """Test error handling when generating a presentation page."""
         # Setup

@@ -223,6 +223,16 @@
   - ✅ Verified fix with regenerated presentations showing visible background images
   - _Requirements: 2.1, 8.2_
 
+- [x] 15. Enhanced mode simplification ✅ COMPLETED
+- [x] 15.1 Remove enhanced_mode configuration and always use enhanced features
+  - ✅ Removed GeneratorConfig.enhanced_mode instance variable from WebPageGenerator and DecksetWebsiteGenerator
+  - ✅ Removed EnhancedTemplateEngine.render_presentation() method (redundant with _render_enhanced_presentation)
+  - ✅ Updated WebPageGenerator to always use _render_enhanced_presentation() method
+  - ✅ Updated all tests to remove enhanced_mode references and patch the correct methods
+  - ✅ Updated test_enhanced_features_usage to verify enhanced features are always enabled
+  - ✅ All 287 tests passing with enhanced features always enabled
+  - _Requirements: All enhanced requirements now apply by default_
+
 ## IMPLEMENTATION COMPLETE ✅
 
 ### Summary of Completion
@@ -232,15 +242,20 @@ All major implementation phases have been completed successfully:
 2. **Media Processing**: Full support for images, videos, and audio with all Deckset modifiers
 3. **Advanced Features**: Code highlighting, math formulas, multi-column layouts
 4. **Template System**: Enhanced templates with proper HTML generation
-5. **Testing**: Comprehensive test suite with 279 tests all passing
+5. **Testing**: Comprehensive test suite with 287 tests all passing
 6. **Bug Fixes**: 
    - Fixed markdown to HTML conversion (headers no longer wrapped in `<p>` tags)
    - Fixed background image visibility issue (proper CSS z-index stacking)
    - Included Examples folder by default for better user experience
-7. **Verification**: Successfully processed and generated `Examples/10 Deckset basics.md` with all features working
+7. **Simplification**:
+   - ✅ Removed enhanced_mode configuration - all enhanced features now enabled by default
+   - ✅ Simplified codebase by removing redundant rendering paths
+   - ✅ Updated all tests and documentation to reflect always-enhanced operation
+8. **Verification**: Successfully processed and generated `Examples/10 Deckset basics.md` with all features working
 
 ### Key Achievements
 - **100% Deckset Compatibility**: All documented Deckset features implemented and tested
+- **Always Enhanced**: No mode switching - enhanced features always available
 - **Robust Error Handling**: Graceful degradation for missing files and invalid syntax
 - **Performance Optimized**: Efficient processing with lazy loading and responsive design
 - **Accessibility**: Proper ARIA labels and semantic HTML structure

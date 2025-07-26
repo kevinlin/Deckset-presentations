@@ -265,22 +265,18 @@ Some text here.
                 assert "<html" in content
                 assert "</html>" in content
     
-    def test_enhanced_mode_detection(self):
-        """Test that enhanced mode is properly detected and used."""
+    def test_enhanced_features_usage(self):
+        """Test that enhanced features are properly used."""
         generator = DecksetWebsiteGenerator(self.config)
-        
-        # Should use enhanced mode if available
-        assert hasattr(generator, 'enhanced_mode')
         
         # Generate and check for enhanced features
         result = generator.generate_website(self.temp_dir)
         
-        if generator.enhanced_mode:
-            # Verify enhanced features are present
-            homepage_path = self.output_dir / "index.html"
-            if homepage_path.exists():
-                homepage_content = homepage_path.read_text()
-                assert "Enhanced" in homepage_content or "enhanced" in homepage_content
+        # Verify enhanced features are present
+        homepage_path = self.output_dir / "index.html"
+        if homepage_path.exists():
+            homepage_content = homepage_path.read_text()
+            assert "Enhanced" in homepage_content or "enhanced" in homepage_content
     
     def test_backward_compatibility(self):
         """Test that basic presentations still work without enhanced features."""

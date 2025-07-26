@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This enhancement will transform the current basic website generator into a comprehensive Deckset-compatible markdown-to-HTML converter. The system will support all Deckset markdown features including slide separators, image placement options, speaker notes, code highlighting, mathematical formulas, video/audio embedding, and advanced layout features like multi-column layouts and fit text. The goal is to faithfully reproduce Deckset's markdown semantics in a responsive web environment.
+This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensive support for all Deckset markdown features including slide separators, image placement options, speaker notes, code highlighting, mathematical formulas, video/audio embedding, and advanced layout features like multi-column layouts and fit text. The system faithfully reproduces Deckset's markdown semantics in a responsive web environment, with all enhanced features enabled by default.
 
 ## Requirements
 
