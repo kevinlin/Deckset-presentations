@@ -417,7 +417,7 @@ Content for second example.
         for content, name in [(single_content, "single"), (example1_content, "example1"), (example2_content, "example2")]:
             assert "presentation-container" in content, f"{name} missing presentation container"
             assert "slide-content" in content, f"{name} missing slide content structure"
-            assert "enhanced_slide_styles.css" in content, f"{name} missing enhanced styles"
+            assert "slide_styles.css" in content, f"{name} missing enhanced styles"
             assert "MathJax" in content, f"{name} missing MathJax support"
             assert "highlight.js" in content, f"{name} missing code highlighting"
         
@@ -519,17 +519,17 @@ More content.
         example2_content = example2_html.read_text(encoding='utf-8')
         
         # Single presentation should use "../" for assets (one level up)
-        assert 'href="../enhanced_slide_styles.css"' in single_content, "Single presentation should use ../enhanced_slide_styles.css"
+        assert 'href="../slide_styles.css"' in single_content, "Single presentation should use ../slide_styles.css"
         assert 'src="../assets/js/enhanced-slide-viewer.js"' in single_content, "Single presentation should use ../assets/js/enhanced-slide-viewer.js"
         
         # Multiple presentations in subdirectory should use "../../" for assets (two levels up)
-        assert 'href="../../enhanced_slide_styles.css"' in example1_content, "Subdirectory presentation should use ../../enhanced_slide_styles.css"
+        assert 'href="../../slide_styles.css"' in example1_content, "Subdirectory presentation should use ../../slide_styles.css"
         assert 'src="../../assets/js/enhanced-slide-viewer.js"' in example1_content, "Subdirectory presentation should use ../../assets/js/enhanced-slide-viewer.js"
         
-        assert 'href="../../enhanced_slide_styles.css"' in example2_content, "Subdirectory presentation should use ../../enhanced_slide_styles.css"
+        assert 'href="../../slide_styles.css"' in example2_content, "Subdirectory presentation should use ../../slide_styles.css"
         assert 'src="../../assets/js/enhanced-slide-viewer.js"' in example2_content, "Subdirectory presentation should use ../../assets/js/enhanced-slide-viewer.js"
         
         # Make sure we don't have incorrect paths
-        assert 'href="../enhanced_slide_styles.css"' not in example1_content, "Subdirectory presentation should not use ../enhanced_slide_styles.css"
-        assert 'href="../enhanced_slide_styles.css"' not in example2_content, "Subdirectory presentation should not use ../enhanced_slide_styles.css"
-        assert 'href="../../enhanced_slide_styles.css"' not in single_content, "Single presentation should not use ../../enhanced_slide_styles.css"
+        assert 'href="../slide_styles.css"' not in example1_content, "Subdirectory presentation should not use ../slide_styles.css"
+        assert 'href="../slide_styles.css"' not in example2_content, "Subdirectory presentation should not use ../slide_styles.css"
+        assert 'href="../../slide_styles.css"' not in single_content, "Single presentation should not use ../../slide_styles.css"

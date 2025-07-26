@@ -78,7 +78,7 @@ class FileManager:
         
         Copies:
         - code_highlighting_styles.css to output root
-        - enhanced_slide_styles.css to output root (if exists)
+        - slide_styles.css to output root (if exists)
         - enhanced-slide-viewer.js to assets/js/ directory
         - favicon.png and other icons to assets/ directory
         """
@@ -87,7 +87,7 @@ class FileManager:
         # List of CSS files to copy from templates directory to output root
         css_files = [
             "code_highlighting_styles.css",
-            "enhanced_slide_styles.css"
+            "slide_styles.css"
         ]
         
         for css_file in css_files:

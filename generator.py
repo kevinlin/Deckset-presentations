@@ -458,7 +458,7 @@ class WebPageGenerator:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{presentation.info.title}</title>
-    <link rel="stylesheet" href="{asset_path_prefix}enhanced_slide_styles.css">
+    <link rel="stylesheet" href="{asset_path_prefix}slide_styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>

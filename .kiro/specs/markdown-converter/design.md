@@ -303,7 +303,7 @@ templates/
 ├── slide.html          # Main slide template
 ├── homepage.html       # Homepage listing template
 ├── base.html          # Base template (existing)
-├── enhanced_slide_styles.css
+├── slide_styles.css
 ├── code_highlighting_styles.css
 └── assets/
     ├── favicon.png
@@ -729,7 +729,7 @@ This enhanced design provides comprehensive Deckset compatibility while maintain
      - Background images: `z-index: 1` (above slide background)
      - Slide content: `z-index: 2` (above background images)
      - Footer and slide numbers: `z-index: 3` (above all content)
-   - **Files Updated**: `templates/enhanced_slide_styles.css` and `docs/enhanced_slide_styles.css`
+   - **Files Updated**: `templates/slide_styles.css` and `docs/slide_styles.css`
 
 ### Verification Results
 
