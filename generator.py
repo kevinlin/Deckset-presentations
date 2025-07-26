@@ -450,68 +450,17 @@ class WebPageGenerator:
             # Calculate asset path depth based on folder structure
             asset_path_prefix = self._calculate_asset_path_prefix(presentation.info.folder_name)
 
-            # Create presentation HTML with dynamic asset paths
-            presentation_html = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{presentation.info.title}</title>
-    <link rel="stylesheet" href="{asset_path_prefix}slide_styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <!-- Navigation Header -->
-    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{asset_path_prefix}index.html" class="text-xl font-semibold text-gray-900 flex items-center">
-                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <span>Deckset Presentations</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="{asset_path_prefix}index.html" 
-                       class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                        ← Back to Home
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
-    
-    <div class="presentation-container" data-presentation-title="{presentation.info.title}">
-        <div class="slides-container">
-            {"".join(slides_html)}
-        </div>
-        
-        <!-- Navigation -->
-        <div class="navigation">
-            <button id="prev-slide" class="nav-button">Previous</button>
-            <span id="slide-counter">1 / {len(presentation.slides)}</span>
-            <button id="next-slide" class="nav-button">Next</button>
-            <button id="toggle-notes" class="nav-button">Notes</button>
-        </div>
-    </div>
-    
-    <!-- Enhanced JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    <script src="{asset_path_prefix}assets/js/slide-viewer.js"></script>
-    
-    <!-- MathJax Configuration -->
-    <script>
-        {self._get_mathjax_config()}
-    </script>
-</body>
-</html>
-            """
+            # Prepare template context
+            template_context = {
+                'presentation': presentation,
+                'slides_html': "".join(slides_html),
+                'total_slides': len(presentation.slides),
+                'asset_path_prefix': asset_path_prefix,
+                'mathjax_config': self._get_mathjax_config()
+            }
+
+            # Render using the presentation template
+            presentation_html = self.template_manager.render_presentation_page(presentation, template_context)
 
             return presentation_html
 

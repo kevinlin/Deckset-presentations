@@ -269,18 +269,26 @@ class WebPageGenerator:
 ```python
 class EnhancedTemplateEngine:
     def __init__(self, template_dir: str)
-    def render_presentation_page(self, presentation: EnhancedPresentation) -> str
+    def render_presentation_page(self, presentation: EnhancedPresentation, context: dict) -> str
+    def render_slide(self, slide: ProcessedSlide, config: DecksetConfig, total_slides: int = 1) -> str
     def render_homepage(self, presentations: List[PresentationInfo], metadata: Dict) -> str
     def render_columns(self, columns: List[ColumnContent]) -> str
     def render_background_image(self, image: ProcessedImage) -> str
 ```
 
+**Template Files**:
+- `presentation.html`: Main presentation page layout with navigation header, slide container, and JavaScript integration
+- `slide.html`: Individual slide rendering with support for content, images, videos, code blocks, and speaker notes
+- `homepage.html`: Homepage layout with presentation grid, search functionality, and Deckset branding
+
 **Key Features**:
 - Jinja2-based template engine with custom filters and functions
+- Modular template architecture with separate files for different page types
 - Support for multi-column layouts, background images, and media embedding
 - Code highlighting integration with Pygments
 - Mathematical formula rendering with MathJax
 - Responsive design and mobile optimization
+- Dynamic asset path calculation for presentations in subdirectories
 
 ### 7. File Manager (`file_manager.py`)
 
@@ -389,6 +397,7 @@ Deckset-presentations/
 ├── file_manager.py            # File operations manager
 ├── templates/                 # HTML templates
 │   ├── homepage.html
+│   ├── presentation.html
 │   ├── slide.html
 │   └── assets/
 ├── tests/                     # Comprehensive test suite

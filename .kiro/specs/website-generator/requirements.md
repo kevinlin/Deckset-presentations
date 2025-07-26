@@ -47,8 +47,22 @@ This feature will create a dynamic website generator that converts Deckset prese
 3. WHEN displaying slide images THEN they SHALL be properly sized and bordered
 4. WHEN rendering text content THEN it SHALL use readable typography and spacing
 5. WHEN navigating between pages THEN the styling SHALL remain consistent
+6. WHEN managing templates THEN the system SHALL use separate template files for modular HTML generation
 
-### Requirement 4
+### Requirement 3.1
+
+**User Story:** As a developer, I want the presentation HTML generation to use modular template files, so that the system is maintainable and templates can be updated independently from code logic.
+
+#### Acceptance Criteria
+
+1. WHEN generating presentation pages THEN the system SHALL use a separate `presentation.html` template file for the main presentation layout
+2. WHEN rendering individual slides THEN the system SHALL use a separate `slide.html` template file for slide content
+3. WHEN generating the homepage THEN the system SHALL use a separate `homepage.html` template file for the homepage layout
+4. WHEN templates are updated THEN the changes SHALL be reflected without requiring code modifications
+5. WHEN template rendering fails THEN the system SHALL provide fallback HTML with error information
+6. WHEN using templates THEN the system SHALL pass context variables for dynamic content rendering (asset paths, presentation data, configuration)
+
+### Requirement 5
 
 **User Story:** As a website visitor, I want a homepage that shows all available presentations with preview images and Deckset branding, so that I can easily browse and select presentations to view.
 
@@ -65,7 +79,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 9. WHEN loading the homepage THEN it SHALL display the Deckset favicon in the browser tab and use professional Deckset branding in the header
 10. WHEN viewing the homepage header THEN it SHALL display the Deckset logo icon instead of a generic document icon
 
-### Requirement 5
+### Requirement 6
 
 **User Story:** As a system administrator, I want the website generator to handle errors gracefully, so that partial failures don't prevent the entire website from being generated.
 
@@ -77,7 +91,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 4. WHEN the homepage generation encounters errors THEN it SHALL still generate a basic homepage with available presentations
 5. WHEN file operations fail THEN the system SHALL provide clear error messages for debugging
 
-### Requirement 6
+### Requirement 7
 
 **User Story:** As a repository maintainer, I want the website generation to be automated through GitHub Actions, so that the website updates automatically when presentations are added or modified.
 
@@ -89,7 +103,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 4. WHEN generation is complete THEN the action SHALL deploy the website to GitHub Pages or specified hosting
 5. IF generation fails THEN the action SHALL report clear error messages
 
-### Requirement 7
+### Requirement 8
 
 **User Story:** As a presentation viewer, I want functional slide navigation with an accurate slide counter and notes toggle, so that I can navigate presentations effectively and view speaker notes when needed.
 

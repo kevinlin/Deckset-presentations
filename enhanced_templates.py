@@ -579,6 +579,39 @@ class EnhancedTemplateEngine:
 </html>
             """
 
+    def render_presentation_page(self, presentation, context: dict) -> str:
+        """
+        Render a complete presentation page using the presentation template.
+        
+        Args:
+            presentation: Enhanced presentation object with all processed data
+            context: Template context dictionary with variables for rendering
+            
+        Returns:
+            Complete HTML string for the presentation page
+        """
+        try:
+            template = self.env.get_template('presentation.html')
+            return template.render(**context)
+
+        except Exception as e:
+            # Fallback to minimal presentation page
+            return f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{self._escape_html(presentation.info.title if hasattr(presentation, 'info') else 'Error')}</title>
+</head>
+<body>
+    <h1>Presentation Rendering Error</h1>
+    <p>Error: {self._escape_html(str(e))}</p>
+    <p>Presentation: {self._escape_html(presentation.info.title if hasattr(presentation, 'info') else 'Unknown')}</p>
+</body>
+</html>
+            """
+
     def _calculate_asset_path_prefix(self, folder_name: str) -> str:
         """
         Calculate the correct relative path prefix for assets based on presentation nesting.

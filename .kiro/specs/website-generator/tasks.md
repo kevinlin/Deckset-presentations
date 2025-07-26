@@ -162,3 +162,14 @@
   - Verify all tests pass with manual testing and validation
   - Update requirements.md, design.md, and tasks.md to document folder name inclusion feature
   - _Requirements: 1.9, 2.8_
+
+- [x] 20. Separate presentation HTML template into modular template file
+  - Create templates/presentation.html template file with Jinja2 template syntax for main presentation layout
+  - Add render_presentation_page method to EnhancedTemplateEngine for rendering presentation pages using the new template
+  - Update WebPageGenerator._render_enhanced_presentation to use template engine instead of hardcoded HTML strings
+  - Implement template context passing with presentation data, slides HTML, asset paths, and MathJax configuration
+  - Add error handling and fallback HTML generation for template rendering failures
+  - Update requirements.md to add Requirement 3.1 for template modularization and renumber subsequent requirements
+  - Update design.md to document template files, Enhanced Template Engine interface changes, and file structure
+  - Update tasks.md to document template separation implementation
+  - _Requirements: 3.1.1, 3.1.2, 3.1.4, 3.1.5, 3.1.6_
