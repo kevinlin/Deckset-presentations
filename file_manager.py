@@ -74,12 +74,13 @@ class FileManager:
         
     def copy_template_assets(self) -> None:
         """
-        Copy template assets (CSS and JS files) to the output directory.
+        Copy template assets (CSS, JS, and icon files) to the output directory.
         
         Copies:
         - code_highlighting_styles.css to output root
         - enhanced_slide_styles.css to output root (if exists)
         - enhanced-slide-viewer.js to assets/js/ directory
+        - favicon.png and other icons to assets/ directory
         """
         output_dir = Path(self.config.output_dir)
         
@@ -121,6 +122,50 @@ class FileManager:
                 self.logger.warning(f"Failed to copy JavaScript files: {e}")
         else:
             self.logger.warning(f"JavaScript source directory not found: {js_source_dir}")
+        
+        # Copy favicon and icon assets to assets/ directory
+        self._copy_favicon_assets()
+    
+    def _copy_favicon_assets(self) -> None:
+        """
+        Copy favicon and icon assets to the output assets directory.
+        
+        Copies:
+        - favicon.png to assets/ directory
+        - Any other icon files found in templates/assets/
+        """
+        output_dir = Path(self.config.output_dir)
+        assets_source_dir = Path("templates") / "assets"
+        assets_dest_dir = output_dir / "assets"
+        
+        # Ensure assets destination directory exists
+        assets_dest_dir.mkdir(parents=True, exist_ok=True)
+        
+        # List of icon files to copy
+        icon_files = [
+            "favicon.png",
+            "favicon.ico",  # In case there's also an ICO version
+            "apple-touch-icon.png",  # Common Apple touch icon name
+            "icon-192x192.png",  # PWA icons
+            "icon-512x512.png"
+        ]
+        
+        for icon_file in icon_files:
+            source_path = assets_source_dir / icon_file
+            dest_path = assets_dest_dir / icon_file
+            
+            if source_path.exists():
+                try:
+                    shutil.copy2(source_path, dest_path)
+                    self.logger.debug(f"Copied icon file: {source_path} -> {dest_path}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy icon file {icon_file}: {e}")
+            else:
+                # Only log debug for favicon.png since it's required, others are optional
+                if icon_file == "favicon.png":
+                    self.logger.warning(f"Required favicon file not found: {source_path}")
+                else:
+                    self.logger.debug(f"Optional icon file not found: {source_path}")
     
     def ensure_fallback_image(self) -> None:
         """

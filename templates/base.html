@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block meta_description %}Deckset Presentations{% endblock %}">
     <title>{% block title %}Deckset Presentations{% endblock %}</title>
+    
+    <!-- Favicon and Apple Touch Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/favicon.png">
+    <link rel="shortcut icon" href="/assets/favicon.png">
+    
+    <!-- Additional meta tags for favicon support -->
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="theme-color" content="#2563eb">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for presentation content */
@@ -69,10 +80,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="/" class="text-xl font-semibold text-gray-900 flex items-center">
-                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
+                        <img src="/assets/favicon.png" alt="Deckset" class="h-8 w-8 mr-2" />
                         <span>Deckset Presentations</span>
                     </a>
                 </div>

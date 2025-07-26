@@ -156,6 +156,23 @@ class EnhancedSlideViewer {
 - Accessibility features including ARIA attributes and screen reader announcements
 - Presentation container marking with 'js-enabled' class for proper CSS styling
 
+### 7. Favicon and Branding Management (`file_manager.py`)
+
+**Purpose**: Handle favicon and icon asset management for professional Deckset branding
+
+**Key Methods**:
+- `_copy_favicon_assets()`: Copies favicon.png and other icon assets to output assets directory
+- Supports multiple favicon formats (PNG, ICO, Apple Touch Icons, PWA icons)
+- Integrates with template asset copying workflow
+- Provides proper error handling and logging for missing assets
+
+**Branding Features**:
+- Professional Deckset favicon display in browser tabs
+- Deckset logo icon in website header navigation
+- Cross-browser favicon support with multiple sizes and formats
+- Apple Touch Icon support for mobile devices
+- Progressive Web App (PWA) icon support for future enhancements
+
 ## Data Models
 
 ### PresentationInfo
@@ -344,9 +361,11 @@ docs/                           # GitHub Pages output directory
 - Mobile-responsive design that adapts to different screen sizes (Requirement 3.2)
 - Clickable presentation cards for navigation (Requirement 4.4)
 - Alphabetical sorting by title with case-insensitive comparison (Requirement 4.7)
+- Professional Deckset branding with favicon and logo icon (Requirement 4.9-4.10)
+- Cross-browser favicon support with multiple formats and sizes
 - Search/filter functionality (future enhancement)
 
-**Design Rationale**: The homepage serves as the primary entry point and must provide clear visual hierarchy and easy navigation. Preview images help users quickly identify presentations, while metadata provides context for selection. Alphabetical sorting ensures predictable presentation order regardless of creation or modification dates, making it easier for users to find specific presentations.
+**Design Rationale**: The homepage serves as the primary entry point and must provide clear visual hierarchy and easy navigation. Preview images help users quickly identify presentations, while metadata provides context for selection. Alphabetical sorting ensures predictable presentation order regardless of creation or modification dates, making it easier for users to find specific presentations. Professional Deckset branding with favicon and logo creates a cohesive, branded experience that reflects the official Deckset application.
 
 ### Presentation Template Enhancements
 

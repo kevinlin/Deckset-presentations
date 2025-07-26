@@ -140,3 +140,13 @@
   - Update enhanced_slide_styles.css to properly hide/show slides based on JavaScript state
   - Update requirements.md, design.md, and tasks.md to document navigation enhancement requirements
   - _Requirements: 7.1-7.11_
+
+- [x] 18. Enhance homepage with Deckset branding and favicon
+  - Download and integrate Deckset favicon from https://www.deckset.com/static/images/favicon.png for professional branding
+  - Add Deckset app icon from https://www.deckset.com/static/images/deckset-icon.png as fallback or header logo
+  - Update homepage template to include proper favicon links in HTML head section
+  - Implement favicon copying to output directory during website generation
+  - Add proper meta tags for favicon support across different browsers and devices
+  - Update FileManager to handle favicon and icon asset copying
+  - Test favicon display in generated website across different browsers
+  - _Requirements: 4.9, 4.10_

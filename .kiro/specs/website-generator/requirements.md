@@ -50,7 +50,7 @@ This feature will create a dynamic website generator that converts Deckset prese
 
 ### Requirement 4
 
-**User Story:** As a website visitor, I want a homepage that shows all available presentations with preview images, so that I can easily browse and select presentations to view.
+**User Story:** As a website visitor, I want a homepage that shows all available presentations with preview images and Deckset branding, so that I can easily browse and select presentations to view.
 
 #### Acceptance Criteria
 
@@ -62,6 +62,8 @@ This feature will create a dynamic website generator that converts Deckset prese
 6. WHEN organizing presentations from multiple-presentation folders THEN the system SHALL create appropriate subdirectories (e.g., presentations/Examples/10 Deckset basics.html)
 7. WHEN listing presentations on the homepage THEN the system SHALL sort them alphabetically by title (case-insensitive, ignoring Deckset formatting markup)
 8. WHEN viewing any presentation page THEN it SHALL include navigation links back to the homepage with correct relative paths based on presentation nesting depth
+9. WHEN loading the homepage THEN it SHALL display the Deckset favicon in the browser tab and use professional Deckset branding in the header
+10. WHEN viewing the homepage header THEN it SHALL display the Deckset logo icon instead of a generic document icon
 
 ### Requirement 5
 
