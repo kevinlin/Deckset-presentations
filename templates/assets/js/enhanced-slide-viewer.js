@@ -201,7 +201,7 @@ class EnhancedSlideViewer {
     }
     
     scaleAllFitText() {
-        const fitElements = document.querySelectorAll('.fit-text');
+        const fitElements = document.querySelectorAll('.fit');
         fitElements.forEach(element => {
             this.scaleFitText(element);
         });

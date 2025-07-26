@@ -52,10 +52,18 @@ class DecksetParser:
 **Key Methods**:
 - `parse_global_commands()`: Extracts global settings like `slidenumbers: true`, `footer: text`
 - `parse_slide_commands()`: Processes slide-specific commands like `[.column]`, `[.background-image: file.jpg]`
-- `process_fit_headers()`: Handles `[fit]` modifier for auto-scaling headers
+- `process_fit_headers()`: Handles `[fit]` modifier for auto-scaling headers and applies global `fit-headers` configuration
 - `process_speaker_notes()`: Separates speaker notes from slide content
 - `process_footnotes()`: Handles footnote references and definitions
 - `detect_auto_slide_breaks()`: Implements automatic slide breaks at heading levels
+
+**Fit Headers Processing Details**:
+The `process_fit_headers()` method implements the Deckset fit header functionality in two phases:
+
+1. **Explicit Fit Processing**: Converts `# [fit] Title` syntax to `# Title {.fit}` markers
+2. **Global Configuration**: Applies `fit-headers: #, ##` configuration to automatically add `{.fit}` markers to all headers of specified levels
+3. **Template Integration**: The `{.fit}` markers are converted to `<h1 class="fit">Title</h1>` in HTML by the template engine
+4. **CSS/JavaScript Scaling**: The `.fit` class triggers dynamic font-size adjustment via CSS and JavaScript to fit the slide width
 
 ### 2. Enhanced Media Processor (`media_processor.py`)
 

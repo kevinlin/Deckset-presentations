@@ -222,6 +222,15 @@ class TestEnhancedTemplateEngine(unittest.TestCase):
         self.assertIn('<strong>Bold</strong>', result)
         self.assertIn('<em>italic</em>', result)
     
+    def test_markdown_to_html_fit_headers(self):
+        """Test markdown to HTML conversion with fit headers."""
+        markdown = "# Title {.fit}\n\n## Subtitle {.fit}\n\n### Normal Header"
+        result = self.engine._markdown_to_html(markdown)
+        
+        self.assertIn('<h1 class="fit">Title</h1>', result)
+        self.assertIn('<h2 class="fit">Subtitle</h2>', result)
+        self.assertIn('<h3>Normal Header</h3>', result)
+    
     def test_html_escaping(self):
         """Test HTML character escaping."""
         text = '<script>alert("xss")</script>'

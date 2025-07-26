@@ -426,30 +426,61 @@ class DecksetParser:
     
     def process_fit_headers(self, content: str, config: DecksetConfig) -> str:
         """
-        Process [fit] modifiers on headers.
+        Process [fit] modifiers on headers and apply global fit-headers configuration.
+        
+        This method:
+        1. Processes explicit [fit] modifiers on headers (e.g., # [fit] Title)
+        2. Applies global fit-headers configuration to automatically add fit class to specified header levels
         
         Args:
             content: Content with potential fit headers
-            config: DecksetConfig for context
+            config: DecksetConfig with fit_headers configuration
             
         Returns:
-            Content with fit headers processed
+            Content with fit headers processed and marked with fit class
             
         Raises:
             DecksetParsingError: If processing fails
         """
         try:
-            def replace_fit_header(match):
+            processed_content = content
+            
+            # Step 1: Process explicit [fit] modifiers
+            def replace_explicit_fit_header(match):
                 header_level = match.group(1)  # The # symbols
                 header_text = match.group(2).strip()
                 
-                # Add CSS class for fit text styling
-                return f'{header_level} <span class="fit-text">{header_text}</span>'
+                # Mark this header as needing fit class
+                return f'{header_level} {header_text} {{fit-marker}}'
             
-            processed_content = self._fit_header_pattern.sub(replace_fit_header, content)
+            processed_content = self._fit_header_pattern.sub(replace_explicit_fit_header, processed_content)
+            
+            # Step 2: Apply global fit-headers configuration
+            if config.fit_headers:
+                for fit_level in config.fit_headers:
+                    fit_level = fit_level.strip()
+                    if fit_level.startswith('#'):
+                        # Create pattern for this header level
+                        level_count = len(fit_level)
+                        # Match headers of this level that don't already have fit-marker
+                        header_pattern = re.compile(f'^(#{{{level_count}}}\\s+)(.+?)$', re.MULTILINE)
+                        
+                        def add_global_fit(match):
+                            header_prefix = match.group(1)
+                            header_text = match.group(2).strip()
+                            # Only add fit-marker if it's not already there
+                            if '{fit-marker}' not in header_text:
+                                return f'{header_prefix}{header_text} {{fit-marker}}'
+                            else:
+                                return match.group(0)  # Return unchanged
+                        
+                        processed_content = header_pattern.sub(add_global_fit, processed_content)
+            
+            # Step 3: Replace all fit-markers with actual fit class markers for template processing
+            processed_content = processed_content.replace(' {fit-marker}', ' {.fit}')
             
             # Count how many fit headers were processed
-            fit_count = len(self._fit_header_pattern.findall(content))
+            fit_count = processed_content.count('{.fit}')
             if fit_count > 0:
                 logger.debug(f"Processed {fit_count} fit headers")
             

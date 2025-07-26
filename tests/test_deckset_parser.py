@@ -303,10 +303,48 @@ This has a footnote[^1] with no definition.
         processed = self.parser.process_fit_headers(content, config)
         
         assert '[fit]' not in processed
-        assert 'class="fit-text"' in processed
-        assert '# <span class="fit-text">Large Title</span>' in processed
-        assert '## <span class="fit-text">Subtitle</span>' in processed
+        assert '{.fit}' in processed
+        assert '# Large Title {.fit}' in processed
+        assert '## Subtitle {.fit}' in processed
         assert '### Normal Header' in processed  # Unchanged
+    
+    def test_process_fit_headers_global_config(self):
+        """Test processing of global fit-headers configuration."""
+        content = """
+# Title One
+## Subtitle One
+### Section Header
+## Subtitle Two
+        """
+        
+        config = DecksetConfig(fit_headers=["#", "##"])
+        processed = self.parser.process_fit_headers(content, config)
+        
+        # All H1 and H2 headers should have fit markers
+        assert '# Title One {.fit}' in processed
+        assert '## Subtitle One {.fit}' in processed
+        assert '## Subtitle Two {.fit}' in processed
+        # H3 should not have fit marker
+        assert '### Section Header' in processed
+        assert '### Section Header {.fit}' not in processed
+    
+    def test_process_fit_headers_mixed_explicit_and_global(self):
+        """Test processing with both explicit [fit] and global fit-headers."""
+        content = """
+# [fit] Explicit Fit Title
+## Regular Subtitle
+### [fit] Explicit Fit Section
+        """
+        
+        config = DecksetConfig(fit_headers=["##"])
+        processed = self.parser.process_fit_headers(content, config)
+        
+        # Explicit fit should work
+        assert '# Explicit Fit Title {.fit}' in processed
+        # Global config should apply to H2
+        assert '## Regular Subtitle {.fit}' in processed
+        # Explicit fit on H3 should work even though H3 not in global config
+        assert '### Explicit Fit Section {.fit}' in processed
     
     def test_process_emoji_shortcodes_basic(self):
         """Test conversion of emoji shortcodes."""
@@ -399,7 +437,7 @@ Final slide content
         # Test fit headers and emojis
         processed = self.parser.process_fit_headers(slides[0], global_config)
         processed = self.parser.process_emoji_shortcodes(processed)
-        assert 'class="fit-text"' in processed
+        assert '{.fit}' in processed
         assert '😊' in processed
 
 

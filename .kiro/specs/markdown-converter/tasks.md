@@ -25,11 +25,14 @@
   - Create unit tests for notes and footnotes extraction
   - _Requirements: 1.3, 7.2_
 
-- [x] 2.4 Implement fit headers and emoji processing
-  - Implement process_fit_headers() to handle [fit] modifier on headings
-  - Implement process_emoji_shortcodes() to convert :emoji: to Unicode
-  - Create unit tests for text processing features
-  - _Requirements: 1.2, 7.3_
+- [x] 2.4 Implement fit headers and emoji processing ✅ UPDATED
+  - ✅ Implement process_fit_headers() to handle [fit] modifier on headings with proper HTML class output
+  - ✅ Add support for global fit-headers configuration (e.g., fit-headers: #, ##)
+  - ✅ Update CSS to use .fit class instead of .fit-text for proper Deckset compatibility
+  - ✅ Update JavaScript to target .fit class for dynamic font scaling
+  - ✅ Implement process_emoji_shortcodes() to convert :emoji: to Unicode
+  - ✅ Create comprehensive unit tests for text processing features including global config
+  - _Requirements: 1.2, 1.2.1, 7.3_
 
 - [x] 3. Implement enhanced media processor
 - [x] 3.1 Create MediaProcessor class with image processing

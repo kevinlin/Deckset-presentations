@@ -321,6 +321,13 @@ class EnhancedTemplateEngine:
         html = content
         
         # Convert headers first (before paragraph processing)
+        # Handle fit headers with {.fit} markers
+        html = re.sub(r'^# (.+?) \{\.fit\}$', r'<h1 class="fit">\1</h1>', html, flags=re.MULTILINE)
+        html = re.sub(r'^## (.+?) \{\.fit\}$', r'<h2 class="fit">\1</h2>', html, flags=re.MULTILINE)
+        html = re.sub(r'^### (.+?) \{\.fit\}$', r'<h3 class="fit">\1</h3>', html, flags=re.MULTILINE)
+        html = re.sub(r'^#### (.+?) \{\.fit\}$', r'<h4 class="fit">\1</h4>', html, flags=re.MULTILINE)
+        
+        # Convert regular headers (without fit)
         html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
         html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
         html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)

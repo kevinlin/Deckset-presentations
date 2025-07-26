@@ -13,7 +13,8 @@ This enhancement will transform the current basic website generator into a compr
 #### Acceptance Criteria
 
 1. WHEN the system encounters slide separators (`---`) THEN it SHALL split content into individual slides
-2. WHEN the system processes headings with `[fit]` modifier THEN it SHALL scale the heading to fit the slide width
+2. WHEN the system processes headings with `[fit]` modifier THEN it SHALL scale the heading to fit the slide width and add `class="fit"` to the HTML element
+2.1. WHEN global `fit-headers: #, ##` configuration is set THEN the system SHALL automatically apply fit scaling to all headers of the specified levels
 3. WHEN the system encounters speaker notes (lines starting with `^`) THEN it SHALL hide them from slide content but make them accessible
 4. WHEN the system processes global commands (e.g., `slidenumbers: true`, `footer: text`) THEN it SHALL apply them to all slides
 5. WHEN the system encounters slide-specific commands (e.g., `[.column]`, `[.background-image: file.jpg]`) THEN it SHALL apply them only to that slide
