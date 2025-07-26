@@ -104,6 +104,33 @@ sequenceDiagram
     DWG-->>Main: Final results
 ```
 
+## Data Models
+
+All data models are defined in `models.py` with comprehensive type definitions:
+
+### Core Models
+- **PresentationInfo**: Metadata about discovered presentations
+- **ProcessedPresentation**: Fully processed presentation with slides
+- **Slide**: Individual slide with content and metadata
+- **GeneratorConfig**: Global generator configuration
+
+### Enhanced Models  
+- **EnhancedPresentation**: Comprehensive presentation with Deckset features
+- **ProcessedSlide**: Enhanced slide with media, code, math, and layout features
+- **DecksetConfig**: Global Deckset configuration settings
+- **SlideConfig**: Slide-specific configuration overrides
+
+### Media Models
+- **ProcessedImage**: Images with placement and scaling modifiers
+- **ProcessedVideo**: Videos with autoplay and control options
+- **ProcessedAudio**: Audio files with playback controls
+- **MediaModifiers**: Placement and playback configuration
+
+### Content Models
+- **ColumnContent**: Multi-column layout content
+- **ProcessedCodeBlock**: Syntax-highlighted code with line emphasis
+- **MathFormula**: LaTeX mathematical expressions
+- **ImageGrid**: Grid layouts for multiple images
 ## Core Components
 
 ### 1. Main Orchestrator (`main.py`)
@@ -216,102 +243,3 @@ sequenceDiagram
 - `copy_media_files(src_dir, dest_dir)`: Handles media file copying
 - `optimize_images()`: Optimizes images for web delivery
 - `ensure_output_directory(path)`: Creates necessary output directories
-
-## Data Models
-
-All data models are defined in `models.py` with comprehensive type definitions:
-
-### Core Models
-- **PresentationInfo**: Metadata about discovered presentations
-- **ProcessedPresentation**: Fully processed presentation with slides
-- **Slide**: Individual slide with content and metadata
-- **GeneratorConfig**: Global generator configuration
-
-### Enhanced Models  
-- **EnhancedPresentation**: Comprehensive presentation with Deckset features
-- **ProcessedSlide**: Enhanced slide with media, code, math, and layout features
-- **DecksetConfig**: Global Deckset configuration settings
-- **SlideConfig**: Slide-specific configuration overrides
-
-### Media Models
-- **ProcessedImage**: Images with placement and scaling modifiers
-- **ProcessedVideo**: Videos with autoplay and control options
-- **ProcessedAudio**: Audio files with playback controls
-- **MediaModifiers**: Placement and playback configuration
-
-### Content Models
-- **ColumnContent**: Multi-column layout content
-- **ProcessedCodeBlock**: Syntax-highlighted code with line emphasis
-- **MathFormula**: LaTeX mathematical expressions
-- **ImageGrid**: Grid layouts for multiple images
-
-## Error Handling
-
-The system implements comprehensive error handling with custom exception classes:
-
-- **GeneratorError**: Base exception for all generator errors
-- **ScanningError**: Repository scanning failures
-- **PresentationProcessingError**: Presentation processing failures
-- **TemplateRenderingError**: Template rendering failures
-- **DecksetParsingError**: Deckset syntax parsing errors
-- **MediaProcessingError**: Media file processing errors
-- **SlideProcessingError**: Slide processing failures
-- **FileOperationError**: File system operation errors
-
-## Configuration and Extensibility
-
-### Generator Configuration
-```python
-@dataclass
-class GeneratorConfig:
-    output_dir: str = "docs"
-    template_dir: str = "templates"
-    slides_dir: str = "slides"
-    exclude_folders: List[str] = field(default_factory=lambda: [
-        '.git', '.kiro', 'node_modules', '__pycache__', '.pytest_cache'
-    ])
-```
-
-### Deckset Configuration
-```python
-@dataclass
-class DecksetConfig:
-    theme: Optional[str] = None
-    autoscale: bool = False
-    slide_numbers: bool = False
-    footer: Optional[str] = None
-    background_image: Optional[str] = None
-    fit_headers: List[str] = field(default_factory=list)
-    # ... additional Deckset settings
-```
-
-## Features Implementation Status
-
-**All Deckset Features Working Correctly:**
-- ✅ **Speaker Notes**: `^ This is a speaker note` syntax properly extracted and hidden
-- ✅ **Image Processing**: 
-  - Background images: `![](red.jpg)` → background with cover scaling
-  - Positioned images: `![right](plant.jpg)` → inline image with right placement
-  - Fit images: `![fit](presenter.jpg)` → background with fit scaling
-- ✅ **Code Blocks**: Syntax highlighting with proper `<pre><code>` structure
-- ✅ **Footer and Slide Numbers**: Global config `footer: © Text` and `slidenumbers: true` working
-- ✅ **Video Processing**: `![autoplay](water.mov)` properly detected and processed
-- ✅ **Mathematical Formulas**: MathJax integration for `$$...$$` syntax
-- ✅ **Multi-column Layouts**: `[.column]` syntax for side-by-side content
-- ✅ **Fit Headers**: `[fit]` modifier for auto-scaling headers
-- ✅ **Emoji Shortcodes**: `:emoji:` syntax support
-- ✅ **Footnotes**: Footnote references and definitions
-- ✅ **Responsive Design**: All features work on mobile and desktop
-
-**Test Coverage:**
-- All 279 tests passing
-- Comprehensive coverage of all processors and templates
-- End-to-end testing with real Deckset presentations
-- Integration testing between all components
-
-**Generated Output Quality:**
-- Clean, semantic HTML structure
-- Proper CSS classes for styling
-- Accessible markup with ARIA labels
-- Responsive design across devices
-- Performance optimized with lazy loading for images
