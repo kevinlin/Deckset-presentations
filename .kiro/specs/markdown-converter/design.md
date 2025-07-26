@@ -363,6 +363,11 @@ class EnhancedPresentation:
 }
 
 /* Column layouts */
+.slide-content {
+    position: relative;
+    z-index: 2; /* Ensures content appears above background images */
+}
+
 .slide-content.columns {
     display: flex;
     gap: 2rem;
@@ -381,7 +386,7 @@ class EnhancedPresentation:
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
+    z-index: 1;
 }
 
 .background-image.left {
@@ -687,12 +692,21 @@ This enhanced design provides comprehensive Deckset compatibility while maintain
      - Avoid wrapping headers and other block elements in paragraphs
      - Added support for inline code, multiple emphasis styles, and H4 headers
 
+2. **Background Image Visibility Issue** ✅ FIXED
+   - **Problem**: Background images were not visible in generated presentations due to CSS stacking context issues
+   - **Root Cause**: The `.slide` element has `position: relative` creating a stacking context, but `.background-image` with `z-index: -1` was positioned behind the entire slide container
+   - **Solution**: Updated CSS z-index values to create proper layering:
+     - Background images: `z-index: 1` (above slide background)
+     - Slide content: `z-index: 2` (above background images)
+     - Footer and slide numbers: `z-index: 3` (above all content)
+   - **Files Updated**: `templates/enhanced_slide_styles.css` and `docs/enhanced_slide_styles.css`
+
 ### Verification Results
 
 **All Deckset Features Working Correctly:**
 - ✅ **Speaker Notes**: `^ This is a speaker note` syntax properly extracted and hidden
 - ✅ **Image Processing**: 
-  - Background images: `![](red.jpg)` → background with cover scaling
+  - Background images: `![](red.jpg)` → background with cover scaling (visibility issue fixed with proper z-index)
   - Positioned images: `![right](plant.jpg)` → inline image with right placement
   - Fit images: `![fit](presenter.jpg)` → background with fit scaling
 - ✅ **Code Blocks**: Syntax highlighting with proper `<pre><code>` structure

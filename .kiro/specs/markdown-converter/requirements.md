@@ -27,6 +27,7 @@ This enhancement will transform the current basic website generator into a compr
 #### Acceptance Criteria
 
 1. WHEN an image uses `![](image.jpg)` syntax without modifiers THEN it SHALL be treated as a full-slide background with cover scaling
+1.1. WHEN background images are displayed THEN they SHALL be visible above the slide background but below the content text and UI elements
 2. WHEN an image uses `![fit](image.jpg)` syntax THEN it SHALL fit entirely on the slide with letterboxing if needed
 3. WHEN an image uses `![left](image.jpg)` or `![right](image.jpg)` THEN it SHALL occupy the left or right half of the slide
 4. WHEN an image uses `![inline](image.jpg)` THEN it SHALL appear as part of the content flow
