@@ -440,10 +440,10 @@ Content for second example.
         with open(homepage, 'r', encoding='utf-8') as f:
             homepage_content = f.read()
         
-        # Should contain all presentation titles (now filename-based)
+        # Should contain all presentation titles (now includes folder names for multiple presentations)
         assert "Single Presentation" in homepage_content
-        assert "First Example" in homepage_content
-        assert "Second Example" in homepage_content
+        assert "Example - First Example" in homepage_content
+        assert "Example - Second Example" in homepage_content
 
     def test_asset_paths_for_subdirectory_presentations(self, tmp_path):
         """Test that asset paths are correct for presentations in subdirectories like Examples."""

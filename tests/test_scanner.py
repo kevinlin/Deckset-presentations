@@ -247,19 +247,37 @@ class TestPresentationScanner:
         folder_path = Path(examples_dir)
         assert scanner._has_multiple_independent_presentations(folder_path)
         
-        # Test title extraction for each file (now filename-based)
+        # Test title extraction for each file (now includes folder name for multiple presentations)
         expected_titles = {
-            "10 Deckset basics.md": "Deckset Basics",
-            "20 Working with images.md": "Working With Images", 
-            "30 Big text.md": "Big Text",
-            "40 Education.md": "Education",
-            "50 Tables.md": "Tables",
+            "10 Deckset basics.md": "Example - Deckset Basics",
+            "20 Working with images.md": "Example - Working With Images", 
+            "30 Big text.md": "Example - Big Text",
+            "40 Education.md": "Example - Education",
+            "50 Tables.md": "Example - Tables",
         }
         
         for filename, expected_title in expected_titles.items():
             file_path = os.path.join(examples_dir, filename)
-            title = scanner.extract_presentation_title(file_path, use_filename_fallback=True)
+            markdown_file = Path(file_path)
+            
+            # Test the actual method used for multiple presentations
+            title = scanner._create_title_with_folder_name(folder_path, markdown_file)
             assert title == expected_title, f"Expected '{expected_title}' for {filename}, got '{title}'"
+
+    def test_folder_name_singularization(self, config):
+        """Test that folder names are properly singularized in titles."""
+        scanner = PresentationScanner(config)
+        
+        # Test basic singularization
+        assert scanner._singularize_folder_name("Examples") == "Example"
+        assert scanner._singularize_folder_name("Demos") == "Demo"
+        assert scanner._singularize_folder_name("Tutorials") == "Tutorial"
+        assert scanner._singularize_folder_name("Samples") == "Sample"
+        
+        # Test edge cases
+        assert scanner._singularize_folder_name("Test") == "Test"  # Already singular
+        assert scanner._singularize_folder_name("s") == "s"  # Single character
+        assert scanner._singularize_folder_name("") == ""  # Empty string
 
     def test_is_presentation_folder(self, test_repo, config):
         """Test checking if a folder is a presentation folder."""

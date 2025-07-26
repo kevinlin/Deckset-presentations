@@ -393,8 +393,8 @@ class PresentationScanner:
             PresentationInfo object or None if creation fails
         """
         try:
-            # Extract title from the markdown file
-            title = self.extract_presentation_title(str(markdown_file), use_filename_fallback=True)
+            # Extract title from the markdown file with folder name inclusion
+            title = self._create_title_with_folder_name(folder_path, markdown_file)
             
             # For multiple presentations in one folder, use the markdown filename (without extension) as a unique identifier
             markdown_name = markdown_file.stem
@@ -480,3 +480,43 @@ class PresentationScanner:
         title = title.title()
         
         return title
+    
+    def _create_title_with_folder_name(self, folder_path: Path, markdown_file: Path) -> str:
+        """
+        Create a presentation title that includes the folder name for multiple presentations.
+        
+        For multiple presentations in a single folder, includes the folder name:
+        - "Examples/10 Deckset basics.md" → "Example - Deckset Basics"
+        - "Examples/30 Big text.md" → "Example - Big Text"
+        
+        Args:
+            folder_path: Path to the folder containing the presentation
+            markdown_file: Path to the markdown file
+            
+        Returns:
+            Formatted title with folder name prefix for multiple presentations
+        """
+        # Get the formatted filename title
+        filename_title = self._format_filename_as_title(markdown_file.stem)
+        
+        # Get the folder name and singularize it
+        folder_name = folder_path.name
+        folder_title = self._singularize_folder_name(folder_name)
+        
+        # Combine folder name with filename title
+        return f"{folder_title} - {filename_title}"
+    
+    def _singularize_folder_name(self, folder_name: str) -> str:
+        """
+        Convert plural folder names to singular for title display.
+        
+        Args:
+            folder_name: The folder name (e.g., "Examples", "Demos")
+            
+        Returns:
+            Singularized folder name (e.g., "Example", "Demo")
+        """
+        # Basic singularization rules
+        if folder_name.endswith('s') and len(folder_name) > 1:
+            return folder_name[:-1]
+        return folder_name

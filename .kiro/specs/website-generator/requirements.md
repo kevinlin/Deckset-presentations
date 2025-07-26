@@ -17,9 +17,8 @@ This feature will create a dynamic website generator that converts Deckset prese
 3. WHEN multiple markdown files exist in a folder THEN the system SHALL use the file with the same name as the folder or the first markdown file found
 4. IF no markdown file matches the folder name THEN the system SHALL use the first markdown file alphabetically
 5. WHEN a folder contains multiple independent presentations (e.g., "Examples", "Demos", "Samples", "Tutorials") THEN the system SHALL treat each markdown file as a separate presentation
-6. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL use markdown filename as fallback instead of folder name, removing numeric prefixes (e.g., "10 Deckset basics" → "Deckset basics")
-7. WHEN processing any presentation (single or multiple) THEN the system SHALL use the same EnhancedPresentationProcessor and processing pipeline to ensure consistency
-8. WHEN extracting presentation titles THEN the system SHALL use the markdown filename instead of content extraction, applying formatting rules: remove numeric prefixes (e.g., "30 Big text" → "Big Text"), convert dashes/underscores to spaces, and apply title case formatting
+6. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL include the folder name as a prefix with singularization (e.g., "Examples/10 Deckset basics.md" → "Example - Deckset Basics", "Demos/05 Sample demo.md" → "Demo - Sample Demo")
+7. WHEN extracting presentation titles THEN the system SHALL use the markdown filename instead of content extraction, applying formatting rules: remove numeric prefixes (e.g., "30 Big text" → "Big Text"), convert dashes/underscores to spaces, and apply title case formatting
 
 ### Requirement 2
 
@@ -34,7 +33,8 @@ This feature will create a dynamic website generator that converts Deckset prese
 5. WHEN a slide image is missing or no images are referenced THEN the system SHALL display a fallback "redacted.png" image
 6. WHEN rendering notes THEN the system SHALL convert markdown formatting to HTML
 7. WHEN extracting presentation titles THEN the system SHALL use the markdown filename with formatting rules applied (remove numeric prefixes, convert dashes/underscores to spaces, apply title case)
-8. WHEN generating presentation HTML THEN the system SHALL use correct relative asset paths based on presentation nesting depth (e.g., "../assets/file.css" for single presentations, "../../assets/file.css" for presentations in subdirectories like Examples)
+8. WHEN extracting titles for multiple presentations in a single folder THEN the system SHALL include the folder name as a prefix with singularization (e.g., "Examples/10 Deckset basics.md" → "Example - Deckset Basics")
+9. WHEN generating presentation HTML THEN the system SHALL use correct relative asset paths based on presentation nesting depth (e.g., "../assets/file.css" for single presentations, "../../assets/file.css" for presentations in subdirectories like Examples)
 
 ### Requirement 3
 

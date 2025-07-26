@@ -150,3 +150,15 @@
   - Update FileManager to handle favicon and icon asset copying
   - Test favicon display in generated website across different browsers
   - _Requirements: 4.9, 4.10_
+
+- [x] 19. Implement folder name inclusion in presentation titles for multiple presentations
+  - Modify _create_presentation_info_from_file to use _create_title_with_folder_name for multiple presentations
+  - Implement _create_title_with_folder_name method to include singularized folder name as prefix in titles
+  - Add _singularize_folder_name method to convert plural folder names to singular (e.g., "Examples" → "Example")
+  - Update presentation titles for multiple presentations to include folder name: "Examples/10 Deckset basics.md" → "Example - Deckset Basics"
+  - Ensure single presentations maintain filename-only titles without folder name prefix
+  - Update scanner tests to expect folder names in multiple presentation titles
+  - Update integration tests to expect folder names in multiple presentation titles
+  - Verify all tests pass with manual testing and validation
+  - Update requirements.md, design.md, and tasks.md to document folder name inclusion feature
+  - _Requirements: 1.9, 2.8_

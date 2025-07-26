@@ -181,7 +181,7 @@ Desktop.ini
 .uv_cache/
 
 # Generated site
-docs/
+# docs/
 
 # Node.js dependencies
 node_modules/
