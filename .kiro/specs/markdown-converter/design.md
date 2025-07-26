@@ -180,6 +180,7 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - Processes `[fit]` headers for auto-scaling
 - Extracts speaker notes and footnotes
 - Implements emoji shortcode processing
+- Converts markdown lists (unordered and ordered) to HTML with proper formatting
 
 #### Slide Processor (`slide_processor.py`)
 - Processes individual slide content and layout
@@ -233,6 +234,7 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - `render_video_player(video)`: Creates video players with controls
 - `render_code_block(code_block)`: Renders syntax-highlighted code
 - `render_math_formula(formula)`: Renders mathematical expressions
+- `_markdown_to_html(content)`: Converts markdown to HTML with comprehensive list support
 
 ### 7. File Manager (`file_manager.py`)
 

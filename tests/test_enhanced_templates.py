@@ -6,11 +6,16 @@ and template functionality with Deckset features.
 """
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+import tempfile
+import shutil
+
 from enhanced_templates import EnhancedTemplateEngine
 from models import (
-    ProcessedSlide, ColumnContent, ProcessedImage, ImageModifiers,
-    DecksetConfig, SlideConfig
+    ProcessedSlide, ColumnContent, ProcessedImage, ProcessedVideo, ProcessedAudio,
+    ProcessedCodeBlock, MathFormula, DecksetConfig, SlideConfig, ImageGrid,
+    MediaModifiers, ImageModifiers
 )
 
 
@@ -19,7 +24,14 @@ class TestEnhancedTemplateEngine(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        self.engine = EnhancedTemplateEngine()
+        self.temp_dir = tempfile.mkdtemp()
+        self.template_dir = Path(self.temp_dir) / "templates"
+        self.template_dir.mkdir(exist_ok=True)
+        
+        # Create mock templates
+        self._create_mock_templates()
+        
+        self.engine = EnhancedTemplateEngine(str(self.template_dir))
         
         # Create test slide
         self.test_slide = ProcessedSlide(
@@ -35,6 +47,101 @@ class TestEnhancedTemplateEngine(unittest.TestCase):
             footer="Test Footer"
         )
     
+    def tearDown(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def _create_mock_templates(self):
+        """Create mock template files for testing."""
+        # Create slide template that matches the actual structure
+        slide_template = """<section class="slide" id="slide-{{ slide.index }}" 
+         data-transition="{{ slide.slide_config.slide_transition or config.slide_transition or 'none' }}"
+         {% if slide.slide_config.autoscale or config.autoscale %}data-autoscale="true"{% endif %}>
+    
+    <!-- Background Image -->
+    {% if slide.background_image %}
+        {{ render_background_image(slide.background_image) }}
+    {% endif %}
+    
+    <!-- Slide Content -->
+    <div class="slide-content {{ 'columns' if slide.columns else 'single-column' }}">
+        {% if slide.columns %}
+            {{ render_columns(slide.columns) }}
+        {% else %}
+            <div class="content-area">
+                {{ slide.content | markdown_to_html }}
+                {% if slide.inline_images %}
+                    {{ render_inline_images(slide.inline_images) }}
+                {% endif %}
+                {% if slide.videos %}
+                    {% for video in slide.videos %}
+                        {{ render_video_player(video) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.audio %}
+                    {% for audio in slide.audio %}
+                        {{ render_audio_player(audio) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.code_blocks %}
+                    {% for code_block in slide.code_blocks %}
+                        {{ render_code_block(code_block) }}
+                    {% endfor %}
+                {% endif %}
+                {% if slide.math_formulas %}
+                    {% for formula in slide.math_formulas %}
+                        {{ render_math_formula(formula) }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Footnotes -->
+    {% if slide.footnotes %}
+        <div class="footnotes">
+            {{ render_footnotes(slide.footnotes) }}
+        </div>
+    {% endif %}
+    
+    <!-- Footer -->
+    {% if not slide.slide_config.hide_footer and config.footer %}
+        <div class="slide-footer">
+            {{ render_slide_footer(config, slide.slide_config) }}
+        </div>
+    {% endif %}
+    
+    <!-- Slide Number -->
+    {% if not slide.slide_config.hide_slide_numbers and config.slide_numbers %}
+        <div class="slide-number">
+            {{ render_slide_number(slide.index, total_slides, config) }}
+        </div>
+    {% endif %}
+    
+    <!-- Speaker Notes (hidden by default) -->
+    {% if slide.notes %}
+        <aside class="speaker-notes" style="display: none;">
+            {{ slide.notes | markdown_to_html }}
+        </aside>
+    {% endif %}
+</section>"""
+        (self.template_dir / "slide.html").write_text(slide_template)
+        
+        # Create homepage template
+        homepage_template = """
+        <html>
+            <body>
+                <h1>Presentations</h1>
+                <ul>
+                {% for presentation in presentations %}
+                    <li><a href="{{ presentation.folder_name }}.html">{{ presentation.title }}</a></li>
+                {% endfor %}
+                </ul>
+            </body>
+        </html>
+        """
+        (self.template_dir / "homepage.html").write_text(homepage_template.strip())
+
     def test_render_slide_basic(self):
         """Test basic slide rendering."""
         result = self.engine.render_slide(self.test_slide, self.test_config)
@@ -255,6 +362,165 @@ class TestEnhancedTemplateEngine(unittest.TestCase):
         result = self.engine.render_slide(self.test_slide, self.test_config)
         
         self.assertIn('data-transition="fade"', result)
+
+    def test_markdown_to_html_lists(self):
+        """Test markdown to HTML conversion with comprehensive list support."""
+        # Test unordered lists
+        unordered_markdown = """
+Here is a list:
+
+- First item
+- Second item
+- Third item
+
+After the list.
+        """.strip()
+        
+        result = self.engine._markdown_to_html(unordered_markdown)
+        
+        # Should contain proper unordered list structure
+        self.assertIn('<ul>', result)
+        self.assertIn('<li>First item</li>', result)
+        self.assertIn('<li>Second item</li>', result)
+        self.assertIn('<li>Third item</li>', result)
+        self.assertIn('</ul>', result)
+        
+        # Should have proper separation with paragraph before and after
+        self.assertIn('<p>Here is a list:</p>', result)
+        self.assertIn('<p>After the list.</p>', result)
+        
+        # Test ordered lists
+        ordered_markdown = """
+Steps to follow:
+
+1. First step
+2. Second step
+3. Third step
+
+That's it!
+        """.strip()
+        
+        result = self.engine._markdown_to_html(ordered_markdown)
+        
+        # Should contain proper ordered list structure
+        self.assertIn('<ol>', result)
+        self.assertIn('<li>First step</li>', result)
+        self.assertIn('<li>Second step</li>', result)
+        self.assertIn('<li>Third step</li>', result)
+        self.assertIn('</ol>', result)
+        
+        # Should have proper separation
+        self.assertIn('<p>Steps to follow:</p>', result)
+        self.assertIn('<p>That\'s it!</p>', result)
+
+    def test_markdown_to_html_mixed_lists(self):
+        """Test markdown with mixed list types and other content."""
+        mixed_markdown = """
+# Main Title
+
+Introduction paragraph.
+
+Unordered list:
+- Item A
+- Item B
+
+Ordered list:
+1. Step One
+2. Step Two
+
+## Subheading
+
+Final paragraph.
+        """.strip()
+        
+        result = self.engine._markdown_to_html(mixed_markdown)
+        
+        # Should have headers
+        self.assertIn('<h1>Main Title</h1>', result)
+        self.assertIn('<h2>Subheading</h2>', result)
+        
+        # Should have both list types
+        self.assertIn('<ul>', result)
+        self.assertIn('<ol>', result)
+        self.assertIn('<li>Item A</li>', result)
+        self.assertIn('<li>Step One</li>', result)
+        
+        # Should have paragraphs
+        self.assertIn('<p>Introduction paragraph.</p>', result)
+        self.assertIn('<p>Unordered list:</p>', result)
+        self.assertIn('<p>Ordered list:</p>', result)
+        self.assertIn('<p>Final paragraph.</p>', result)
+
+    def test_markdown_to_html_list_with_emphasis(self):
+        """Test lists with emphasis and inline formatting."""
+        emphasis_markdown = """
+- **Bold item**
+- *Italic item*
+- `Code item`
+- Normal item
+
+1. **Bold step**
+2. *Italic step*
+3. `Code step`
+        """.strip()
+        
+        result = self.engine._markdown_to_html(emphasis_markdown)
+        
+        # Should preserve emphasis within list items
+        self.assertIn('<li><strong>Bold item</strong></li>', result)
+        self.assertIn('<li><em>Italic item</em></li>', result)
+        self.assertIn('<li><code>Code item</code></li>', result)
+        self.assertIn('<li>Normal item</li>', result)
+        
+        self.assertIn('<li><strong>Bold step</strong></li>', result)
+        self.assertIn('<li><em>Italic step</em></li>', result)
+        self.assertIn('<li><code>Code step</code></li>', result)
+
+    def test_markdown_to_html_empty_lists(self):
+        """Test edge cases with empty or malformed lists."""
+        # Empty list items should still create list structure
+        empty_markdown = """
+- 
+- Second item
+-   
+
+1. 
+2. Second step
+        """.strip()
+        
+        result = self.engine._markdown_to_html(empty_markdown)
+        
+        # Should create lists even with empty items
+        self.assertIn('<ul>', result)
+        self.assertIn('<ol>', result)
+        self.assertIn('<li></li>', result)  # Empty list item
+        self.assertIn('<li>Second item</li>', result)
+        self.assertIn('<li>Second step</li>', result)
+
+    def test_markdown_to_html_list_separation(self):
+        """Test that lists are properly separated from surrounding content."""
+        separation_markdown = """
+Before list text.
+- List item 1
+- List item 2
+After list text.
+
+Before ordered.
+1. Ordered item 1
+2. Ordered item 2
+After ordered.
+        """.strip()
+        
+        result = self.engine._markdown_to_html(separation_markdown)
+        
+        # Lists should be separate from paragraphs
+        lines = [line.strip() for line in result.split('\n') if line.strip()]
+        
+        # Should have proper order: paragraph, list, paragraph
+        self.assertIn('<p>Before list text.</p>', result)
+        self.assertIn('<p>After list text.</p>', result)
+        self.assertIn('<p>Before ordered.</p>', result)
+        self.assertIn('<p>After ordered.</p>', result)
 
 
 if __name__ == '__main__':

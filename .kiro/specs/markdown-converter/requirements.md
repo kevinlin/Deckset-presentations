@@ -19,6 +19,10 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 4. WHEN the system processes global commands (e.g., `slidenumbers: true`, `footer: text`) THEN it SHALL apply them to all slides
 5. WHEN the system encounters slide-specific commands (e.g., `[.column]`, `[.background-image: file.jpg]`) THEN it SHALL apply them only to that slide
 6. WHEN automatic slide breaks are enabled (`slide-dividers: #, ##`) THEN the system SHALL create new slides at specified heading levels
+7. WHEN the system encounters unordered list items (lines starting with `- `) THEN it SHALL convert them to HTML `<ul>` and `<li>` elements
+8. WHEN the system encounters ordered list items (lines starting with `1. `, `2. `, etc.) THEN it SHALL convert them to HTML `<ol>` and `<li>` elements
+9. WHEN list items contain emphasis, code, or other inline formatting THEN the formatting SHALL be preserved within the list items
+10. WHEN lists are followed by other content THEN there SHALL be proper separation with paragraph elements
 
 ### Requirement 2: Advanced Image and Media Support
 
