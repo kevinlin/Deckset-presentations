@@ -144,10 +144,10 @@ class FileManager:
         # List of icon files to copy
         icon_files = [
             "favicon.png",
-            "favicon.ico",  # In case there's also an ICO version
             "apple-touch-icon.png",  # Common Apple touch icon name
             "icon-192x192.png",  # PWA icons
-            "icon-512x512.png"
+            "icon-512x512.png",
+            "deckset-icon.png"
         ]
         
         for icon_file in icon_files:
