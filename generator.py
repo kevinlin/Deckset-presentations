@@ -176,12 +176,11 @@ class WebPageGenerator:
                 )
                 # Continue with generation even if preview processing fails
             
-            # Sort presentations by last modified date (newest first)
+            # Sort presentations by title alphabetically
             try:
                 sorted_presentations = sorted(
                     presentations,
-                    key=lambda p: p.last_modified if p.last_modified else datetime.min,
-                    reverse=True
+                    key=lambda p: p.title.lower() if p.title else ""
                 )
             except Exception as e:
                 self.logger.warning(f"Failed to sort presentations, using original order: {e}")
@@ -453,8 +452,32 @@ class WebPageGenerator:
     <link rel="stylesheet" href="{asset_path_prefix}enhanced_slide_styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{asset_path_prefix}index.html" class="text-xl font-semibold text-gray-900 flex items-center">
+                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span>Deckset Presentations</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{asset_path_prefix}index.html" 
+                       class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        ← Back to Home
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
     <div class="presentation-container" data-presentation-title="{presentation.info.title}">
         <div class="slides-container">
             {"".join(slides_html)}

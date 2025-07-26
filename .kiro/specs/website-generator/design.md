@@ -323,21 +323,23 @@ docs/                           # GitHub Pages output directory
 - Presentation metadata display (title, slide count, last modified) (Requirement 4.5)
 - Mobile-responsive design that adapts to different screen sizes (Requirement 3.2)
 - Clickable presentation cards for navigation (Requirement 4.4)
+- Alphabetical sorting by title with case-insensitive comparison (Requirement 4.7)
 - Search/filter functionality (future enhancement)
 
-**Design Rationale**: The homepage serves as the primary entry point and must provide clear visual hierarchy and easy navigation. Preview images help users quickly identify presentations, while metadata provides context for selection.
+**Design Rationale**: The homepage serves as the primary entry point and must provide clear visual hierarchy and easy navigation. Preview images help users quickly identify presentations, while metadata provides context for selection. Alphabetical sorting ensures predictable presentation order regardless of creation or modification dates, making it easier for users to find specific presentations.
 
 ### Presentation Template Enhancements
 
 - Responsive layout for slide images with proper sizing and borders (Requirement 3.3)
 - Speaker notes display with markdown-to-HTML conversion (Requirement 2.5)
 - Navigation between presentations with consistent styling (Requirement 3.5)
+- Navigation header with home page links using dynamic relative paths (Requirement 4.8)
 - Slide counter and progress indicator
 - Fallback image handling for missing slides (Requirement 2.4)
 - Readable typography and spacing for text content (Requirement 3.4)
 - Print-friendly styles
 
-**Design Rationale**: Individual presentation pages must balance visual slide content with textual notes, ensuring both are accessible and well-formatted across devices.
+**Design Rationale**: Individual presentation pages must balance visual slide content with textual notes, ensuring both are accessible and well-formatted across devices. The navigation header provides consistent access back to the homepage using relative paths that automatically adjust based on presentation nesting depth (e.g., "../index.html" for single presentations, "../../index.html" for nested presentations like Examples).
 
 ## GitHub Actions Integration
 

@@ -59,6 +59,8 @@ This feature will create a dynamic website generator that converts Deckset prese
 4. WHEN clicking on a presentation THEN the system SHALL navigate to the presentation's web page
 5. WHEN displaying presentation titles THEN the system SHALL use the extracted title (with proper filename-based fallback for multiple presentations in one folder)
 6. WHEN organizing presentations from multiple-presentation folders THEN the system SHALL create appropriate subdirectories (e.g., presentations/Examples/10 Deckset basics.html)
+7. WHEN listing presentations on the homepage THEN the system SHALL sort them alphabetically by title (case-insensitive, ignoring Deckset formatting markup)
+8. WHEN viewing any presentation page THEN it SHALL include navigation links back to the homepage with correct relative paths based on presentation nesting depth
 
 ### Requirement 5
 

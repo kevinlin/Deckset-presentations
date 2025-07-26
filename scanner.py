@@ -159,10 +159,12 @@ class PresentationScanner:
             if title:
                 return title
             
-            # Try to extract title from first line if it's a header
+            # Try to extract title from first header in content (may not be on first line)
             lines = content.strip().split('\n')
-            if lines and lines[0].startswith('#'):
-                return lines[0].lstrip('#').strip()
+            for line in lines:
+                line = line.strip()
+                if line.startswith('#'):
+                    return line.lstrip('#').strip()
             
             # Fallback logic depends on context
             if use_filename_fallback:
@@ -211,17 +213,32 @@ class PresentationScanner:
         Returns:
             Title from frontmatter or None if not found
         """
-        # Check if content has frontmatter (between --- markers)
-        if content.startswith('---'):
-            try:
+        try:
+            # Check if content has standard frontmatter (between --- markers)
+            if content.startswith('---'):
                 end_idx = content.find('---', 3)
                 if end_idx != -1:
                     frontmatter = content[3:end_idx].strip()
                     for line in frontmatter.split('\n'):
                         if line.startswith('title:'):
                             return line.split('title:', 1)[1].strip().strip('"\'')
-            except Exception:
-                pass
+            
+            # Check for Deckset-style frontmatter (no --- delimiters, just key: value at start)
+            lines = content.split('\n')
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if not line or ':' not in line:
+                    # If we hit an empty line or line without colon, we're done with frontmatter
+                    if line.startswith('#'):
+                        # Found first header, stop looking
+                        break
+                    continue
+                
+                if line.startswith('title:'):
+                    return line.split('title:', 1)[1].strip().strip('"\'')
+                    
+        except Exception:
+            pass
         return None
     
     def is_presentation_folder(self, folder_path: str) -> bool:

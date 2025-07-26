@@ -110,3 +110,12 @@
   - Create comprehensive integration test to verify asset paths are correct for both single and multiple presentations
   - Update requirements.md and design.md to document asset path management requirements
   - _Requirements: 2.8_
+
+- [x] 15. Fix homepage presentation sorting and navigation
+  - Fix homepage to sort presentations alphabetically by title instead of by last modified date
+  - Improve title extraction logic to handle Deckset-specific frontmatter format and locate first header in content
+  - Add navigation header to all presentation pages with "Back to Home" links using correct relative paths
+  - Update both _render_enhanced_presentation method and EnhancedTemplateEngine.render_presentation method to include navigation
+  - Ensure navigation paths automatically adjust based on presentation nesting depth
+  - Update requirements.md and design.md to reflect homepage sorting and navigation requirements
+  - _Requirements: 4.7, 4.8_

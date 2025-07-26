@@ -933,8 +933,32 @@ class EnhancedTemplateEngine:
     <link rel="stylesheet" href="{asset_path_prefix}assets/enhanced_slide_styles.css">
     <link rel="stylesheet" href="{asset_path_prefix}assets/code_highlighting_styles.css">
     <script src="{asset_path_prefix}assets/js/enhanced-slide-viewer.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{asset_path_prefix}index.html" class="text-xl font-semibold text-gray-900 flex items-center">
+                        <svg class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span>Deckset Presentations</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{asset_path_prefix}index.html" 
+                       class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        ← Back to Home
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
     <div class="presentation-container">
         <div class="slides-container">
             {"".join(rendered_slides)}
