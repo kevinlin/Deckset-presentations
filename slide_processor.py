@@ -8,10 +8,7 @@ background images, code blocks, math formulas, and autoscaling.
 import re
 import logging
 from typing import List, Optional
-from models import (
-    ProcessedSlide, ColumnContent, ProcessedImage, ProcessedCodeBlock, MathFormula,
-    DecksetConfig, SlideConfig, SlideContext, SlideProcessingError, SlideProcessorInterface
-)
+from models import ProcessedSlide, ColumnContent, ProcessedImage,DecksetConfig, SlideProcessingError, SlideProcessorInterface
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +62,8 @@ class SlideProcessor(SlideProcessorInterface):
             # Process background image
             slide.background_image = self.process_background_image(slide.content)
             
-            # Process code blocks
-            slide.content = self.process_code_blocks(slide.content)
+            # Remoce code blocks
+            slide.content = self.remove_code_blocks(slide.content)
             
             # Note: Math formulas are processed by the enhanced processor
             # to create proper MathFormula objects
@@ -152,41 +149,10 @@ class SlideProcessor(SlideProcessorInterface):
         except Exception as e:
             raise SlideProcessingError(f"Error processing background image: {str(e)}")
     
-    def process_code_blocks(self, slide_content: str) -> str:
-        """Process code blocks with highlighting."""
-        try:
-            # Find code highlight directives
-            highlight_configs = {}
-            for match in self.code_highlight_pattern.finditer(slide_content):
-                directive = match.group(1).strip()
-                # Store position and directive for later use
-                highlight_configs[match.start()] = directive
-            
-            # Remove highlight directives from content
-            content = self.code_highlight_pattern.sub('', slide_content)
-            
-            # Process code blocks
-            def replace_code_block(match):
-                language = match.group(1) or 'text'
-                code = match.group(2)
-                
-                # Find applicable highlight directive
-                highlight_directive = None
-                for pos, directive in highlight_configs.items():
-                    if pos < match.start():
-                        highlight_directive = directive
-                
-                # Create enhanced code block HTML
-                css_class = f"code-block language-{language}"
-                if highlight_directive:
-                    css_class += f" highlight-{highlight_directive.replace(' ', '-')}"
-                
-                return f'<pre class="{css_class}"><code>{code}</code></pre>'
-            
-            return self.code_block_pattern.sub(replace_code_block, content)
-            
-        except Exception as e:
-            raise SlideProcessingError(f"Error processing code blocks: {str(e)}")
+    def remove_code_blocks(self, slide_content: str) -> str:
+        """Remove code blocks."""
+        # Remove highlight directives and code blocks from content            
+        return self.code_block_pattern.sub('', self.code_highlight_pattern.sub('', slide_content))
     
     def process_math_formulas(self, slide_content: str) -> str:
         """Process mathematical formulas. (Stub - handled by enhanced processor)"""

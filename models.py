@@ -395,8 +395,8 @@ class SlideProcessorInterface(ABC):
         pass
     
     @abstractmethod
-    def process_code_blocks(self, slide_content: str) -> str:
-        """Process code blocks with highlighting."""
+    def remove_code_blocks(self, slide_content: str) -> str:
+        """Remove code blocks."""
         pass
     
     @abstractmethod
