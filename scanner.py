@@ -394,7 +394,6 @@ class PresentationScanner:
         This is true when:
         1. The folder contains multiple markdown files, AND
         2. No markdown file matches the folder name (indicating they are not meant to be one presentation), AND
-        3. The folder name suggests it contains examples/demos (like "Examples", "Demos", etc.)
         
         Args:
             folder_path: Path to the folder to check
@@ -414,11 +413,7 @@ class PresentationScanner:
         if folder_markdown.exists():
             return False
 
-        # Check if folder name suggests it contains multiple examples/demos
-        folder_name_lower = folder_name.lower()
-        multiple_presentation_indicators = ['examples', 'demos', 'samples', 'tutorials']
-
-        return any(indicator in folder_name_lower for indicator in multiple_presentation_indicators)
+        return True
 
     def _create_presentation_info_from_file(self, folder_path: Path, markdown_file: Path) -> Optional[PresentationInfo]:
         """
