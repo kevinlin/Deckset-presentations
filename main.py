@@ -460,7 +460,7 @@ def main():
 Examples:
   %(prog)s                          # Generate website from current directory
   %(prog)s --root /path/to/repo     # Generate from specific directory
-  %(prog)s --output docs            # Specify output directory
+  %(prog)s --output site            # Specify output directory
   %(prog)s --single presentation1   # Generate single presentation
         """,
     )
@@ -472,7 +472,7 @@ Examples:
     )
 
     parser.add_argument(
-        "--output", help="Output directory for generated website (default: docs)"
+        "--output", help="Output directory for generated website (default: site)"
     )
 
     parser.add_argument(

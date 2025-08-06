@@ -152,16 +152,16 @@ jobs:
       
       - name: Generate website
         run: |
-          python main.py --verbose --output docs
+          python main.py --verbose --output site
         env:
           PYTHONPATH: .
       
       - name: Check generated files
         run: |
           echo "Generated files:"
-          find docs -type f -name "*.html" | head -20
-          echo "Total HTML files: $(find docs -type f -name "*.html" | wc -l)"
-          echo "Total slide images: $(find docs/slides -type f -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" 2>/dev/null | wc -l || echo 0)"
+          find site -type f -name "*.html" | head -20
+          echo "Total HTML files: $(find site -type f -name "*.html" | wc -l)"
+          echo "Total slide images: $(find site/slides -type f -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" 2>/dev/null | wc -l || echo 0)"
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -171,7 +171,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
-          path: ./docs
+          path: ./site
 
   # Deployment job
   deploy:

@@ -47,7 +47,7 @@ class ProcessedPresentation:
 @dataclass
 class GeneratorConfig:
     """Configuration settings for the website generator."""
-    output_dir: str = "docs"
+    output_dir: str = "site"
     template_dir: str = "templates"
     slides_dir: str = "slides"
     exclude_folders: List[str] = field(default_factory=lambda: [

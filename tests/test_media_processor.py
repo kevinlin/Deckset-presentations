@@ -23,7 +23,7 @@ class TestMediaProcessor:
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.processor = MediaProcessor(base_path=self.temp_dir, output_path=os.path.join(self.temp_dir, "docs"))
+        self.processor = MediaProcessor(base_path=self.temp_dir, output_path=os.path.join(self.temp_dir, "site"))
         
         # Create test slide context
         self.slide_context = SlideContext(
@@ -411,7 +411,7 @@ class TestMediaProcessorIntegration:
     def setup_method(self):
         """Set up test fixtures with real files."""
         self.temp_dir = tempfile.mkdtemp()
-        self.processor = MediaProcessor(base_path=self.temp_dir, output_path=os.path.join(self.temp_dir, "docs"))
+        self.processor = MediaProcessor(base_path=self.temp_dir, output_path=os.path.join(self.temp_dir, "site"))
         
         # Create test presentation directory
         self.presentation_path = os.path.join(self.temp_dir, "test-presentation")

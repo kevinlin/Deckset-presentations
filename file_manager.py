@@ -32,11 +32,11 @@ class FileManager:
         Create the necessary output directory structure.
         
         Creates the following directories:
-        - output_dir (e.g., docs/)
-        - presentations directory (e.g., docs/presentations/)
-        - slides directory (e.g., docs/slides/)
-        - images directory (e.g., docs/images/)
-        - assets directory (e.g., docs/assets/)
+        - output_dir (e.g., site/)
+        - presentations directory (e.g., site/presentations/)
+        - slides directory (e.g., site/slides/)
+        - images directory (e.g., site/images/)
+        - assets directory (e.g., site/assets/)
         
         Raises:
             FileOperationError: If directory creation fails

@@ -57,7 +57,7 @@
 - [x] 8. Create file and asset management
 
   - Implement slide image copying from source folders to output directory
-  - Create output directory structure management (docs/, slides/, assets/)
+  - Create output directory structure management (site/, slides/, assets/)
   - Implement file cleanup and organization for generated website
   - Write integration tests for complete file management workflow in tests/test_integration.py
   - _Requirements: 2.4, 4.3, 5.2_
@@ -82,7 +82,7 @@
   - Design workflow YAML file for automated website generation
   - Implement Python environment setup and dependency installation
   - Add website generation step that runs the main generator
-  - Configure GitHub Pages deployment from generated docs/ directory
+  - Configure GitHub Pages deployment from generated site/ directory
   - Add error notification and reporting for failed builds
   - Write workflow that triggers on main branch pushes
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_

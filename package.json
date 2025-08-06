@@ -24,7 +24,7 @@
       "js"
     ],
     "collectCoverageFrom": [
-      "docs/assets/js/**/*.js",
+      "site/assets/js/**/*.js",
       "templates/assets/js/**/*.js"
     ]
   }

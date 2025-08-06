@@ -51,7 +51,7 @@ See [pyproject.toml](mdc:pyproject.toml) for:
 ### Environment Variables
 ```bash
 # Set output directory (optional)
-export DECKSET_OUTPUT_DIR="docs"
+export DECKSET_OUTPUT_DIR="site"
 
 # Set log level (optional)
 export DECKSET_LOG_LEVEL="INFO"
@@ -147,7 +147,7 @@ presentation-name/
 ### Branch Naming
 - `feature/description` - New features
 - `fix/description` - Bug fixes  
-- `docs/description` - Documentation updates
+- `site/description` - Documentation updates
 - `test/description` - Test improvements
 
 ### Commit Messages
@@ -224,11 +224,11 @@ Configure `.vscode/settings.json`:
 ## Deployment
 
 ### GitHub Pages Deployment
-The generated `docs/` directory can be deployed to GitHub Pages:
+The generated `site/` directory can be deployed to GitHub Pages:
 
 1. Push generated files to repository
 2. Enable GitHub Pages in repository settings
-3. Select `docs/` directory as source
+3. Select `site/` directory as source
 
 ### Static Site Hosting
 Output is compatible with:

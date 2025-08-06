@@ -18,7 +18,7 @@ from models import (
 class MediaProcessor(MediaProcessorInterface):
     """Processor for media files with Deckset modifier support."""
     
-    def __init__(self, base_path: str = ".", output_path: str = "docs"):
+    def __init__(self, base_path: str = ".", output_path: str = "site"):
         """Initialize the media processor."""
         self.base_path = base_path
         self.output_path = output_path
@@ -288,7 +288,7 @@ class MediaProcessor(MediaProcessorInterface):
         # Extract presentation folder name
         presentation_folder = os.path.basename(presentation_path)
         
-        # Create web path relative to docs/slides/
+        # Create web path relative to site/slides/
         web_path = f"slides/{presentation_folder}/{media_path}"
         
         return web_path

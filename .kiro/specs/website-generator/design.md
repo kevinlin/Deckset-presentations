@@ -80,7 +80,7 @@ class EnhancedPresentation:
 ```python
 @dataclass
 class GeneratorConfig:
-    output_dir: str = "docs"
+    output_dir: str = "site"
     template_dir: str = "templates"
     slides_dir: str = "slides"
     exclude_folders: List[str] = field(default_factory=lambda: [
@@ -401,13 +401,13 @@ Deckset-presentations/
 │   ├── slide.html
 │   └── assets/
 ├── tests/                     # Comprehensive test suite
-└── docs/                      # Generated website output
+└── site/                      # Generated website output
 ```
 
 ### Generated Website Structure
 
 ```
-docs/                          # GitHub Pages output directory
+site/                          # GitHub Pages output directory
 ├── index.html                 # Homepage with presentation listings
 ├── presentations/             # Individual presentation pages
 │   ├── fix-messaging.html

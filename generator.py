@@ -312,11 +312,11 @@ class WebPageGenerator:
                 # Convert relative path to absolute path for validation
                 if presentation.preview_image.startswith("../"):
                     # This is a web-accessible path like "../images/filename"
-                    # Convert to actual file path: docs/images/filename
+                    # Convert to actual file path: site/images/filename
                     actual_path = Path(self.config.output_dir) / presentation.preview_image.replace("../", "")
                 elif presentation.preview_image.startswith("images/"):
                     # This is a homepage-adjusted path like "images/filename"
-                    # Convert to actual file path: docs/images/filename
+                    # Convert to actual file path: site/images/filename
                     actual_path = Path(self.config.output_dir) / presentation.preview_image
                 else:
                     actual_path = Path(presentation.preview_image)
