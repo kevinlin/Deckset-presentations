@@ -226,6 +226,19 @@ html {
     margin: 1rem 0;
 }
 
+/* Inline figures (image + caption) */
+.inline-figure {
+    display: block;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.inline-figcaption {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
 .inline-image.fill {
     width: 100%;
     object-fit: cover;

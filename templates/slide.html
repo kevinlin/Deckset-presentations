@@ -14,6 +14,9 @@
         {% else %}
             <div class="content-area">
                 {{ slide.content | markdown_to_html }}
+                {% if slide.inline_figures %}
+                    {{ render_inline_figures(slide.inline_figures) }}
+                {% endif %}
                 {% if slide.inline_images %}
                     {{ render_inline_images(slide.inline_images) }}
                 {% endif %}

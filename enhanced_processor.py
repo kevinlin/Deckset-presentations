@@ -242,6 +242,9 @@ class EnhancedPresentationProcessor:
             # Process media elements (use original content to find media references)
             slide = self._process_slide_media(slide, original_content, context)
 
+            # Detect inline figures (image followed immediately by caption line without a blank line)
+            slide = self._detect_inline_figures(slide, original_content, context)
+
             return slide
 
         except Exception as e:
@@ -329,6 +332,71 @@ class EnhancedPresentationProcessor:
         content = re.sub(r'<p>\s*</p>', '', content)  # Remove empty paragraphs
 
         return content.strip()
+
+    def _detect_inline_figures(
+        self,
+        slide: ProcessedSlide,
+        original_content: str,
+        context: SlideContext,
+    ) -> ProcessedSlide:
+        """Identify inline image lines that are immediately followed by a caption line.
+
+        Supported pattern (no blank line between image and text):
+            ![inline](image.jpg)
+            Caption text here
+        or
+            ![](image.jpg)
+            Caption text here
+        """
+        try:
+            lines = original_content.split('\n')
+            import re
+            img_re = re.compile(r'^\s*!\[[^\]]*\]\([^\)]+\)\s*$')
+
+            # Quick lookup from filename to processed images
+            images_by_name = {}
+            for img in slide.inline_images:
+                images_by_name.setdefault(img.web_path.split('/')[-1], []).append(img)
+            if slide.background_image:
+                images_by_name.setdefault(slide.background_image.web_path.split('/')[-1], []).append(slide.background_image)
+
+            i = 0
+            while i < len(lines) - 1:
+                line = lines[i]
+                next_line = lines[i + 1]
+                if img_re.match(line) and next_line.strip() and not img_re.match(next_line):
+                    m = re.search(r'\(([^\)]+)\)', line)
+                    img_path = m.group(1).strip() if m else None
+                    if img_path:
+                        key = img_path.split('/')[-1]
+                        candidates = images_by_name.get(key, [])
+                        chosen = None
+                        for cand in candidates:
+                            try:
+                                if cand.modifiers.placement == 'inline':
+                                    chosen = cand
+                                    break
+                            except Exception:
+                                pass
+                        if not chosen and candidates:
+                            chosen = candidates[0]
+                        if chosen:
+                            from models import InlineFigure
+                            slide.inline_figures.append(InlineFigure(image=chosen, caption=next_line.strip()))
+                            if chosen in slide.inline_images:
+                                slide.inline_images.remove(chosen)
+                            # Remove the raw lines from HTML/markdown content best-effort
+                            slide.content = re.sub(re.escape(line), '', slide.content)
+                            slide.content = re.sub(re.escape(next_line), '', slide.content)
+                            i += 2
+                            continue
+                i += 1
+
+            # Normalize extra blank lines
+            slide.content = re.sub(r'\n\s*\n\s*\n+', '\n\n', slide.content)
+            return slide
+        except Exception:
+            return slide
 
     def _extract_media_references(self, content: str) -> List[str]:
         """Extract all media references from slide content."""

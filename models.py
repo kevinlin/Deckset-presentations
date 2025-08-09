@@ -150,6 +150,14 @@ class ImageGrid:
     gap: str = "1rem"
 
 
+# Figure Models
+@dataclass
+class InlineFigure:
+    """Inline image with an associated caption placed directly below the image."""
+    image: ProcessedImage
+    caption: str
+
+
 # Code Processing Models
 @dataclass
 class HighlightConfig:
@@ -187,6 +195,7 @@ class ProcessedSlide:
     columns: List[ColumnContent] = field(default_factory=list)
     background_image: Optional[ProcessedImage] = None
     inline_images: List[ProcessedImage] = field(default_factory=list)
+    inline_figures: List[InlineFigure] = field(default_factory=list)
     videos: List[ProcessedVideo] = field(default_factory=list)
     audio: List[ProcessedAudio] = field(default_factory=list)
     code_blocks: List[ProcessedCodeBlock] = field(default_factory=list)

@@ -346,7 +346,7 @@
   - Add unit and integration tests covering overrides, defaults, and no-regression for slides without background images
   - _Requirements: 2.15-2.15.6, 8.1, 8.2_
 
-- [ ] 29. Inline image captions
+- [x] 29. Inline image captions
   - Extend parser to detect caption lines immediately following an inline image without a blank line
   - Add `InlineFigure` model with `caption` field and use semantic `<figure>/<figcaption>` in templates
   - Ensure autoscale and wrapping work with captions; maintain grouping in print/PDF

@@ -12,7 +12,7 @@ from typing import List, Dict, Optional
 from jinja2 import Environment, FileSystemLoader, Template
 from models import (
     ProcessedSlide, ColumnContent, ProcessedImage, ProcessedVideo, ProcessedAudio,
-    ProcessedCodeBlock, MathFormula, DecksetConfig, SlideConfig, ImageGrid
+    ProcessedCodeBlock, MathFormula, DecksetConfig, SlideConfig, ImageGrid, InlineFigure
 )
 
 
@@ -39,6 +39,7 @@ class EnhancedTemplateEngine:
             'render_columns': self.render_columns,
             'render_background_image': self.render_background_image,
             'render_inline_images': self.render_inline_images,
+            'render_inline_figures': self.render_inline_figures,
             'render_image_grid': self.render_image_grid,
             'render_video_player': self.render_video_player,
             'render_audio_player': self.render_audio_player,
@@ -149,6 +150,27 @@ class EnhancedTemplateEngine:
             html_parts.append(self._render_single_inline_image(image))
 
         return "".join(html_parts)
+
+    def render_inline_figures(self, figures: List[InlineFigure]) -> str:
+        """Render inline image + caption figures with semantic HTML."""
+        if not figures:
+            return ""
+        parts = []
+        for fig in figures:
+            img = fig.image
+            styles = []
+            if img.modifiers.corner_radius:
+                styles.append(f"border-radius: {img.modifiers.corner_radius}px")
+            style_attr = f'style="{"; ".join(styles)}"' if styles else ""
+            parts.append(
+                f"""
+                <figure class="inline-figure">
+                    <img class="inline-image" {style_attr} src="{img.web_path}" alt="{self._escape_html(img.alt_text)}" loading="lazy">
+                    <figcaption class="inline-figcaption">{self._markdown_to_html(fig.caption)}</figcaption>
+                </figure>
+                """
+            )
+        return "".join(parts)
 
     def render_image_grid(self, grid: ImageGrid) -> str:
         """Render image grid layout."""
