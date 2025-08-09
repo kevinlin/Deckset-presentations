@@ -259,23 +259,33 @@ class EnhancedPresentationProcessor:
     ) -> ProcessedSlide:
         """Process media elements (images, videos, audio) in the slide."""
         try:
-            # Extract media references from original content
+            # Extract media references from original content (with inline-in-text detection)
             media_references = self._extract_media_references(original_content)
             processed_media_refs = []
 
             # Process each media reference
-            for media_ref in media_references:
+            for media in media_references:
+                media_ref = media['ref']
                 try:
                     if self._is_image_reference(media_ref):
                         processed_image = self.media_processor.process_image(media_ref, context)
 
-                        # Categorize image based on modifiers
-                        if processed_image.modifiers.placement == "background":
-                            slide.background_image = processed_image
+                        # If this is an inline-in-text image, replace in content in place and do not add to side collections
+                        if media.get('inline_in_text', False) and processed_image.modifiers.placement == 'inline':
+                            # Replace markdown token with inline <img> tag preserving flow
+                            replacement = (
+                                f'<img class="inline-image inline-text" '
+                                f'src="{processed_image.web_path}" '
+                                f'alt="{processed_image.alt_text}" loading="lazy">'
+                            )
+                            slide.content = self._replace_one(slide.content, media_ref, replacement)
                         else:
-                            slide.inline_images.append(processed_image)
-
-                        processed_media_refs.append(media_ref)
+                            # Categorize image based on modifiers
+                            if processed_image.modifiers.placement == "background":
+                                slide.background_image = processed_image
+                            else:
+                                slide.inline_images.append(processed_image)
+                            processed_media_refs.append(media_ref)
 
                     elif self._is_video_reference(media_ref):
                         processed_video = self.media_processor.process_video(media_ref, context)
@@ -301,6 +311,18 @@ class EnhancedPresentationProcessor:
         except Exception as e:
             logger.warning(f"Failed to process slide media: {e}")
             return slide
+
+    def _replace_one(self, text: str, target: str, replacement: str) -> str:
+        """Replace a single occurrence of target string in text with replacement.
+        Uses split once to avoid regex pitfalls.
+        """
+        try:
+            parts = text.split(target, 1)
+            if len(parts) == 2:
+                return parts[0] + replacement + parts[1]
+            return text
+        except Exception:
+            return text
 
     def _remove_media_reference_from_content(self, content: str, media_ref: str) -> str:
         """Remove a processed media reference from slide content."""
@@ -398,20 +420,29 @@ class EnhancedPresentationProcessor:
         except Exception:
             return slide
 
-    def _extract_media_references(self, content: str) -> List[str]:
-        """Extract all media references from slide content."""
+    def _extract_media_references(self, content: str) -> List[Dict[str, Any]]:
+        """Extract all media references from slide content with inline-in-text context.
+
+        Returns a list of dicts: { 'ref': full_markdown, 'inline_in_text': bool }
+        """
         import re
 
         # Pattern to match ![...](...) with support for spaces/Unicode in paths and adjacent tokens
-        media_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+?)\)')
-        matches = media_pattern.findall(content)
+        media_pattern = re.compile(r'!\[[^\]]*\]\([^\)]+?\)')
+        results: List[Dict[str, Any]] = []
+        for m in media_pattern.finditer(content):
+            ref = m.group(0)
+            # Determine if inline inside a non-empty line (not alone on its line)
+            line_start = content.rfind('\n', 0, m.start()) + 1
+            line_end = content.find('\n', m.end())
+            if line_end == -1:
+                line_end = len(content)
+            line_text = content[line_start:line_end]
+            stripped = line_text.strip()
+            inline_in_text = not (stripped == ref)
+            results.append({'ref': ref, 'inline_in_text': inline_in_text})
 
-        # Reconstruct full media references
-        media_references = []
-        for alt_text, path in matches:
-            media_references.append(f"![{alt_text}]({path})")
-
-        return media_references
+        return results
 
     def _is_image_reference(self, media_ref: str) -> bool:
         """Check if media reference is an image."""

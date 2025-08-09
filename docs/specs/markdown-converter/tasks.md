@@ -353,7 +353,7 @@
   - Add unit tests for detection, rendering, and accessibility (associating captions with images)
   - _Requirements: 2.16-2.16.1_
 
-- [ ] 30. Inline-in-text image sizing and alignment
+- [x] 30. Inline-in-text image sizing and alignment
   - Constrain inline images to the current line height with baseline alignment; preserve aspect ratio
   - Add tests for lines with mixed text and inline images across different font sizes and in lists/quotes
   - _Requirements: 2.17_
