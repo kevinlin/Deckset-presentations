@@ -181,6 +181,9 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - Extracts speaker notes and footnotes
 - Implements emoji shortcode processing
 - Converts markdown lists (unordered and ordered) to HTML with proper formatting
+- Supports nested lists by indentation (four spaces or a tab) with mixed ordered/unordered combinations
+- Converts Markdown links `[text](url)` to safe HTML anchors with URL sanitization and appropriate attributes
+- Preserves safe inline HTML (e.g., `<br/>`, `<a name="id"></a>`) after sanitization
 
 #### Slide Processor (`slide_processor.py`)
 - Processes individual slide content and layout
@@ -193,18 +196,22 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - Handles video processing with autoplay, loop, and mute options
 - Manages audio files with playback controls
 - Creates image grids for multiple consecutive images
+- Handles image file paths with spaces/Unicode; parses adjacent inline images on the same line without requiring whitespace separators
+- Supports animated GIF rendering without conversion to static frames
 
 #### Code Processor (`code_processor.py`)
 - Provides syntax highlighting for code blocks
 - Handles line emphasis and highlighting directives
 - Supports multiple programming languages
 - Integrates with Prism.js for web rendering
+- Detects and renders indented code blocks (four spaces or a tab) equivalently to fenced code
 
 #### Math Processor (`math_processor.py`)
 - Processes LaTeX math expressions (both inline and display)
 - Validates LaTeX syntax
 - Integrates with MathJax for web rendering
 - Handles both `$...$` and `$$...$$` syntax
+- Renders math inside footnotes and table cells with the same rules and responsive overflow behavior
 
 ### 5. Web Page Generator (`generator.py`)
 
@@ -215,6 +222,7 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - `generate_presentation_page(presentation, output_path)`: Creates individual presentation HTML
 - `generate_homepage(presentations, output_path)`: Creates the main index page
 - `_render_enhanced_presentation(presentation)`: Renders presentations with full Deckset features
+  - Builds an internal anchor index across slides; de-duplicates conflicting IDs and rewrites internal fragment links accordingly
 
 ### 6. Enhanced Template Engine (`enhanced_templates.py`)
 
@@ -234,7 +242,9 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - `render_video_player(video)`: Creates video players with controls
 - `render_code_block(code_block)`: Renders syntax-highlighted code
 - `render_math_formula(formula)`: Renders mathematical expressions
-- `_markdown_to_html(content)`: Converts markdown to HTML with comprehensive list support
+- `_markdown_to_html(content)`: Converts markdown to HTML with comprehensive inline formatting (links, emphasis, lists)
+- `sanitize_and_render_link(text, url, title)`: Sanitizes URLs and renders anchors with `target`/`rel` for external links
+  - Resolves internal anchors and attaches `id` attributes to headings and named anchors
 
 ### 7. File Manager (`file_manager.py`)
 
@@ -245,3 +255,31 @@ All data models are defined in `models.py` with comprehensive type definitions:
 - `copy_media_files(src_dir, dest_dir)`: Handles media file copying
 - `optimize_images()`: Optimizes images for web delivery
 - `ensure_output_directory(path)`: Creates necessary output directories
+
+## Aspect Ratio Enforcement (16:9)
+
+All slides are rendered into a fixed-ratio container that preserves a strict 16:9 aspect ratio across devices and outputs.
+
+### Technical Approach
+
+- CSS: The slide root uses `aspect-ratio: 16 / 9` for modern browsers. A padding-top fallback (56.25%) ensures compatibility where needed. The inner content uses absolute positioning to fill the 16:9 box.
+- Viewport Scaling: The `EnhancedSlideViewer` computes an appropriate `transform: scale(...)` (or CSS `zoom` fallback) so the 16:9 slide fits within the viewport while preserving the ratio. Resize events reflow the scale without content cropping.
+- Letterboxing/Pillarboxing: Neutral background bands appear as needed when the viewport ratio differs from 16:9. Content remains centered within the safe area.
+- Safe Area: A CSS variable defines a safe content area; autoscale and `[fit]` text sizing operate within these bounds to avoid clipping.
+- Print/PDF: Print styles set page boxes to 16:9, ensuring each slide prints as a full page without distortion and with consistent margins.
+- Media Within 16:9: Background images/videos use `object-fit: cover|contain` per modifier semantics while honoring the container’s ratio. Left/right and inline media layouts compute within the 16:9 bounds.
+  - Adjacent inline images form rows and grids inside the safe area; image gutters adapt responsively
+
+### Link Rendering and Security
+
+- Markdown links are converted to `<a>` tags during `_markdown_to_html` with a whitelist sanitizer (allow: `http`, `https`, `mailto`, `tel`, and `#`).
+- External links (`http`, `https`) get `target="_blank"` and `rel="noopener noreferrer"`.
+- Internal anchors and relative paths open in the same tab and omit `rel` attributes.
+- Optional Markdown titles map to the `title` attribute on anchors.
+  
+### Internal Anchors and Cross-Slide Navigation
+
+- Headings produce slugified IDs (stable across runs). Conflicts are resolved by suffixing `-n`.
+- An index of `id` -> (slide, element) is created during generation to support cross-slide `#fragment` navigation.
+- The slide viewer intercepts internal anchor clicks, computes the target slide, navigates to it, and scrolls/focuses the element.
+- Unresolvable anchors are left inert and a warning is logged during generation.

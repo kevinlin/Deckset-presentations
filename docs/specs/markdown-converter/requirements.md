@@ -23,6 +23,8 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 8. WHEN the system encounters ordered list items (lines starting with `1. `, `2. `, etc.) THEN it SHALL convert them to HTML `<ol>` and `<li>` elements
 9. WHEN list items contain emphasis, code, or other inline formatting THEN the formatting SHALL be preserved within the list items
 10. WHEN lists are followed by other content THEN there SHALL be proper separation with paragraph elements
+11. WHEN nested lists are created by indenting with four spaces (or one tab) per level THEN the system SHALL render properly nested `<ul>`/`<ol>` structures
+12. WHEN nested lists mix ordered and unordered types THEN the system SHALL preserve the mixed structure and indentation levels
 
 ### Requirement 2: Advanced Image and Media Support
 
@@ -41,6 +43,10 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 8. WHEN an image uses `![original](image.jpg)` THEN no darkening filter SHALL be applied
 9. WHEN an image uses `![filtered](image.jpg)` THEN a darkening filter SHALL be applied for text readability
 10. WHEN an image uses `corner-radius(n)` modifier THEN it SHALL apply border-radius styling
+11. WHEN image file paths contain spaces or Unicode characters THEN they SHALL be parsed and rendered correctly
+12. WHEN multiple inline image tokens appear back-to-back without whitespace THEN they SHALL be parsed as separate images
+13. WHEN the system encounters animated GIFs (`.gif`) THEN they SHALL render as animated images without conversion to static frames
+14. WHEN referencing web images via `http(s)` URLs THEN remote images SHALL be supported, subject to network/CORS constraints
 
 ### Requirement 3: Video and Audio Embedding
 
@@ -56,6 +62,7 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 6. WHEN video/audio uses `hide` modifier THEN the visual element SHALL be hidden but audio SHALL still play
 7. WHEN the system encounters YouTube URLs THEN it SHALL embed them as iframes
 8. WHEN video uses positioning modifiers (`left`, `right`) THEN it SHALL position accordingly like images
+9. WHEN the system encounters common video formats (`.mp4`, `.webm`, `.mov`) THEN it SHALL render them via HTML5 video with appropriate `type` attributes; if playback is unsupported by the browser, a clear fallback message SHALL be shown and processing SHALL continue
 
 ### Requirement 4: Code Block Enhancement
 
@@ -70,6 +77,7 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 5. WHEN a code block is preceded by `[.code-highlight: none]` THEN no lines SHALL be highlighted
 6. WHEN global `code-language: X` is set THEN unlabeled code blocks SHALL use language X for highlighting
 7. WHEN code blocks overflow horizontally THEN they SHALL be scrollable while preserving formatting
+8. WHEN the system encounters indented code blocks (four leading spaces or a single tab) THEN it SHALL render them as code blocks with syntax highlighting, equivalent to fenced code
 
 ### Requirement 5: Mathematical Formula Support
 
@@ -81,6 +89,7 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 2. WHEN the system encounters `$...$` delimiters THEN it SHALL render the content as inline math
 3. WHEN math formulas are too wide for the slide THEN they SHALL scale down or allow horizontal scrolling
 4. WHEN MathJax fails to load THEN the system SHALL display the raw LaTeX as fallback
+5. WHEN math appears inside footnotes or table cells THEN it SHALL be rendered using MathJax with the same rules as elsewhere on the slide
 
 ### Requirement 6: Multi-Column Layout Support
 
@@ -107,6 +116,9 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 5. WHEN global `autoscale: true` is set THEN text SHALL scale down when it overflows the slide
 6. WHEN slide numbers are enabled (`slidenumbers: true`) THEN each slide SHALL display its number
 7. WHEN footer text is set (`footer: text`) THEN it SHALL appear on every slide unless overridden
+8. WHEN the system encounters safe inline HTML (e.g., `<br/>`, `<a name="id"></a>`) THEN it SHALL preserve and sanitize these elements, applying allowed attributes only
+9. WHEN footnote references appear inside tables, headings, or captions THEN they SHALL render and function correctly; footnote definitions MAY appear anywhere in the document and SHALL be unique by label
+10. WHEN multiple references point to the same footnote definition across slides THEN they SHALL all resolve correctly and display on the slide where the reference appears
 
 ### Requirement 8: Responsive Design and Accessibility
 
@@ -178,3 +190,41 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 3. WHEN updating homepage layout THEN changes SHALL be made in `templates/homepage.html` file
 4. WHEN template files are modified THEN changes SHALL be immediately available without code changes
 5. WHEN templates are versioned THEN they SHALL be tracked in version control as separate files
+
+### Requirement 13: Slide Aspect Ratio (16:9 Standard)
+
+**User Story:** As a presenter, I want every slide to use a consistent 16:9 aspect ratio so that my presentations reliably fit modern displays and video platforms.
+
+#### Acceptance Criteria
+
+1. WHEN rendering slide containers THEN they SHALL preserve a strict 16:9 aspect ratio on all screen sizes
+2. WHEN the viewport aspect ratio differs from 16:9 THEN slides SHALL scale to fit while maintaining 16:9, with neutral letterboxing or pillarboxing as needed, and without cropping slide content
+3. WHEN printing or exporting to PDF THEN each slide page SHALL be rendered at a 16:9 ratio with consistent margins
+4. WHEN background images or videos are displayed THEN they SHALL scale within the 16:9 container without distortion; positioning modifiers (e.g., `left`, `right`, `fit`, `fill`) SHALL respect the 16:9 bounds
+5. WHEN multi-column layouts, inline images, or image grids are used THEN the layout SHALL compute within the 16:9 container so that elements do not overflow the slide
+6. WHEN autoscale or `[fit]` text is applied THEN scaling SHALL occur within the 16:9 safe content area (no clipping)
+
+### Requirement 14: Markdown Link Support
+
+**User Story:** As a presentation author and viewer, I want standard Markdown links to be clickable, so that I can reference external and internal resources from my slides.
+
+#### Acceptance Criteria
+
+1. WHEN the system encounters Markdown links in the form `[link-text](link-url)` THEN it SHALL render an HTML `<a>` element with the correct `href`
+2. WHEN links appear inside headings, paragraphs, list items, blockquotes, table cells, or footnotes THEN they SHALL render and function consistently
+3. WHEN the link target uses `http://` or `https://` THEN the rendered link SHALL include `target="_blank"` and `rel="noopener noreferrer"`
+4. WHEN the link target is an internal anchor (e.g., `#section`) or a relative path THEN the link SHALL open in the same tab without adding `rel` attributes
+5. WHEN the Markdown link includes a title (e.g., `[text](url \"title\")`) THEN the rendered link SHALL include a `title` attribute
+6. WHEN processing links THEN the system SHALL sanitize URLs and only allow safe schemes (`http`, `https`, `mailto`, `tel`, and `#` anchors); unsupported or unsafe schemes SHALL be rendered as plain text
+7. WHEN printing or exporting to PDF THEN links SHALL remain present and clickable in the output
+
+### Requirement 15: Internal Anchors and Cross-Slide Linking
+
+**User Story:** As a viewer, I want to navigate to specific sections within or across slides using internal anchors, so that I can jump to relevant content quickly.
+
+#### Acceptance Criteria
+
+1. WHEN anchors are defined via `<a name="id"></a>` or generated from headings THEN the system SHALL assign stable, unique `id` attributes to target elements
+2. WHEN a link with a fragment identifier (e.g., `[See more](#details)`) is clicked THEN the viewer SHALL navigate to the slide containing the target `id` and focus/scroll to it within the slide
+3. WHEN multiple anchors share the same proposed `id` THEN the system SHALL de-duplicate by suffixing to ensure uniqueness and SHALL update internal links accordingly during generation
+4. WHEN an internal anchor cannot be resolved THEN the system SHALL leave the link inert and log a warning without breaking slide navigation

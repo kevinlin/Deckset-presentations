@@ -278,3 +278,58 @@
   - ✅ All 22 enhanced template tests passing with list functionality
   - ✅ End-to-end verification: presentations display lists correctly with proper HTML structure
   - _Requirements: 1.7-1.10 (Core Deckset Markdown Compatibility - List Support)_
+
+- [ ] 19. Enforce 16:9 slide aspect ratio
+  - Implement strict 16:9 slide container using CSS `aspect-ratio` with padding-top fallback
+  - Update `EnhancedSlideViewer` to scale slides to viewport while preserving 16:9 and add neutral letterboxing/pillarboxing when needed
+  - Update print styles to render each slide as 16:9 pages with consistent margins
+  - Ensure media and layouts (backgrounds, left/right, inline, grids, columns) compute within 16:9 bounds without distortion
+  - Create unit/integration tests to validate container ratio and scaling behavior (resize scenarios)
+  - _Requirements: 13.1-13.6 (Slide Aspect Ratio - 16:9 Standard)_
+
+- [ ] 20. Implement Markdown link support
+  - Extend `_markdown_to_html()` to convert `[text](url)` into anchors
+  - Add URL sanitization (allow: `http`, `https`, `mailto`, `tel`, `#`) with safe fallbacks for unsupported schemes
+  - Apply `target="_blank"` and `rel="noopener noreferrer"` to external links; keep internal anchors/relative paths in same tab
+  - Support optional link titles `[text](url "title")`
+  - Add unit tests for links in headings, paragraphs, lists, tables, blockquotes, and footnotes
+  - Add end-to-end test to verify links remain present and clickable in generated HTML and printed PDF
+  - _Requirements: 14.1-14.7 (Markdown Link Support)_
+
+- [ ] 21. Nested lists and mixed list types
+  - Enhance list parser to support multi-level nesting via indentation (4 spaces/tab) and mixed ordered/unordered lists
+  - Add tests covering deeply nested and mixed lists across slides
+  - _Requirements: 1.11-1.12_
+
+- [ ] 22. Indented code blocks parity with fenced code
+  - Detect indented code blocks and assign language from `code-language` fallback when no fence language is provided
+  - Ensure highlighting, overflow scrolling, and line-number options remain consistent
+  - Add unit tests for indented code inside lists and blockquotes
+  - _Requirements: 4.8_
+
+- [ ] 23. Image path robustness and adjacent inline parsing
+  - Support filenames with spaces/Unicode; ensure URLs are correctly encoded in output
+  - Parse adjacent inline image tokens on the same line without requiring whitespace
+  - Add tests for single-line galleries and captions below inline images
+  - _Requirements: 2.11-2.12_
+
+- [ ] 24. Animated GIF support
+  - Ensure `.gif` images render animated by default; document performance caveats
+  - Add tests verifying animation presence and correct sizing within 16:9 container
+  - _Requirements: 2.13_
+
+- [ ] 25. Math in footnotes and tables
+  - Ensure inline/display math renders correctly inside footnotes and table cells
+  - Add tests for overflow handling and scaling within these contexts
+  - _Requirements: 5.5_
+
+- [ ] 26. Safe inline HTML and sanitization
+  - Allow a minimal safe HTML subset (`br`, named anchor) with attribute sanitization
+  - Add tests ensuring unsafe tags/attributes are stripped while preserving text
+  - _Requirements: 7.8_
+
+- [ ] 27. Internal anchors and cross-slide navigation
+  - Generate stable, unique IDs for headings and named anchors; build an index across slides
+  - Update viewer to navigate across slides on internal anchor clicks and focus target elements
+  - Warn on unresolved anchors; add tests for duplicate IDs and de-duplication
+  - _Requirements: 15.1-15.4_
