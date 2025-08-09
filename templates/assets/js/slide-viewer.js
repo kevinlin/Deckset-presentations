@@ -398,17 +398,29 @@ class EnhancedSlideViewer {
             width: window.innerWidth,
             height: window.innerHeight
         };
-        
+
+        // Maintain 16:9 within available viewport height minus nav/header
+        const header = document.querySelector('header');
+        const nav = document.querySelector('.navigation');
+        const reservedHeight = (header ? header.offsetHeight : 0) + (nav ? nav.offsetHeight + 24 : 0) + 32; // padding
+        const availableHeight = Math.max(viewport.height - reservedHeight, 200);
+        const targetWidth = Math.min(viewport.width - 32, availableHeight * (16 / 9));
+
         slides.forEach(slide => {
+            // Constrain slide width to maintain 16:9 within viewport
+            slide.style.width = `${targetWidth}px`;
+            slide.style.marginLeft = 'auto';
+            slide.style.marginRight = 'auto';
+
             const content = slide.querySelector('.slide-content');
             if (!content) return;
-            
+
             // Apply autoscale if content is too large
             const autoscaleElement = content.querySelector('.autoscale-content');
             if (autoscaleElement) {
                 this.applyAutoscale(autoscaleElement, viewport);
             }
-            
+
             // Adjust math formulas for mobile
             if (viewport.width < 768) {
                 this.adjustMathForMobile(slide);

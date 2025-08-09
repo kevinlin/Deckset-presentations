@@ -279,7 +279,7 @@
   - ✅ End-to-end verification: presentations display lists correctly with proper HTML structure
   - _Requirements: 1.7-1.10 (Core Deckset Markdown Compatibility - List Support)_
 
-- [ ] 19. Enforce 16:9 slide aspect ratio
+- [x] 19. Enforce 16:9 slide aspect ratio
   - Implement strict 16:9 slide container using CSS `aspect-ratio` with padding-top fallback
   - Update `EnhancedSlideViewer` to scale slides to viewport while preserving 16:9 and add neutral letterboxing/pillarboxing when needed
   - Update print styles to render each slide as 16:9 pages with consistent margins

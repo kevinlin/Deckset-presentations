@@ -102,7 +102,7 @@ html {
 }
 
 .slides-container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 2rem;
 }
@@ -115,6 +115,8 @@ html {
     overflow: hidden;
     position: relative;
     display: none; /* Hidden by default, JavaScript will show the active slide */
+    /* Enforce strict 16:9 aspect ratio */
+    aspect-ratio: 16 / 9;
 }
 
 .slide.active {
@@ -129,9 +131,11 @@ html {
 /* Slide content layout */
 .slide-content {
     padding: 2rem;
-    min-height: 400px;
+    min-height: 0; /* Height is governed by the 16:9 container */
+    height: 100%;
     position: relative;
     z-index: 2;
+    box-sizing: border-box;
 }
 
 .slide-content.single-column {
@@ -528,7 +532,9 @@ html {
     
     .slide-content {
         padding: 1rem;
-        min-height: 300px;
+        min-height: 0;
+        height: 100%;
+        box-sizing: border-box;
     }
     
     .slide-content.columns {
@@ -619,6 +625,9 @@ html {
     
     .slide-content {
         padding: 0.75rem;
+        min-height: 0;
+        height: 100%;
+        box-sizing: border-box;
     }
     
     .nav-button {
@@ -642,6 +651,11 @@ html {
 
 /* Print styles */
 @media print {
+    /* Render pages at a 16:9 size with minimal margins */
+    @page {
+        size: 1280px 720px;
+        margin: 0.5cm;
+    }
     .navigation {
         display: none;
     }
@@ -650,6 +664,7 @@ html {
         break-inside: avoid;
         page-break-inside: avoid;
         margin-bottom: 1rem;
+        aspect-ratio: 16 / 9;
     }
     
     .speaker-notes {
