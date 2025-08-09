@@ -262,93 +262,82 @@ class EnhancedTemplateEngine:
         # Convert inline code
         html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
 
-        # Process lines to handle lists and paragraphs
+        # Process lines to handle lists (including nested) and paragraphs
         lines = html.split('\n')
         result_lines = []
-        current_paragraph = []
-        current_list = None  # Track current list state: None, 'ul', or 'ol'
-        current_list_items = []
+        paragraph_lines: list[str] = []
+        list_stack: list[str] = []  # stack of 'ul' or 'ol'
 
-        def _finish_current_list():
-            """Helper to close the current list and add it to results."""
-            nonlocal current_list, current_list_items
-            if current_list and current_list_items:
-                list_html = f'<{current_list}>\n'
-                for item in current_list_items:
-                    list_html += f'    <li>{item}</li>\n'
-                list_html += f'</{current_list}>'
-                result_lines.append(list_html)
-                current_list = None
-                current_list_items = []
+        def _close_paragraph():
+            nonlocal paragraph_lines
+            if paragraph_lines:
+                result_lines.append(f'<p>{" ".join([ln.strip() for ln in paragraph_lines])}</p>')
+                paragraph_lines = []
 
-        def _finish_current_paragraph():
-            """Helper to close the current paragraph and add it to results."""
-            nonlocal current_paragraph
-            if current_paragraph:
-                result_lines.append(f'<p>{" ".join(current_paragraph)}</p>')
-                current_paragraph = []
+        def _open_list(list_type: str):
+            result_lines.append(f'<{list_type}>')
+            list_stack.append(list_type)
 
-        for line in lines:
-            line = line.strip()
-            
-            if not line:
-                # Empty line - finish current list or paragraph
-                _finish_current_list()
-                _finish_current_paragraph()
-                
-            elif line.startswith('<h') or line.startswith('<pre>'):
-                # Block element - finish current items and add block element
-                _finish_current_list()
-                _finish_current_paragraph()
-                result_lines.append(line)
-                
-            elif line.startswith('- ') or line == '-':
-                # Unordered list item (including empty ones like just "-")
-                _finish_current_paragraph()  # Finish paragraph if we were in one
-                
-                # Extract list item content
-                if line == '-':
-                    item_content = ''
-                else:
-                    item_content = line[2:].strip()
-                
-                if current_list != 'ul':
-                    # Starting a new unordered list or switching from ordered list
-                    _finish_current_list()
-                    current_list = 'ul'
-                    current_list_items = []
-                
-                current_list_items.append(item_content)
-                
-            elif re.match(r'^\d+\.\s*$', line) or re.match(r'^\d+\.\s+', line):
-                # Ordered list item (starts with number followed by period and optional space/content)
-                _finish_current_paragraph()  # Finish paragraph if we were in one
-                
-                # Extract list item content (everything after "number. ")
-                if re.match(r'^\d+\.\s*$', line):
-                    # Empty list item like "1." or "1. "
-                    item_content = ''
-                else:
-                    item_content = re.sub(r'^\d+\.\s+', '', line)
-                
-                if current_list != 'ol':
-                    # Starting a new ordered list or switching from unordered list
-                    _finish_current_list()
-                    current_list = 'ol'
-                    current_list_items = []
-                
-                current_list_items.append(item_content)
-                
-            else:
-                # Regular text line
-                _finish_current_list()  # Finish list if we were in one
-                current_paragraph.append(line)
+        def _close_one_list():
+            if list_stack:
+                lt = list_stack.pop()
+                result_lines.append(f'</{lt}>')
 
-        # Handle any remaining items at the end
-        _finish_current_list()
-        _finish_current_paragraph()
+        def _close_all_lists():
+            while list_stack:
+                _close_one_list()
 
-        # Join all lines
+        for raw_line in lines:
+            # Preserve original indentation for list processing
+            if raw_line.strip() == '':
+                _close_all_lists()
+                _close_paragraph()
+                continue
+
+            # Handle headers or preformatted blocks that are already converted
+            trimmed = raw_line.strip()
+            if trimmed.startswith('<h') or trimmed.startswith('<pre>'):
+                _close_all_lists()
+                _close_paragraph()
+                result_lines.append(trimmed)
+                continue
+
+            # Detect list items with indentation (4 spaces or a tab per level)
+            m_un = re.match(r'^(\s*)[-\+\*]\s*(.*)$', raw_line)
+            m_ol = re.match(r'^(\s*)(\d+)\.\s*(.*)$', raw_line)
+
+            if m_un or m_ol:
+                _close_paragraph()
+                indent_ws = (m_un.group(1) if m_un else m_ol.group(1)).replace('\t', '    ')
+                level = max(len(indent_ws) // 4, 0)
+                item_type = 'ul' if m_un else 'ol'
+                item_content = (m_un.group(2) if m_un else m_ol.group(3)) or ''
+
+                # Adjust nesting depth
+                # Open new lists if deeper
+                while len(list_stack) < level + 1:
+                    _open_list(item_type)
+                # If shallower, close lists
+                while len(list_stack) > level + 1:
+                    _close_one_list()
+                # Same depth but list type changed
+                if list_stack and list_stack[-1] != item_type:
+                    _close_one_list()
+                    _open_list(item_type)
+
+                # Append the list item
+                result_lines.append(f'    <li>{item_content.strip()}</li>')
+                continue
+
+            # Non-list regular text
+            _close_all_lists()
+            paragraph_lines.append(trimmed)
+
+        # Close any remaining structures
+        _close_all_lists()
+        _close_paragraph()
+
+        # Join accumulated HTML
         html = '\n'.join(result_lines)
 
         # Clean up empty paragraphs

@@ -296,7 +296,7 @@
   - Add end-to-end test to verify links remain present and clickable in generated HTML and printed PDF
   - _Requirements: 14.1-14.7 (Markdown Link Support)_
 
-- [ ] 21. Nested lists and mixed list types
+- [x] 21. Nested lists and mixed list types
   - Enhance list parser to support multi-level nesting via indentation (4 spaces/tab) and mixed ordered/unordered lists
   - Add tests covering deeply nested and mixed lists across slides
   - _Requirements: 1.11-1.12_
