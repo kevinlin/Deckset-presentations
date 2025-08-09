@@ -287,7 +287,7 @@
   - Create unit/integration tests to validate container ratio and scaling behavior (resize scenarios)
   - _Requirements: 13.1-13.6 (Slide Aspect Ratio - 16:9 Standard)_
 
-- [ ] 20. Implement Markdown link support
+- [x] 20. Implement Markdown link support
   - Extend `_markdown_to_html()` to convert `[text](url)` into anchors
   - Add URL sanitization (allow: `http`, `https`, `mailto`, `tel`, `#`) with safe fallbacks for unsupported schemes
   - Apply `target="_blank"` and `rel="noopener noreferrer"` to external links; keep internal anchors/relative paths in same tab

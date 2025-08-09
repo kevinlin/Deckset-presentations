@@ -47,6 +47,7 @@ class EnhancedTemplateEngine:
             'render_footnotes': self.render_footnotes,
             'render_slide_footer': self.render_slide_footer,
             'render_slide_number': self.render_slide_number,
+            'sanitize_and_render_link': self._sanitize_and_render_link,
         })
 
         # Custom filters
@@ -241,6 +242,17 @@ class EnhancedTemplateEngine:
         html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
         html = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', html, flags=re.MULTILINE)
 
+        # Convert Markdown links before emphasis/code so inner text can still be formatted
+        # Pattern: [text](url "optional title")
+        def _link_replacer(match: re.Match) -> str:
+            link_text = match.group(1)
+            link_target = match.group(2)
+            link_title = match.group(3) if match.lastindex and match.lastindex >= 3 else None
+            return self._sanitize_and_render_link(link_text, link_target, link_title)
+
+        # Support spaces in URL via lazy match up to closing paren; optional title in quotes
+        html = re.sub(r'\[([^\]]+)\]\(([^\s\)]+|[^\)]*?)\s*(?:"([^"]+)")?\)', _link_replacer, html)
+
         # Convert emphasis
         html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
         html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
@@ -344,6 +356,46 @@ class EnhancedTemplateEngine:
         html = re.sub(r'<p>\s*</p>', '', html)
 
         return html
+
+    def _sanitize_and_render_link(self, text: str, url: str, title: Optional[str] = None) -> str:
+        """Sanitize URL and render an HTML anchor per requirements.
+
+        - Allow schemes: http, https, mailto, tel, and # anchors; also allow relative paths.
+        - External http/https links get target="_blank" rel="noopener noreferrer".
+        - Internal anchors/relative links open in same tab and omit rel.
+        - Unsafe/unsupported schemes render as escaped plain text (no anchor).
+        """
+        if not text or not url:
+            return self._escape_html(text or '')
+
+        safe_text = self._escape_html(text)
+        safe_title = self._escape_html(title) if title else None
+
+        normalized = url.strip()
+        lower = normalized.lower()
+
+        is_anchor = lower.startswith('#')
+        has_scheme = '://' in lower or lower.startswith('mailto:') or lower.startswith('tel:')
+
+        is_http = lower.startswith('http://') or lower.startswith('https://')
+        is_mailto = lower.startswith('mailto:')
+        is_tel = lower.startswith('tel:')
+
+        # Determine safety
+        allowed = is_anchor or is_http or is_mailto or is_tel or not has_scheme  # relative path allowed
+        if not allowed:
+            return safe_text
+
+        attrs = [f'href="{self._escape_html(normalized)}"']
+
+        if is_http:
+            attrs.append('target="_blank"')
+            attrs.append('rel="noopener noreferrer"')
+
+        if safe_title:
+            attrs.append(f'title="{safe_title}"')
+
+        return f'<a {" ".join(attrs)}>{safe_text}</a>'
 
     def _escape_html(self, text: str) -> str:
         """Escape HTML characters in text."""
