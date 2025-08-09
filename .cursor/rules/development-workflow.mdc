@@ -1,6 +1,5 @@
 ---
-description: Development workflow, tooling, and project setup guidelines
-alwaysApply: false
+alwaysApply: true
 ---
 # Development Workflow
 
