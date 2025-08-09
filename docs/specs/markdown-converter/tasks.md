@@ -332,4 +332,5 @@
   - Generate stable, unique IDs for headings and named anchors; build an index across slides
   - Update viewer to navigate across slides on internal anchor clicks and focus target elements
   - Warn on unresolved anchors; add tests for duplicate IDs and de-duplication
+  - Add tests for internal anchors and cross-slide navigation and ensure all tests are passing
   - _Requirements: 15.1-15.4_
