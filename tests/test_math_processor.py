@@ -183,6 +183,26 @@ class TestMathProcessor:
         # Check that it's valid JavaScript (basic syntax check)
         assert config.count("{") == config.count("}")
         assert config.count("[") == config.count("]")
+
+    def test_math_in_footnotes_and_tables(self):
+        """Ensure math is processed correctly within footnotes and tables content via markdown_to_html."""
+        from enhanced_templates import EnhancedTemplateEngine
+        engine = EnhancedTemplateEngine()
+
+        # Table with inline math
+        table_md = (
+            "Header 1|Header 2\n"
+            "---|---\n"
+            "Cell with $a^2$ | Cell with $b^2$\n"
+        )
+        html = engine._markdown_to_html(table_md)
+        assert '\\(a^2\\)' in html
+        assert '\\(b^2\\)' in html
+
+        # Footnote content including math
+        footnotes = {"1": "This is math $E=mc^2$ in a footnote."}
+        foot_html = engine.render_footnotes(footnotes)
+        assert '\\(E=mc^2\\)' in foot_html
     
     def test_process_math_formulas_empty_content(self):
         """Test processing empty or no-math content."""

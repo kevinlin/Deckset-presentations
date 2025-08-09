@@ -318,7 +318,7 @@
   - Add tests verifying animation presence and correct sizing within 16:9 container
   - _Requirements: 2.13_
 
-- [ ] 25. Math in footnotes and tables
+- [x] 25. Math in footnotes and tables
   - Ensure inline/display math renders correctly inside footnotes and table cells
   - Add tests for overflow handling and scaling within these contexts
   - _Requirements: 5.5_

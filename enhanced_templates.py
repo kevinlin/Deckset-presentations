@@ -229,6 +229,15 @@ class EnhancedTemplateEngine:
         # Start with the original content
         html = content
 
+        # First, convert LaTeX math delimiters to MathJax syntax so math works everywhere
+        try:
+            from math_processor import MathProcessor
+            mp = MathProcessor()
+            html, _ = mp.process_math_formulas(html)
+        except Exception:
+            # If math processing fails, continue with raw content
+            pass
+
         # Convert headers first (before line-by-line processing)
         # Handle fit headers with {.fit} markers
         html = re.sub(r'^# (.+?) \{\.fit\}$', r'<h1 class="fit">\1</h1>', html, flags=re.MULTILINE)
