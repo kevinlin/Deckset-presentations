@@ -363,8 +363,3 @@
   - Validate conflicting combinations; log structured warnings without halting processing
   - Add tests for combinations such as `[inline, right]`, `[left, 30%]`, `[fit, filtered]`, and override interactions with the readability filter
   - _Requirements: 2.18_
-
-- [ ] 32. Inline image grids across lines
-  - Render consecutive `![inline]` tokens into grid containers with consistent gutters; support multi-line grids
-  - Add responsiveness tests for wrapping and 16:9 safe-area containment
-  - _Requirements: 2.19, 13.4-13.5_
