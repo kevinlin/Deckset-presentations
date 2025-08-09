@@ -92,6 +92,8 @@ class ImageModifiers:
     scaling: str    # 'fit', 'fill', 'original', percentage
     filter: str     # 'filtered', 'original'
     corner_radius: Optional[int] = None
+    # For inline images, optional alignment hint: 'left' or 'right'
+    inline_alignment: Optional[str] = None
 
 
 @dataclass

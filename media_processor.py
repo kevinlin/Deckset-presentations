@@ -158,10 +158,14 @@ class MediaProcessor(MediaProcessorInterface):
         
         alt_lower = alt_text.lower()
         
-        # Parse placement modifiers
+        # Parse placement modifiers with precedence: inline vs block
         if "inline" in alt_lower:
             modifiers.placement = "inline"
             modifiers.scaling = "fit"  # Default for inline images
+            if "left" in alt_lower:
+                modifiers.inline_alignment = "left"
+            elif "right" in alt_lower:
+                modifiers.inline_alignment = "right"
         elif "left" in alt_lower:
             modifiers.placement = "left"
         elif "right" in alt_lower:

@@ -206,13 +206,28 @@ class EnhancedTemplateEngine:
         # Add scaling classes and styles
         if image.modifiers.scaling == "fill":
             css_classes.append("fill")
+        elif image.modifiers.scaling == "fit":
+            # Ensure the image fits both width and height of its containing area
+            styles.append("max-width: 100%")
+            styles.append("max-height: 100%")
+            styles.append("object-fit: contain")
         elif image.modifiers.scaling.endswith("%"):
             percentage = image.modifiers.scaling
             styles.append(f"width: {percentage}")
+            styles.append("max-width: 100%")
+            styles.append("height: auto")
 
         # Add corner radius if specified
         if image.modifiers.corner_radius:
             styles.append(f"border-radius: {image.modifiers.corner_radius}px")
+
+        # Inline alignment for inline placement per modifier composition
+        if getattr(image.modifiers, 'inline_alignment', None) == 'left':
+            styles.append('float: left')
+            styles.append('margin: 0 0.75rem 0.5rem 0')
+        elif getattr(image.modifiers, 'inline_alignment', None) == 'right':
+            styles.append('float: right')
+            styles.append('margin: 0 0 0.5rem 0.75rem')
 
         style_attr = f'style="{"; ".join(styles)}"' if styles else ""
         class_attr = f'class="{" ".join(css_classes)}"'
@@ -221,7 +236,8 @@ class EnhancedTemplateEngine:
             <img {class_attr} {style_attr}
                  src="{image.web_path}"
                  alt="{self._escape_html(image.alt_text)}"
-                 loading="lazy">
+                 loading="lazy"
+                 decoding="async">
         """
 
     def _render_grid_image(self, image: ProcessedImage) -> str:
