@@ -358,7 +358,7 @@
   - Add tests for lines with mixed text and inline images across different font sizes and in lists/quotes
   - _Requirements: 2.17_
 
-- [ ] 31. Image Modifier composition and precedence
+- [x] 31. Image Modifier composition and precedence
   - Implement deterministic application order (context → placement → sizing → filtering)
   - Validate conflicting combinations; log structured warnings without halting processing
   - Add tests for combinations such as `[inline, right]`, `[left, 30%]`, `[fit, filtered]`, and override interactions with the readability filter
