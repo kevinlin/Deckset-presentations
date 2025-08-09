@@ -429,3 +429,38 @@ site/                          # GitHub Pages output directory
     ├── fix-messaging-preview.png
     └── docker-kubernetes-101-preview.png
 ```
+
+## Google Analytics Integration
+
+### Approach
+
+- Inject a small Jinja block into `presentation.html` and `homepage.html` head sections that renders the GA4 snippet when analytics are enabled
+- Read Measurement ID from configuration or environment; default to `G-7BHNP61XYB`
+- Respect a `DISABLE_ANALYTICS` environment variable to skip injection in tests/local
+- Respect browser Do Not Track by setting default consent to denied before config
+
+### Snippet (rendered by template)
+
+```html
+{% if analytics_enabled %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_measurement_id }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);} 
+  {% if do_not_track %}
+  gtag('consent','default',{'analytics_storage':'denied'});
+  {% endif %}
+  gtag('js', new Date());
+  gtag('config', '{{ analytics_measurement_id }}');
+</script>
+{% endif %}
+```
+
+### Data Flow
+
+- `WebPageGenerator` computes `analytics_enabled` and `analytics_measurement_id` and passes them to templates via context
+- `EnhancedTemplateEngine` simply renders the template with those values; no JS bundling changes required
+
+### Failure Modes
+
+- If the network blocks `gtag.js`, the page continues rendering since script is async and errors are ignored

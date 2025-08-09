@@ -120,3 +120,16 @@ This feature will create a dynamic website generator that converts Deckset prese
 9. WHEN on the last slide THEN the Next button SHALL be disabled
 10. WHEN on middle slides THEN both Previous and Next buttons SHALL be enabled
 11. WHEN toggling notes THEN the aria-pressed attribute SHALL be properly set for screen reader accessibility
+
+### Requirement 9: Analytics
+
+**User Story:** As the site owner, I want the generated site to include Google Analytics so that I can measure usage and engagement.
+
+#### Acceptance Criteria
+
+1. WHEN any presentation page or the homepage is generated THEN the HTML head SHALL include the Google tag `gtag.js` snippet with Measurement ID `G-7BHNP61XYB`
+2. The GA script SHALL be loaded asynchronously and after critical CSS to avoid blocking rendering
+3. The snippet SHALL be injected exactly once per page and SHALL initialize `window.dataLayer` and `gtag('config', 'G-7BHNP61XYB')`
+4. WHEN generation runs in tests or local development (env var `DISABLE_ANALYTICS=true`) THEN the snippet SHALL be omitted
+5. WHEN a visitor has Do Not Track enabled THEN the page SHALL set `gtag('consent', 'default', { 'analytics_storage': 'denied' })` prior to config
+6. The solution SHALL be resilient if the GA CDN is blocked (page still loads without errors)
