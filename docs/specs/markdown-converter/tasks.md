@@ -313,7 +313,7 @@
   - Add tests for single-line galleries and captions below inline images
   - _Requirements: 2.11-2.12_
 
-- [ ] 24. Animated GIF support
+- [x] 24. Animated GIF support
   - Ensure `.gif` images render animated by default; document performance caveats
   - Add tests verifying animation presence and correct sizing within 16:9 container
   - _Requirements: 2.13_

@@ -183,6 +183,20 @@ class TestMediaProcessor:
             self.processor.process_image("invalid syntax", self.slide_context)
         
         assert "Invalid image syntax" in str(exc_info.value)
+
+    def test_process_gif_image(self):
+        """Animated GIFs should be treated as images and preserved."""
+        # Create test gif file
+        test_gif_path = os.path.join(self.slide_context.presentation_path, "anim.gif")
+        with open(test_gif_path, 'w') as f:
+            f.write("fake gif content")
+
+        image_syntax = "![](anim.gif)"
+        processed = self.processor.process_image(image_syntax, self.slide_context)
+
+        assert isinstance(processed, ProcessedImage)
+        assert processed.web_path.endswith('/anim.gif')
+        assert processed.modifiers.placement == "background"
     
     def test_process_video_local(self):
         """Test local video processing."""
