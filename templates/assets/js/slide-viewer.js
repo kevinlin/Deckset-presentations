@@ -24,6 +24,7 @@ class EnhancedSlideViewer {
         this.setupKeyboardShortcuts();
         this.setupSlideCounter();
         this.setupNotesToggle();
+        this.setupInternalAnchorNavigation();
         this.setupAutoplay();
         this.setupResponsiveFeatures();
         this.initializeHighlighting();
@@ -156,6 +157,36 @@ class EnhancedSlideViewer {
         const notes = document.querySelectorAll('.speaker-notes');
         notes.forEach(note => {
             note.style.display = 'none';
+        });
+    }
+
+    setupInternalAnchorNavigation() {
+        // Delegate clicks on internal anchors to navigate slides
+        document.addEventListener('click', (e) => {
+            const anchor = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+            if (!anchor) return;
+            const href = anchor.getAttribute('href');
+            if (!href || !href.startsWith('#')) return;
+
+            // Attempt to find target element across slides
+            const targetId = href.slice(1);
+            const slides = this.slides;
+            for (let i = 0; i < slides.length; i++) {
+                const target = slides[i].querySelector(`#${CSS.escape(targetId)}`) || slides[i].querySelector(`a[name="${CSS.escape(targetId)}"]`);
+                if (target) {
+                    e.preventDefault();
+                    this.showSlide(i);
+                    // Focus/scroll to target within the slide
+                    if (typeof target.scrollIntoView === 'function') {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    if (typeof target.focus === 'function') {
+                        target.setAttribute('tabindex', '-1');
+                        target.focus({ preventScroll: true });
+                    }
+                    break;
+                }
+            }
         });
     }
     

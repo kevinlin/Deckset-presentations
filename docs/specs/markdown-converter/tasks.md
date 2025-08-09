@@ -328,7 +328,7 @@
   - Add tests ensuring unsafe tags/attributes are stripped while preserving text
   - _Requirements: 7.8_
 
-- [ ] 27. Internal anchors and cross-slide navigation
+- [x] 27. Internal anchors and cross-slide navigation
   - Generate stable, unique IDs for headings and named anchors; build an index across slides
   - Update viewer to navigate across slides on internal anchor clicks and focus target elements
   - Warn on unresolved anchors; add tests for duplicate IDs and de-duplication

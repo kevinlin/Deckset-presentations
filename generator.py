@@ -441,10 +441,20 @@ class WebPageGenerator:
             Complete HTML string for the presentation
         """
         try:
-            # Render all slides
+            # Render all slides and collect internal anchors
             slides_html = []
+            anchor_index = {}
             for slide in presentation.slides:
                 slide_html = self.template_manager.render_slide(slide, presentation.config)
+                # Build a simple anchor index by scanning for id="..." and <a name="...">
+                try:
+                    import re as _re
+                    for m in _re.finditer(r'id="([^"]+)"', slide_html):
+                        anchor_index[m.group(1)] = slide.index - 1
+                    for m in _re.finditer(r'<a\s+name="([^"]+)"', slide_html):
+                        anchor_index[m.group(1)] = slide.index - 1
+                except Exception:
+                    pass
                 slides_html.append(slide_html)
 
             # Calculate asset path depth based on folder structure
@@ -456,7 +466,8 @@ class WebPageGenerator:
                 'slides_html': "".join(slides_html),
                 'total_slides': len(presentation.slides),
                 'asset_path_prefix': asset_path_prefix,
-                'mathjax_config': self._get_mathjax_config()
+                'mathjax_config': self._get_mathjax_config(),
+                'anchor_index': anchor_index
             }
 
             # Render using the presentation template
