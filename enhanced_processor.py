@@ -313,8 +313,8 @@ class EnhancedPresentationProcessor:
         """Extract all media references from slide content."""
         import re
 
-        # Pattern to match ![...](...)
-        media_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+        # Pattern to match ![...](...) with support for spaces/Unicode in paths and adjacent tokens
+        media_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+?)\)')
         matches = media_pattern.findall(content)
 
         # Reconstruct full media references

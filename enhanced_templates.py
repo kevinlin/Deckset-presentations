@@ -137,7 +137,7 @@ class EnhancedTemplateEngine:
         inline_images = [img for img in images if img.modifiers.placement == "inline"]
 
         if len(inline_images) > 1:
-            # Create image grid for multiple consecutive inline images
+            # Create image grid for multiple consecutive inline images, regardless of adjacency spacing
             from media_processor import MediaProcessor
             processor = MediaProcessor()
             grid = processor.create_image_grid(inline_images)

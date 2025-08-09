@@ -23,8 +23,8 @@ class MediaProcessor(MediaProcessorInterface):
         self.base_path = base_path
         self.output_path = output_path
         
-        # Image syntax pattern: ![modifiers](path)
-        self.image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+        # Image syntax pattern: ![modifiers](path) allowing spaces/Unicode and adjacent tokens
+        self.image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+?)\)')
         
         # Video/audio extensions
         self.video_extensions = {'.mp4', '.mov', '.avi', '.webm', '.mkv', '.m4v'}
@@ -46,6 +46,8 @@ class MediaProcessor(MediaProcessorInterface):
             
             alt_text = match.group(1)
             image_path = match.group(2)
+            # Normalize any surrounding whitespace and preserve spaces/unicode inside
+            image_path = image_path.strip()
             
             # Parse modifiers from alt text
             modifiers = self.parse_image_modifiers(alt_text)
@@ -75,7 +77,7 @@ class MediaProcessor(MediaProcessorInterface):
                 raise MediaProcessingError(f"Invalid video syntax: {video_syntax}")
             
             alt_text = match.group(1)
-            video_path = match.group(2)
+            video_path = match.group(2).strip()
             
             # Parse modifiers from alt text
             modifiers = self.parse_media_modifiers(alt_text)
@@ -123,7 +125,7 @@ class MediaProcessor(MediaProcessorInterface):
                 raise MediaProcessingError(f"Invalid audio syntax: {audio_syntax}")
             
             alt_text = match.group(1)
-            audio_path = match.group(2)
+            audio_path = match.group(2).strip()
             
             # Parse modifiers from alt text
             modifiers = self.parse_media_modifiers(alt_text)
@@ -289,6 +291,7 @@ class MediaProcessor(MediaProcessorInterface):
         presentation_folder = os.path.basename(presentation_path)
         
         # Create web path relative to site/slides/
+        # Leave spaces and unicode as-is so browsers can handle or the server can encode on delivery
         web_path = f"slides/{presentation_folder}/{media_path}"
         
         return web_path

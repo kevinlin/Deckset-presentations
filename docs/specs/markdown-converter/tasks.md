@@ -307,7 +307,7 @@
   - Add unit tests for indented code inside lists and blockquotes
   - _Requirements: 4.8_
 
-- [ ] 23. Image path robustness and adjacent inline parsing
+- [x] 23. Image path robustness and adjacent inline parsing
   - Support filenames with spaces/Unicode; ensure URLs are correctly encoded in output
   - Parse adjacent inline image tokens on the same line without requiring whitespace
   - Add tests for single-line galleries and captions below inline images
