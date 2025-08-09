@@ -102,7 +102,7 @@ class EnhancedTemplateEngine:
         if image.modifiers.placement in ["left", "right"]:
             css_classes.append(image.modifiers.placement)
 
-        # Add filter classes
+        # Add filter classes for explicit filtered modifier (left/right/background)
         if image.modifiers.filter == "filtered":
             css_classes.append("filtered")
 
