@@ -23,6 +23,12 @@ class SlideProcessor(SlideProcessorInterface):
         
         # Code block patterns
         self.code_block_pattern = re.compile(r'```(\w+)?\n(.*?)\n```', re.DOTALL)
+        # Indented code block: groups of lines starting with 4 spaces or a tab
+        # We will filter out blocks that are actually nested list items (e.g., lines starting with '-' or digits after indent)
+        self.indented_code_block_pattern = re.compile(
+            r'(?:(?<=\n)|^)((?:(?: {4}|\t).*(?:\n|$))+)',
+            re.MULTILINE
+        )
         self.code_highlight_pattern = re.compile(r'^\[\.code-highlight:\s*([^\]]+)\]', re.MULTILINE)
         
         # Math formula patterns
@@ -151,8 +157,37 @@ class SlideProcessor(SlideProcessorInterface):
     
     def remove_code_blocks(self, slide_content: str) -> str:
         """Remove code blocks."""
-        # Remove highlight directives and code blocks from content            
-        return self.code_block_pattern.sub('', self.code_highlight_pattern.sub('', slide_content))
+        # Remove highlight directives and fenced code blocks from content
+        content = self.code_highlight_pattern.sub('', slide_content)
+        content = self.code_block_pattern.sub('', content)
+
+        # Remove indented code blocks (but avoid stripping nested list items)
+        def _should_remove_block(block: str) -> bool:
+            # Examine each line after removing one indent level (4 spaces or a tab)
+            lines = [ln for ln in block.split('\n') if ln.strip() != '']
+            if not lines:
+                return False
+            def _strip_one_indent(s: str) -> str:
+                if s.startswith('    '):
+                    return s[4:]
+                if s.startswith('\t'):
+                    return s[1:]
+                return s
+            # If all lines look like list items after indent, do not treat as code
+            all_listy = True
+            for ln in lines:
+                core = _strip_one_indent(ln).lstrip()
+                if not (core.startswith('- ') or core.startswith('* ') or core.startswith('+ ') or re.match(r'^\d+\.\s', core)):
+                    all_listy = False
+                    break
+            return not all_listy
+
+        def _remove_indented_block(match: re.Match) -> str:
+            block = match.group(1)
+            return '' if _should_remove_block(block) else block
+
+        content = self.indented_code_block_pattern.sub(_remove_indented_block, content)
+        return content
     
     def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str:
         """Apply autoscale to slide content."""

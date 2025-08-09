@@ -265,8 +265,8 @@ class EnhancedTemplateEngine:
         # Process lines to handle lists (including nested) and paragraphs
         lines = html.split('\n')
         result_lines = []
-        paragraph_lines: list[str] = []
-        list_stack: list[str] = []  # stack of 'ul' or 'ol'
+        paragraph_lines = []
+        list_stack = []  # stack of 'ul' or 'ol'
 
         def _close_paragraph():
             nonlocal paragraph_lines

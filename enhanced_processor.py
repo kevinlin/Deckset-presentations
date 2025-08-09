@@ -196,10 +196,11 @@ class EnhancedPresentationProcessor:
         """Apply additional enhanced processing to a slide."""
         try:
             # Process code blocks from original content first, before SlideProcessor transforms them
+            default_lang = context.config.code_language or ""
             original_content_cleaned, code_blocks = (
                 self.code_processor.process_code_block_with_deckset_directive(
-                    original_content,  # Use the processed content, not original_content
-                    default_language="",
+                    original_content,
+                    default_language=default_lang,
                 )
             )
             slide.code_blocks = code_blocks

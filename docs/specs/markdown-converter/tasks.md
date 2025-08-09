@@ -301,7 +301,7 @@
   - Add tests covering deeply nested and mixed lists across slides
   - _Requirements: 1.11-1.12_
 
-- [ ] 22. Indented code blocks parity with fenced code
+- [x] 22. Indented code blocks parity with fenced code
   - Detect indented code blocks and assign language from `code-language` fallback when no fence language is provided
   - Ensure highlighting, overflow scrolling, and line-number options remain consistent
   - Add unit tests for indented code inside lists and blockquotes

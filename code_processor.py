@@ -195,7 +195,7 @@ class CodeProcessor:
         # Parse highlight directive
         cleaned_content, highlight_config = self.parse_deckset_highlight_directive(slide_content)
         
-        # Find code blocks in the cleaned content
+        # Find fenced code blocks in the cleaned content
         code_block_pattern = re.compile(r'```(\w*)\n(.*?)\n```', re.DOTALL)
         processed_blocks = []
         
@@ -213,8 +213,45 @@ class CodeProcessor:
             
             return processed_block.content
         
-        # Replace all code blocks with processed versions
+        # Replace all fenced code blocks with processed versions
         final_content = code_block_pattern.sub(replace_code_block, cleaned_content)
+
+        # Detect and process indented code blocks (4 spaces or tab)
+        indented_pattern = re.compile(r'(?:(?<=\n)|^)((?:(?: {4}|\t).*(?:\n|$))+)', re.MULTILINE)
+
+        def _strip_indent(line: str) -> str:
+            if line.startswith('    '):
+                return line[4:]
+            if line.startswith('\t'):
+                return line[1:]
+            return line
+
+        def _is_probably_list_item(line: str) -> bool:
+            core = _strip_indent(line).lstrip()
+            return core.startswith('- ') or core.startswith('* ') or core.startswith('+ ') or re.match(r'^\d+\.\s', core)
+
+        def replace_indented_block(match: re.Match) -> str:
+            block = match.group(1)
+            lines = [ln for ln in block.split('\n') if ln.strip() != '']
+            if not lines:
+                return block
+            # If all lines appear to be list items after one indent removal, keep as-is (nested list)
+            if all(_is_probably_list_item(ln) for ln in lines):
+                return block
+
+            # Treat as code: strip one indent and process as code block with default language
+            stripped_lines = [_strip_indent(ln) for ln in block.split('\n')]
+            code_content = '\n'.join(stripped_lines).strip('\n')
+
+            processed_block = self.process_code_block(
+                code_content,
+                default_language or "text",
+                self._highlight_config_to_string(highlight_config)
+            )
+            processed_blocks.append(processed_block)
+            return processed_block.content + "\n"
+
+        final_content = indented_pattern.sub(replace_indented_block, final_content)
         
         return final_content, processed_blocks
     
