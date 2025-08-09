@@ -134,7 +134,7 @@ venv.bak/
 .ropeproject
 
 # mkdocs documentation
-/site
+site/
 
 # mypy
 .mypy_cache/
@@ -278,3 +278,6 @@ logs
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Sample output
+sample_output/
