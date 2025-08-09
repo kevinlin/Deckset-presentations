@@ -775,7 +775,8 @@ class EnhancedTemplateEngine:
         """
         try:
             template = self.env.get_template('homepage.html')
-            return template.render(presentations=presentations)
+            context = context or {}
+            return template.render(presentations=presentations, **context)
 
         except Exception as e:
             # Fallback to minimal homepage

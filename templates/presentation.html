@@ -16,6 +16,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    {% if analytics_enabled %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_measurement_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);} 
+      {% if do_not_track %}
+      gtag('consent','default',{'analytics_storage':'denied'});
+      {% endif %}
+      gtag('js', new Date());
+      gtag('config', '{{ analytics_measurement_id }}');
+    </script>
+    {% endif %}
 </head>
 <body>
     <!-- Navigation Header -->

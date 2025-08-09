@@ -174,7 +174,7 @@
   - Update tasks.md to document template separation implementation
   - _Requirements: 3.1.1, 3.1.2, 3.1.4, 3.1.5, 3.1.6_
 
-- [ ] 21. Google Analytics integration
+- [x] 21. Google Analytics integration
   - Add configuration/environment handling in `WebPageGenerator` to read `GA_MEASUREMENT_ID` (default `G-7BHNP61XYB`) and `DISABLE_ANALYTICS`
   - Update `EnhancedTemplateEngine` templates (`homepage.html`, `presentation.html`) to include a Jinja block that renders the GA snippet when `analytics_enabled` is true
   - Ensure snippet loads async and respects Do Not Track by passing `do_not_track` flag to templates

@@ -188,7 +188,18 @@ class WebPageGenerator:
 
             # Render the homepage using the template manager
             try:
-                html_content = self.template_manager.render_homepage(sorted_presentations, None)
+                # Analytics context
+                analytics_enabled = os.environ.get("DISABLE_ANALYTICS", "").lower() not in {"1", "true", "yes", "on"}
+                analytics_measurement_id = os.environ.get("GA_MEASUREMENT_ID", "G-7BHNP61XYB")
+                do_not_track = os.environ.get("DNT", "0") in ("1", "true", "yes", "on")
+                html_content = self.template_manager.render_homepage(
+                    sorted_presentations,
+                    {
+                        "analytics_enabled": analytics_enabled,
+                        "analytics_measurement_id": analytics_measurement_id,
+                        "do_not_track": do_not_track,
+                    },
+                )
             except Exception as e:
                 raise TemplateRenderingError(
                     f"Failed to render homepage template: {e}",
@@ -469,6 +480,16 @@ class WebPageGenerator:
                 'mathjax_config': self._get_mathjax_config(),
                 'anchor_index': anchor_index
             }
+
+            # Analytics context for presentation pages
+            analytics_enabled = os.environ.get("DISABLE_ANALYTICS", "").lower() not in {"1", "true", "yes", "on"}
+            analytics_measurement_id = os.environ.get("GA_MEASUREMENT_ID", "G-7BHNP61XYB")
+            do_not_track = os.environ.get("DNT", "0") in ("1", "true", "yes", "on")
+            template_context.update({
+                "analytics_enabled": analytics_enabled,
+                "analytics_measurement_id": analytics_measurement_id,
+                "do_not_track": do_not_track,
+            })
 
             # Render using the presentation template
             presentation_html = self.template_manager.render_presentation_page(presentation, template_context)
