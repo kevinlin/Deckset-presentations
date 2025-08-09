@@ -50,7 +50,7 @@ class GeneratorConfig:
     output_dir: str = "site"
     template_dir: str = "templates"
     slides_dir: str = "slides"
-    exclude_folders: List[str] = field(default_factory=lambda: ["__pycache__", "Examples", "node_modules"])
+    exclude_folders: List[str] = field(default_factory=lambda: ["__pycache__", "node_modules"])
 
 
 # Enhanced Configuration Models
