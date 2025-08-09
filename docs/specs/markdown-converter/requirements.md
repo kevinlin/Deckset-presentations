@@ -48,6 +48,30 @@ This enhanced Deckset-compatible markdown-to-HTML converter provides comprehensi
 13. WHEN the system encounters animated GIFs (`.gif`) THEN they SHALL render as animated images without conversion to static frames
 14. WHEN referencing web images via `http(s)` URLs THEN remote images SHALL be supported, subject to network/CORS constraints
 
+15. WHEN text content and a background image appear together on the same slide (e.g., a heading/paragraph over a full-bleed background) THEN the system SHALL automatically apply an image readability filter so the text remains readable
+15.1. The automatic readability filter SHALL ensure at least WCAG AA contrast ratios: 4.5:1 for normal body text and 3:1 for large text (≥ 24px regular or ≥ 18.66px bold). If runtime contrast measurement is not available, the system SHALL fall back to a default dimming/blur configuration that preserves readability in common cases
+15.2. The readability filter MAY combine a subtle Gaussian blur and a semi‑transparent dark overlay; exact values MAY adapt to content but SHALL not distort image aspect ratio or layout
+15.3. The automatic readability filter SHALL NOT be applied to purely inline images or to left/right split layouts where text does not overlay the image
+15.4. Authors SHALL be able to override the behavior:
+  - Using existing modifiers: `![filtered](image.jpg)` to force the filter and `![original](image.jpg)` to disable it
+  - Using an optional global/slide setting `readability-filter: on | off | auto` with default `auto`; slide-level settings SHALL override global
+15.5. WHEN the filter is disabled via overrides THEN no blur/dimming SHALL be applied beyond any author-specified modifiers
+15.6. WHEN the system cannot achieve the minimum contrast with the maximum allowed filter strength THEN it SHALL add a subtle text backplate (e.g., semi‑transparent background behind text) to meet the contrast requirement while keeping the image visible
+
+16. WHEN an inline image is followed immediately by a text paragraph on the next line with no blank line BETWEEN them THEN the system SHALL render the paragraph as a caption associated with that image; captions SHALL be semantically marked so assistive technologies can associate text with the image
+16.1. Captions SHALL wrap within the slide content area and respect text autoscaling; image and caption SHALL remain grouped during layout and printing
+
+17. WHEN an inline image appears inside a line of text (e.g., `Some text ![inline](img.jpg) more text`) THEN it SHALL align on the text baseline and scale to the current line height while preserving aspect ratio
+
+18. WHEN multiple image modifiers are combined in a single token THEN the system SHALL apply them with the following precedence and constraints:
+   - `inline` determines inline vs block context; when present, `left`/`right` act as text alignment for the inline element, not split layout
+   - `fit` overrides `fill`; percentage scaling applies after `fit`/`fill` to set the element’s size within its context
+   - `left`/`right` on non-inline images create split layouts; percentages constrain each side within its region
+   - `filtered`/`original` only affect filtering behavior and may override automatic readability filtering; they SHALL NOT modify placement
+   - Conflicting or unsupported combinations SHALL resolve deterministically with a logged warning (processing continues)
+
+19. WHEN creating inline image grids via consecutive `![inline]` or `![inline, fill]` images on one or more lines THEN the system SHALL compute rows with consistent gutters and responsive wrapping within the 16:9 safe area
+
 ### Requirement 3: Video and Audio Embedding
 
 **User Story:** As a presentation author, I want to embed videos and audio files in my presentations, so that I can create multimedia-rich content.

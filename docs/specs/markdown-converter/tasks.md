@@ -334,3 +334,37 @@
   - Warn on unresolved anchors; add tests for duplicate IDs and de-duplication
   - Add tests for internal anchors and cross-slide navigation and ensure all tests are passing
   - _Requirements: 15.1-15.4_
+
+- [ ] 28. Automatic readability filter for text over background images
+  - Implement eligibility detection in the processing pipeline to flag slides that combine background images and overlaying text
+  - Add global and slide-level config: `readability-filter: auto | on | off` (default `auto`), with slide precedence
+  - Respect image modifiers: `![filtered]` forces filter; `![original]` disables it
+  - Implement CSS baseline: overlay pseudo-element and optional background blur with themeable CSS variables
+  - Implement JS adaptive enhancement in `EnhancedSlideViewer` to measure contrast and tune `--overlay-opacity`/`--bg-blur`, with a minimal backplate fallback when limits are reached
+  - Ensure exclusions for inline/left/right images that do not sit behind text
+  - Add accessibility tests that assert WCAG AA contrast for representative slides and verify fallbacks when canvas/image sampling is unavailable
+  - Add unit and integration tests covering overrides, defaults, and no-regression for slides without background images
+  - _Requirements: 2.15-2.15.6, 8.1, 8.2_
+
+- [ ] 29. Inline image captions
+  - Extend parser to detect caption lines immediately following an inline image without a blank line
+  - Add `InlineFigure` model with `caption` field and use semantic `<figure>/<figcaption>` in templates
+  - Ensure autoscale and wrapping work with captions; maintain grouping in print/PDF
+  - Add unit tests for detection, rendering, and accessibility (associating captions with images)
+  - _Requirements: 2.16-2.16.1_
+
+- [ ] 30. Inline-in-text image sizing and alignment
+  - Constrain inline images to the current line height with baseline alignment; preserve aspect ratio
+  - Add tests for lines with mixed text and inline images across different font sizes and in lists/quotes
+  - _Requirements: 2.17_
+
+- [ ] 31. Modifier composition and precedence
+  - Implement deterministic application order (context → placement → sizing → filtering)
+  - Validate conflicting combinations; log structured warnings without halting processing
+  - Add tests for combinations such as `[inline, right]`, `[left, 30%]`, `[fit, filtered]`, and override interactions with the readability filter
+  - _Requirements: 2.18_
+
+- [ ] 32. Inline image grids across lines
+  - Render consecutive `![inline]` tokens into grid containers with consistent gutters; support multi-line grids
+  - Add responsiveness tests for wrapping and 16:9 safe-area containment
+  - _Requirements: 2.19, 13.4-13.5_

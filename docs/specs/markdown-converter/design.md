@@ -283,3 +283,97 @@ All slides are rendered into a fixed-ratio container that preserves a strict 16:
 - An index of `id` -> (slide, element) is created during generation to support cross-slide `#fragment` navigation.
 - The slide viewer intercepts internal anchor clicks, computes the target slide, navigates to it, and scrolls/focuses the element.
 - Unresolvable anchors are left inert and a warning is logged during generation.
+
+## Automatic Readability Filter for Text Over Background Images
+
+Deckset applies a subtle filter when text and a full-slide image are used together so the text remains readable (see example slide 12 in `Examples/10 Deckset basics.md`). The generator reproduces this behavior by default and provides explicit overrides.
+
+### Goals
+
+- Maintain at least WCAG AA contrast for text placed over background images without requiring authors to tune images manually
+- Provide deterministic behavior in static HTML/CSS with progressive enhancement via JavaScript for adaptive strength
+- Preserve author control through modifiers (`filtered`/`original`) and a `readability-filter` setting at global and slide scopes
+
+### Detection Logic
+
+1. A slide is eligible when both conditions hold:
+   - The slide has a background image (implicit `![](x.jpg)` or `[.background-image: x.jpg]`).
+   - The slide also contains visible text content (headings, paragraphs, lists, blockquotes) that overlays the background layer.
+2. Exclusions:
+   - Inline/left/right images that do not sit behind the text are ignored.
+   - If the author forces `![original]` or sets `readability-filter: off`, skip the filter.
+   - If the author forces `![filtered]` or sets `readability-filter: on`, always apply the filter at default strength.
+
+### Rendering Approach
+
+- CSS-only baseline:
+  - The slide root receives a class `has-readability-filter` when eligible in `auto` mode.
+  - A pseudo-element overlay (`::before`) is inserted above the background image layer (z-index: background+1, below content). It uses a semi‑transparent black layer with optional radial/linear gradient to improve contrast across the slide.
+  - Optional small Gaussian blur is applied to the background layer via `filter: blur(var(--bg-blur, 2px))` guarded by `backdrop-filter`/`filter` support checks.
+- Adaptive JS enhancement:
+  - The `EnhancedSlideViewer` samples pixels from the region behind each text block using an offscreen `<canvas>` read of the background image and computes relative luminance/contrast vs. computed text color.
+  - If measured contrast < thresholds (3:1 large text, 4.5:1 body), it increases `--overlay-opacity` and optionally `--bg-blur` up to configured maxima; otherwise it decreases toward the baseline.
+  - If maximum filter strength still cannot meet contrast, the viewer adds a `text-backplate` class to headings/paragraphs which renders a small border‑radius backplate with the minimal opacity to satisfy contrast.
+
+### Data Model and Configuration
+
+- `SlideConfig.readability_filter_mode: Literal["auto", "on", "off"]` (default: `auto`). Slide-level overrides global setting.
+- `ProcessedImage.is_background: bool` (existing) and `ProcessedImage.filter_preference: Optional[Literal["original", "filtered"]]` derived from image modifiers.
+- Generator sets slide-level CSS variables:
+  - `--overlay-opacity` (default 0.35), `--overlay-gradient` (themeable), `--bg-blur` (default 1–2px), and `--filter-strength-max` (caps adaptation).
+
+### Accessibility and Performance
+
+- Contrast targets follow WCAG AA. The JS adaptation only runs after the background image has loaded and debounces on resize.
+- Sampling uses low-resolution canvas reads (e.g., 64×36 grid), minimizing cost. If `canvas` or cross‑origin image reads fail, the system sticks with the CSS baseline.
+- All behavior degrades gracefully without JS: baseline overlay remains, ensuring reasonable readability.
+
+### Layering and Z-Index
+
+- Background image: z-index 1
+- Readability overlay (`::before`): z-index 2
+- Slide content: z-index 3
+- UI elements (nav, slide number, footer): z-index 4
+
+### Author Overrides Summary
+
+- Per image: `![filtered](image.jpg)` forces overlay; `![original](image.jpg)` disables it.
+- Per slide/global: `readability-filter: on | off | auto` with slide precedence.
+
+### Testing Strategy
+
+- Static render tests verify that eligible slides receive `has-readability-filter` and the overlay pseudo-element is present.
+- JS unit tests simulate low/high-contrast backgrounds and assert variable adjustments and backplate fallback.
+- Accessibility tests compute contrast via the same luminance model to verify thresholds.
+
+## Inline Images, Captions, and Modifier Composition
+
+### Inline-in-text sizing
+
+- Parsing: `![inline](image)` within a paragraph is emitted as an inline HTML element (`<img>` or container) with a class `inline-image`.
+- Sizing: CSS constrains height to the current line box using `max-height: 1em` (plus minor tuning to match font metrics), preserving aspect ratio; vertical alignment uses `vertical-align: text-bottom` to sit nicely on the baseline.
+- Alt text and ARIA: The markdown alt text maps to `alt`. If no alt is provided, the generator uses an empty string to avoid announcing file names to screen readers.
+
+### Inline image captions
+
+- Detection: If an image line `![inline](x.jpg)` is immediately followed by a non-empty text line with no blank line, the parser groups them as `InlineFigure(caption=...)`.
+- Rendering: The template outputs a `<figure class="inline-figure">` containing the image and a `<figcaption>`; styles keep the group together in flow and on print.
+- Autoscale and wrapping: Captions inherit text autoscale and wrap within the safe area; figures participate in column and grid layouts when inside those contexts.
+
+### Consecutive inline images and grids
+
+- Adjacent `![inline]` or `![inline, fill]` tokens create a responsive grid. The renderer wraps them in a container with CSS grid; gutters are defined via CSS variables. Multi-line sequences form multiple rows.
+
+### Modifier composition and precedence
+
+Apply modifiers in this order to produce deterministic layout:
+1. Context: `inline` vs. block. If `inline`, `left`/`right` map to text alignment and do not create split regions.
+2. Placement: For block images, `left`/`right` establish split layouts; multiple block images can define multi-pane layouts.
+3. Sizing: `fit` vs `fill` (default). Percentages (e.g., `15%`) apply after placement to set size within its region.
+4. Filtering: `filtered`/`original` affect only overlay/filter behavior and may override the automatic readability filter.
+5. Validation: Unsupported/conflicting pairs emit warnings and fall back to a safe layout.
+
+### Footer and slide number layering with backgrounds
+
+- Layering: Footers and slide numbers reside above content and readability overlays to ensure legibility regardless of background imagery.
+- Positioning: Footer bottom-left; slide number bottom-right, with consistent paddings inside the 16:9 safe area. Print styles keep positions consistent on PDF output.
