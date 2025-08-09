@@ -172,6 +172,27 @@ class EnhancedPresentationProcessor:
                     processed_slide, slide_content, slide_context
                 )
 
+                # Determine per-slide readability filter flag (boolean) based on content:
+                # - True if there's an unmodified image used as a background (no placement modifiers)
+                #   AND there is other text content on the slide
+                # - False in all other cases (e.g., left/right/inline/fit modifiers or image-only slides)
+                has_bg = processed_slide.background_image is not None
+                visible_text = bool((processed_slide.content or '').strip())
+
+                unmodified_background = False
+                if has_bg:
+                    try:
+                        mods = processed_slide.background_image.modifiers
+                        # Unmodified means default placement 'background' and no explicit left/right/inline
+                        # and no explicit scaling like 'fit' or percentage
+                        is_background = mods.placement == 'background'
+                        has_explicit_scaling = (mods.scaling in ['fit'] or str(mods.scaling).endswith('%'))
+                        unmodified_background = is_background and not has_explicit_scaling
+                    except Exception:
+                        unmodified_background = True
+
+                processed_slide.slide_config.readability_filter_mode = bool(unmodified_background and visible_text)
+
                 processed_slides.append(processed_slide)
 
             except Exception as e:

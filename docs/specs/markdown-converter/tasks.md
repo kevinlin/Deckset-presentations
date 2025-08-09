@@ -335,7 +335,7 @@
   - Add tests for internal anchors and cross-slide navigation and ensure all tests are passing
   - _Requirements: 15.1-15.4_
 
-- [ ] 28. Automatic readability filter for text over background images
+- [x] 28. Automatic readability filter for text over background images
   - Implement eligibility detection in the processing pipeline to flag slides that combine background images and overlaying text
   - Add global and slide-level config: `readability-filter: auto | on | off` (default `auto`), with slide precedence
   - Respect image modifiers: `![filtered]` forces filter; `![original]` disables it

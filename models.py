@@ -82,6 +82,8 @@ class SlideConfig:
     autoscale: Optional[bool] = None
     slide_transition: Optional[str] = None
     columns: bool = False
+    # Computed flag: apply automatic readability filter overlay for this slide
+    readability_filter_mode: bool = False
 
 
 # Media Processing Models

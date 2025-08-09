@@ -190,6 +190,34 @@ html {
     filter: blur(2px) brightness(0.7);
 }
 
+/* Automatic readability overlay for text over background images */
+.slide.has-readability-filter::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2; /* above background, below content */
+    /* Baseline overlay; JS may adapt the opacity via CSS variable */
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, var(--overlay-opacity, 0.35)) 0%,
+        rgba(0, 0, 0, var(--overlay-opacity, 0.35)) 100%
+    );
+    pointer-events: none;
+}
+
+/* Optional blur applied to background via CSS variable; guarded by support */
+.slide.has-readability-filter .background-image {
+    filter: blur(var(--bg-blur, 0px)) brightness(0.9);
+}
+
+/* Minimal backplate for text when overlay cannot reach required contrast */
+.slide .text-backplate {
+    background: rgba(0, 0, 0, var(--backplate-opacity, 0.35));
+    color: #fff !important;
+    padding: 0.1em 0.3em;
+    border-radius: 0.2em;
+}
+
 /* Inline images */
 .inline-image {
     max-width: 100%;

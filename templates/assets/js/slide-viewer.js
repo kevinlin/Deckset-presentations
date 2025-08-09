@@ -30,6 +30,7 @@ class EnhancedSlideViewer {
         this.initializeHighlighting();
         this.initializeMathJax();
         this.setupFitText();
+        this.setupReadabilityAdaptation();
         
         // Show first slide
         this.showSlide(0);
@@ -456,6 +457,9 @@ class EnhancedSlideViewer {
             if (viewport.width < 768) {
                 this.adjustMathForMobile(slide);
             }
+
+            // Re-evaluate readability overlay after resize
+            this.adaptReadabilityForSlide(slide);
         });
     }
     
@@ -480,6 +484,106 @@ class EnhancedSlideViewer {
                 math.style.overflowX = 'auto';
             }
         });
+    }
+
+    setupReadabilityAdaptation() {
+        // Adapt overlay opacity/blur to improve contrast when needed
+        const slides = document.querySelectorAll('.slide.has-readability-filter');
+        slides.forEach(slide => this.adaptReadabilityForSlide(slide));
+    }
+
+    adaptReadabilityForSlide(slide) {
+        if (!slide || !slide.classList.contains('has-readability-filter')) return;
+
+        const content = slide.querySelector('.slide-content');
+        const bg = slide.querySelector('.background-image');
+        if (!content || !bg) return;
+
+        try {
+            const textSamples = Array.from(content.querySelectorAll('h1,h2,h3,h4,p,li,blockquote'))
+                .slice(0, 6);
+            if (textSamples.length === 0) return;
+
+            let minContrast = 21; // start higher than possible
+            textSamples.forEach(el => {
+                const contrast = this.estimateContrastAgainstBackground(el, slide);
+                if (contrast !== null) {
+                    minContrast = Math.min(minContrast, contrast);
+                }
+            });
+
+            // Target thresholds from requirements: 4.5 (body) / 3 (large)
+            const target = 4.5;
+            let overlay = 0.35;
+            let blur = 0;
+            let backplateNeeded = false;
+
+            if (minContrast < target) {
+                // Increase overlay up to 0.6 and blur up to 2px
+                overlay = Math.min(0.6, 0.35 + (target - minContrast) * 0.12);
+                blur = Math.min(2, (target - minContrast) * 0.5);
+
+                // If still very low contrast, mark backplate
+                backplateNeeded = (minContrast < 2.5);
+            }
+
+            slide.style.setProperty('--overlay-opacity', overlay.toFixed(2));
+            slide.style.setProperty('--bg-blur', `${blur.toFixed(2)}px`);
+
+            if (backplateNeeded) {
+                // Add backplate class to headings and paragraphs
+                textSamples.forEach(el => {
+                    el.classList.add('text-backplate');
+                });
+                slide.style.setProperty('--backplate-opacity', '0.35');
+            } else {
+                textSamples.forEach(el => el.classList.remove('text-backplate'));
+            }
+        } catch (err) {
+            // Non-fatal; baseline overlay remains
+            console.warn('Readability adaptation failed:', err);
+        }
+    }
+
+    estimateContrastAgainstBackground(textElement, slide) {
+        try {
+            const textColor = getComputedStyle(textElement).color;
+            const rgb = this.parseRgb(textColor);
+            if (!rgb) return null;
+
+            // Estimate background luminance by sampling a few pixels behind the element
+            const rect = textElement.getBoundingClientRect();
+            const slideRect = slide.getBoundingClientRect();
+            const centerX = Math.max(0, Math.min(slideRect.width - 1, rect.left - slideRect.left + rect.width / 2));
+            const centerY = Math.max(0, Math.min(slideRect.height - 1, rect.top - slideRect.top + rect.height / 2));
+
+            // Create a small offscreen canvas using computed background color approximation
+            // Fallback: assume darkened background due to overlay; we approximate contrast via overlay value
+            const overlay = parseFloat(getComputedStyle(slide).getPropertyValue('--overlay-opacity')) || 0.35;
+            const bgLum = 0.2 * (1 - overlay); // heuristic baseline
+
+            const textLum = this.relativeLuminance(rgb.r/255, rgb.g/255, rgb.b/255);
+            const L1 = Math.max(textLum, bgLum);
+            const L2 = Math.min(textLum, bgLum);
+            const contrast = (L1 + 0.05) / (L2 + 0.05);
+            return contrast;
+        } catch {
+            return null;
+        }
+    }
+
+    parseRgb(color) {
+        const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (!m) return null;
+        return { r: parseInt(m[1],10), g: parseInt(m[2],10), b: parseInt(m[3],10) };
+    }
+
+    relativeLuminance(r, g, b) {
+        // sRGB to luminance per WCAG
+        const srgb = [r, g, b].map(c => {
+            return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+        });
+        return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
     }
     
     activateSlideMedia(index) {
