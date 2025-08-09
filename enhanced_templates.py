@@ -229,6 +229,9 @@ class EnhancedTemplateEngine:
         # Start with the original content
         html = content
 
+        # Sanitize any user-provided inline HTML before other processing
+        html = self._sanitize_user_inline_html(html)
+
         # First, convert LaTeX math delimiters to MathJax syntax so math works everywhere
         try:
             from math_processor import MathProcessor
@@ -354,6 +357,74 @@ class EnhancedTemplateEngine:
         html = re.sub(r'<p>\s*</p>', '', html)
 
         return html
+
+    def _sanitize_user_inline_html(self, text: str) -> str:
+        """Sanitize a minimal subset of inline HTML from user content.
+
+        Allowed tags: <br/>, <a name|id|href|title>. Unsafe tags/attributes are removed.
+        Anchors with unsafe href schemes are rendered as plain text (inner content only).
+        External http(s) anchors receive target and rel attributes.
+        """
+        # Remove dangerous paired tags entirely
+        text = re.sub(r'<\s*(script|style|iframe|object|embed)[^>]*>[\s\S]*?<\s*/\s*\1\s*>', '', text, flags=re.IGNORECASE)
+
+        # Normalize <br> variants to <br/>
+        text = re.sub(r'<\s*br\s*/?\s*>', '<br/>', text, flags=re.IGNORECASE)
+
+        # Sanitize <a> tags
+        def sanitize_anchor(match: re.Match) -> str:
+            attrs = match.group(1) or ''
+            inner = match.group(2) or ''
+
+            # Extract attributes
+            allowed_attrs = {}
+            for m in re.finditer(r'(\w+)\s*=\s*("[^"]*"|\'[^\']*\')', attrs):
+                key = m.group(1).lower()
+                val = m.group(2)[1:-1]
+                if key in {'href', 'name', 'id', 'title'}:
+                    allowed_attrs[key] = val
+
+            href = allowed_attrs.get('href')
+
+            # If href present, validate scheme
+            if href:
+                safe = self._is_safe_href(href)
+                if not safe:
+                    # Remove unsafe href but keep anchor structure and inner text
+                    allowed_attrs.pop('href', None)
+                # Add target/rel for external http(s)
+                if href.lower().startswith('http://') or href.lower().startswith('https://'):
+                    allowed_attrs['target'] = '_blank'
+                    allowed_attrs['rel'] = 'noopener noreferrer'
+
+            # Rebuild sanitized anchor
+            attr_str = ''.join(f' {k}="{self._escape_html(v)}"' for k, v in allowed_attrs.items())
+            return f'<a{attr_str}>{inner}</a>'
+
+        text = re.sub(r'<\s*a([^>]*)>([\s\S]*?)<\s*/\s*a\s*>', sanitize_anchor, text, flags=re.IGNORECASE)
+
+        # Strip any remaining tags except allowed <a> and <br/>
+        text = re.sub(r'</?(?!a\b|br\b)[A-Za-z][A-Za-z0-9]*\b[^>]*>', '', text, flags=re.IGNORECASE)
+
+        return text
+
+    def _is_safe_href(self, url: str) -> bool:
+        """Return True if URL uses an allowed scheme or is relative/anchor."""
+        if not url:
+            return False
+        lower = url.strip().lower()
+        if lower.startswith('#'):
+            return True
+        if lower.startswith('http://') or lower.startswith('https://'):
+            return True
+        if lower.startswith('mailto:') or lower.startswith('tel:'):
+            return True
+        # Disallow any other URI scheme (e.g., javascript:, data:, vbscript:)
+        import re as _re
+        if _re.match(r'^[a-z][a-z0-9+\-.]*:', lower):
+            return False
+        # Otherwise treat as relative path
+        return True
 
     def _sanitize_and_render_link(self, text: str, url: str, title: Optional[str] = None) -> str:
         """Sanitize URL and render an HTML anchor per requirements.

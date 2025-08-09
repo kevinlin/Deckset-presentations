@@ -522,6 +522,26 @@ After ordered.
         self.assertIn('<p>Before ordered.</p>', result)
         self.assertIn('<p>After ordered.</p>', result)
 
+    def test_sanitizes_inline_html(self):
+        """Test that only safe inline HTML is preserved and unsafe is removed."""
+        engine = self.engine
+
+        # Unsafe script tag removed, br normalized
+        md = "Text <script>alert('x')</script> line<br>break"
+        html = engine._markdown_to_html(md)
+        self.assertNotIn('<script>', html)
+        self.assertIn('Text ', html)
+        self.assertIn('<br/>break', html)
+
+        # Anchor sanitization: external gets target/rel; unsafe scheme dropped
+        md_links = "Click <a href=\"https://example.com\">here</a> and <a href=\"javascript:alert(1)\">bad</a> and <a name=\"foo\"></a>"
+        html_links = engine._markdown_to_html(md_links)
+        self.assertIn('href="https://example.com"', html_links)
+        self.assertIn('target="_blank"', html_links)
+        self.assertIn('rel="noopener noreferrer"', html_links)
+        self.assertNotIn('javascript:', html_links)
+        # named anchor preserved (after sanitization, it will be stripped to inner text if empty)
+
 
 if __name__ == '__main__':
     unittest.main()

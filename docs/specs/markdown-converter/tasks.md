@@ -323,7 +323,7 @@
   - Add tests for overflow handling and scaling within these contexts
   - _Requirements: 5.5_
 
-- [ ] 26. Safe inline HTML and sanitization
+- [x] 26. Safe inline HTML and sanitization
   - Allow a minimal safe HTML subset (`br`, named anchor) with attribute sanitization
   - Add tests ensuring unsafe tags/attributes are stripped while preserving text
   - _Requirements: 7.8_
