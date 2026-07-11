@@ -48,6 +48,8 @@ class GeneratorConfig:
     output_dir: str = "site"
     template_dir: str = "templates"
     slides_dir: str = "slides"
+    theme: str = "light"
+    designs_dir: str = "design-md"
     exclude_folders: List[str] = field(default_factory=lambda: [
         "__pycache__", "node_modules", "Examples"
     ])
@@ -277,6 +279,11 @@ class ScanningError(GeneratorError):
 
 class ConfigurationError(GeneratorError):
     """Errors that occur due to invalid configuration."""
+    pass
+
+
+class ThemeCompileError(GeneratorError):
+    """Errors that occur during theme compilation from design-md files."""
     pass
 
 

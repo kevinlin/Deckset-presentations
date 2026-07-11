@@ -8,7 +8,7 @@ exposes page-level rendering entry points.
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from jinja2 import Environment, FileSystemLoader
 from markdown_renderer import MarkdownRenderer
@@ -17,8 +17,6 @@ from models import (
 )
 
 logger = logging.getLogger(__name__)
-
-KNOWN_THEMES = ("light", "dark", "minimal")
 
 
 class EnhancedTemplateEngine:
@@ -99,26 +97,40 @@ class EnhancedTemplateEngine:
     # Helpers
     # ------------------------------------------------------------------
 
+    def set_theme_registry(self, slugs: Set[str], default_theme: str) -> None:
+        """Configure the known theme slugs and site default.
+
+        Called after the theme compiler runs so that ``resolve_theme``
+        validates against the full pool (built-ins + compiled designs).
+        """
+        self._theme_slugs: Set[str] = slugs
+        self._default_theme: str = default_theme
+
     def resolve_theme(self, theme_name: Optional[str]) -> str:
-        """Return a known theme name, falling back to ``light``.
+        """Return a known theme slug, falling back to the site default.
 
         Warns if *theme_name* is not recognised.
         """
+        default = getattr(self, "_default_theme", "light")
+        slugs: Set[str] = getattr(self, "_theme_slugs", {"light", "dark", "minimal"})
+
         if not theme_name:
-            return "light"
+            return default
         name = theme_name.strip().lower()
-        if name in KNOWN_THEMES:
+        if name in slugs:
             return name
-        theme_file = Path(self.template_dir) / "assets" / "css" / "themes" / f"{name}.css"
-        if theme_file.exists():
-            return name
-        logger.warning(f"Unknown theme '{theme_name}', falling back to light")
-        return "light"
+        logger.warning(
+            f"Unknown theme '{theme_name}', falling back to {default}"
+        )
+        return default
 
     def theme_stylesheets(self, config: DecksetConfig, asset_prefix: str) -> List[str]:
         """Return ``<link>`` tags for the resolved theme (and custom CSS if present)."""
         theme = self.resolve_theme(config.theme)
-        links = [f'<link rel="stylesheet" href="{asset_prefix}assets/css/themes/{theme}.css">']
+        href = f"{asset_prefix}assets/css/themes/{theme}.css"
+        links = [
+            f'<link id="theme-css" rel="stylesheet" href="{href}" data-default-href="{href}">'
+        ]
         return links
 
     def _calculate_asset_path_prefix(self, folder_name: str) -> str:

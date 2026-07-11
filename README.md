@@ -91,7 +91,17 @@ Full syntax documentation: [`.cursor/rules/deckset-syntax.mdc`](.cursor/rules/de
 
 ### Themes
 
-Three built-in themes: `light` (default), `dark`, `minimal`. Set via `theme:` in the markdown. Drop a `custom.css` in the deck folder for per-presentation overrides.
+16 themes are available: 3 built-in (`light`, `dark`, `minimal`) plus 13 compiled from `design-md/` token systems (airtable, cal, clay, figma, framer, intercom, linear-app, mintlify, miro, notion, resend, webflow, zapier).
+
+**Per-deck theme:** Set `theme: notion` (or any slug) in the markdown's global commands.
+
+**Site default:** Use `--theme <slug>` on the CLI (default: `light`).
+
+**Visitor switcher:** A dropdown in the site header lets visitors choose any theme. The choice is saved in `localStorage` and applied on subsequent page loads. "Page default" resets to the build-time theme.
+
+**Adding a design theme:** Drop a [getdesign.md](https://getdesign.md)-format folder into `design-md/`. The `DESIGN.md` YAML between `---` fences is compiled at build time into a CSS variable file. The `spacing` and `components` sections of DESIGN.md are not consumed. Proprietary font families are mapped to system font stacks — no font downloads are added.
+
+Drop a `custom.css` in a deck folder for per-presentation overrides on top of the theme.
 
 ### Slide transitions
 
@@ -143,6 +153,7 @@ Modular pipeline at the repo root (no `src/` package):
 | `math_processor.py` | LaTeX math formulas |
 | `slide_processor.py` | Columns and slide layout |
 | `enhanced_templates.py` | Jinja2 template engine |
+| `theme_compiler.py` | Compiles design-md tokens to CSS themes |
 | `generator.py` | Writes HTML pages and homepage |
 | `file_manager.py` | Asset copying and output layout |
 | `models.py` | Data classes, config, exceptions |
@@ -155,7 +166,7 @@ The following Deckset features are intentionally not implemented:
 - **Stepped code highlights** — the last `[.code-highlight:]` directive before a block wins; earlier directives on the same slide are ignored.
 - **`build-lists` progressive reveal** — the command is parsed and stored but all list items are always visible.
 - **Video `autoadvance`** — parsed but not acted on.
-- **Deckset's built-in visual themes** — the generator provides its own `light`/`dark`/`minimal` themes rather than cloning Deckset's proprietary themes.
+- **Deckset's built-in visual themes** — the generator provides its own theme system (16 themes from design tokens) rather than cloning Deckset's proprietary themes.
 - **Vimeo and non-YouTube embeds** — only YouTube URLs are recognized for iframe embedding.
 - **Presenter console / dual-screen mode** — not applicable to a static site.
 

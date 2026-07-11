@@ -16,6 +16,7 @@
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/homepage.css">
+    <link id="theme-css" rel="stylesheet" href="assets/css/themes/{{ default_theme }}.css" data-default-href="assets/css/themes/{{ default_theme }}.css">
     {% if analytics_enabled %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_measurement_id }}"></script>
     <script>
@@ -83,28 +84,29 @@
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
     <a href="#main-content"
         class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-blue-500 focus:text-white focus:z-50">
         Skip to main content
     </a>
 
-    <header class="bg-white shadow-sm border-b sticky top-0 z-10">
+    <header class="site-header shadow-sm sticky top-0 z-10">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-semibold text-gray-900 flex items-center">
+                    <a href="/" class="site-title text-xl font-semibold flex items-center">
                         <img src="assets/deckset-icon.png" alt="Deckset" class="h-8 w-8 mr-2">
                         <span>Deckset Presentations</span>
-                        <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Enhanced</span>
+                        <span class="ml-2 text-xs card-cta px-2 py-1 rounded-full">Enhanced</span>
                     </a>
                 </div>
 
                 <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                    <select id="theme-select" class="site-nav-link" aria-label="Theme"></select>
                     <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
-                        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
+                        class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
                     <a href="/"
-                        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Home</a>
                 </div>
             </div>
         </nav>
@@ -142,7 +144,7 @@
                     {% set last_modified_str = "<p>Updated: " + presentation.last_modified.strftime('%Y-%m-%d') + "</p>" %}
                 {% endif %}
 
-                <div class="presentation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                <div class="presentation-card shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
                     <a href="{{ presentation.slug }}/" class="block">
                         {% if preview_image %}
                             <div class="aspect-w-16 aspect-h-9">
@@ -165,14 +167,14 @@
                     </a>
                     
                     <div class="p-6">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2 presentation-title">
+                        <h3 class="card-title text-xl font-semibold mb-2 presentation-title">
                             <a href="{{ presentation.slug }}/" 
-                               class="hover:text-blue-600 transition-colors">
+                               class="transition-colors">
                                 {{ presentation.title | escape_html }}
                             </a>
                         </h3>
                         
-                        <div class="text-sm text-gray-600 space-y-1">
+                        <div class="card-meta text-sm space-y-1">
                             <p>{{ presentation.slide_count }} slide{{ 's' if presentation.slide_count != 1 else '' }}</p>
                             {% if last_modified_str %}
                                 {{ last_modified_str | safe }}
@@ -181,7 +183,7 @@
                         
                         <div class="mt-4 flex justify-end">
                             <a href="{{ presentation.slug }}/" 
-                               class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                               class="card-cta inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2">
                                 View Presentation
                                 <svg class="ml-1 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -205,16 +207,18 @@
         </div>
     </main>
 
-    <footer class="bg-white border-t mt-12 no-print">
+    <footer class="site-footer mt-12 no-print">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row justify-between items-center">
-                <p class="text-center text-gray-500 text-sm mb-2 sm:mb-0">
+                <p class="text-center text-sm mb-2 sm:mb-0">
                     Generated by Enhanced Deckset Website Generator
                 </p>
             </div>
         </div>
     </footer>
 
+    <script type="application/json" id="theme-manifest">{{ theme_manifest_json | safe }}</script>
     <script src="assets/js/homepage.js"></script>
+    <script src="assets/js/theme-switcher.js"></script>
 </body>
 </html> 

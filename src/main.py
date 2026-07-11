@@ -438,6 +438,9 @@ class DecksetWebsiteGenerator:
             "code_highlighting_styles.css",
             "assets/js/slide-viewer.js",
             "assets/css/themes/light.css",
+            "assets/css/themes/dark.css",
+            "assets/css/themes/minimal.css",
+            "assets/js/theme-switcher.js",
             "assets/vendor/highlight/highlight.min.js",
         ]
 
@@ -493,6 +496,12 @@ Examples:
     )
 
     parser.add_argument(
+        "--theme",
+        default="light",
+        help="Site-wide default theme (default: light)",
+    )
+
+    parser.add_argument(
         "--validate", action="store_true", help="Validate configuration and exit"
     )
 
@@ -502,6 +511,7 @@ Examples:
     config = GeneratorConfig()
     if args.output:
         config.output_dir = args.output
+    config.theme = args.theme
 
     # Create generator
     generator = DecksetWebsiteGenerator(config)
