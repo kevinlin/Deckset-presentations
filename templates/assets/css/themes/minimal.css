@@ -1,8 +1,34 @@
 /* Minimal theme — clean, lots of whitespace, serif headings */
-.slide{background:#fff;color:#333}
-.slide-content h1,.slide-content h2,.slide-content h3{font-family:Georgia,'Times New Roman',serif;font-weight:400}
-.slide-content h1{font-size:3rem}
-.slide-content h2{font-size:2.25rem}
-.slide-content h3{font-size:1.75rem}
-.slide-content blockquote{border-left:2px solid #ccc;color:#666}
-.footer-content{font-size:.75rem;color:#aaa}
+:root {
+  --color-canvas: #ffffff;
+  --color-surface-1: #f9fafb;
+  --color-surface-2: #f3f4f6;
+  --color-surface-3: #e5e7eb;
+  --color-ink: #333333;
+  --color-ink-muted: #666666;
+  --color-ink-subtle: #aaaaaa;
+  --color-accent: #3b82f6;
+  --color-on-accent: #1d4ed8;
+  --color-accent-hover: #2563eb;
+  --color-hairline: #cccccc;
+  --color-hairline-strong: #999999;
+  --color-link: #3b82f6;
+  --color-code-bg: #f3f4f6;
+  --color-table-header-bg: #f9fafb;
+  --color-blockquote-border: #cccccc;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  --h1-size: 3em;
+  --h2-size: 2.25em;
+  --h3-size: 1.75em;
+  --h1-weight: 400;
+  --h2-weight: 400;
+  --h3-weight: 400;
+  --h1-tracking: normal;
+  --h2-tracking: normal;
+  --h3-tracking: normal;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
