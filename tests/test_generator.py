@@ -167,38 +167,66 @@ class TestWebPageGenerator:
         # Verify file was not created
         assert not output_path.exists()
 
-    def test_process_preview_images(self, config, presentation_list, tmp_path, monkeypatch):
-        """Test processing preview images with fallbacks."""
-        # Setup
+    def test_process_preview_images(self, tmp_path):
+        """Test processing preview images: FileManager paths preserved, fallback works."""
+        config = GeneratorConfig(output_dir=str(tmp_path / "site"))
         generator = WebPageGenerator(config)
-        
-        # Create a temporary image file for testing
-        test_image_dir = tmp_path / "test-presentation"
-        test_image_dir.mkdir(parents=True)
-        test_image_path = test_image_dir / "slide1.png"
-        with open(test_image_path, 'w') as f:
-            f.write("dummy image content")
-            
-        # Update the first presentation to use the test image
-        presentation_list[0].preview_image = str(test_image_path)
-        
-        # Patch the exists method to return True for our test image
-        original_exists = Path.exists
-        def mock_exists(self):
-            if str(self) == str(test_image_path):
-                return True
-            return original_exists(self)
-        monkeypatch.setattr(Path, "exists", mock_exists)
-        
-        # Execute
-        generator._process_preview_images(presentation_list)
-        
-        # Verify preview image paths are updated
-        assert presentation_list[0].preview_image.startswith("../images/")
-        assert presentation_list[0].preview_image.endswith("-preview.png")
-        
-        # Verify missing preview image is cleared
-        assert presentation_list[1].preview_image is None
+
+        # Create the output directory structure as FileManager would
+        deck_dir = tmp_path / "site" / "test-deck"
+        deck_dir.mkdir(parents=True)
+        (deck_dir / "preview.png").write_text("image data")
+
+        # Presentation whose preview was already processed by FileManager
+        p1 = PresentationInfo(
+            folder_name="test-deck",
+            folder_path=str(tmp_path / "source" / "test-deck"),
+            markdown_path=str(tmp_path / "source" / "test-deck" / "deck.md"),
+            title="Test Deck",
+            preview_image="test-deck/preview.png",
+            slide_count=3,
+            last_modified=datetime.now(),
+        )
+
+        # Presentation with no preview — has images in its source folder for fallback
+        source_dir = tmp_path / "source" / "another-deck"
+        source_dir.mkdir(parents=True)
+        (source_dir / "slide1.jpg").write_text("image data")
+
+        p2 = PresentationInfo(
+            folder_name="another-deck",
+            folder_path=str(source_dir),
+            markdown_path=str(source_dir / "deck.md"),
+            title="Another Deck",
+            preview_image=None,
+            slide_count=2,
+            last_modified=datetime.now(),
+        )
+
+        # Presentation with no preview and no source images
+        empty_dir = tmp_path / "source" / "empty-deck"
+        empty_dir.mkdir(parents=True)
+        p3 = PresentationInfo(
+            folder_name="empty-deck",
+            folder_path=str(empty_dir),
+            markdown_path=str(empty_dir / "deck.md"),
+            title="Empty Deck",
+            preview_image=None,
+            slide_count=1,
+            last_modified=datetime.now(),
+        )
+
+        generator._process_preview_images([p1, p2, p3])
+
+        # p1: FileManager path preserved
+        assert p1.preview_image == "test-deck/preview.png"
+
+        # p2: fallback found and copied the image
+        assert p2.preview_image == "another-deck/preview.jpg"
+        assert (tmp_path / "site" / "another-deck" / "preview.jpg").exists()
+
+        # p3: no images anywhere — stays None
+        assert p3.preview_image is None
 
     @patch('generator.WebPageGenerator.generate_presentation_page')
     @patch('generator.WebPageGenerator.generate_homepage')

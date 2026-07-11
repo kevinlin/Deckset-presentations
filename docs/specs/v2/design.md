@@ -42,6 +42,16 @@ Scanner → DecksetParser → Processor → MarkdownRenderer → Jinja templates
 4. Jinja renders slide macros into a page; generator writes `site/<deck-slug>/index.html` and copies media into `site/<deck-slug>/media/`.
 5. Homepage renders from the collected `PresentationInfo` list.
 
+### Preview image handling
+
+Preview images shown on the homepage cards follow a two-stage pipeline:
+
+1. **Scanner** discovers a candidate image per presentation: first image referenced in the markdown (via `extract_first_image_from_markdown`), falling back to `find_preview_image` which globs the source folder.
+2. **FileManager.copy_preview_image()** copies the source file to `site/<slug>/preview.<ext>` and sets `info.preview_image` to the web-accessible path relative to the site root (e.g. `examples/10-deckset-basics/preview.jpg`).
+3. **Generator._process_preview_images()** runs during homepage generation as a validation/fallback step: it checks that any path set by FileManager resolves to an existing file under the output directory. If the file is missing (source image didn't exist) it clears the path and attempts a folder-glob fallback, copying the first image found into `site/<slug>/preview.<ext>`.
+
+The homepage template renders `<img src="{{ preview_image }}">` directly, so paths are always relative to `site/index.html`.
+
 ## Themes and viewer
 
 - Three built-in themes as CSS files (`light`, `dark`, `minimal`) sharing a base stylesheet; `theme:` picks one per deck, homepage uses the site default. Unknown names warn and fall back. A deck folder may ship `custom.css`, linked after the theme.

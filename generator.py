@@ -243,70 +243,61 @@ class WebPageGenerator:
 
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
-        Process preview images for presentations.
-        
-        This method updates the preview_image for each presentation, handling fallbacks
-        for missing images and creating preview directories.
-        
+        Validate preview images for presentations.
+
+        FileManager.copy_preview_image() handles copying during media processing
+        and sets preview_image to a path relative to the site root (e.g.
+        ``<slug>/preview.jpg``).  This method validates those paths against the
+        output directory and falls back to a folder-glob search when no preview
+        was found earlier.
+
         Args:
             presentations: List of presentation info objects to process
         """
-        # Create images directory for previews if it doesn't exist
-        preview_dir = Path(self.config.output_dir) / "images"
-        preview_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = Path(self.config.output_dir)
 
         for presentation in presentations:
-            # Skip if preview image has already been processed by FileManager
-            # (indicated by web-accessible path starting with "../")
-            if presentation.preview_image and presentation.preview_image.startswith("../"):
-                continue
-            # If no preview image is set, try to find the first slide image
-            if not presentation.preview_image:
-                # Look for potential first slide image in the presentation folder
-                potential_images = list(Path(presentation.folder_path).glob("*.png")) + \
-                                  list(Path(presentation.folder_path).glob("*.jpg")) + \
-                                  list(Path(presentation.folder_path).glob("*.jpeg"))
-
-                # Also check in a slides/ subdirectory if it exists
-                slides_dir = Path(presentation.folder_path) / "slides"
-                if slides_dir.exists():
-                    potential_images.extend(list(slides_dir.glob("*.png")))
-                    potential_images.extend(list(slides_dir.glob("*.jpg")))
-                    potential_images.extend(list(slides_dir.glob("*.jpeg")))
-
-                # Sort by name to try to get slide1.png or similar
-                potential_images.sort(key=lambda p: p.name)
-
-                if potential_images:
-                    # Use the first image found as preview
-                    presentation.preview_image = str(potential_images[0])
-
-            # Process the preview image if it exists
             if presentation.preview_image:
-                # Convert relative path to absolute path for validation
-                if presentation.preview_image.startswith("../"):
-                    # This is a web-accessible path like "../images/filename"
-                    # Convert to actual file path: site/images/filename
-                    actual_path = Path(self.config.output_dir) / presentation.preview_image.replace("../", "")
-                elif presentation.preview_image.startswith("images/"):
-                    # This is a homepage-adjusted path like "images/filename"
-                    # Convert to actual file path: site/images/filename
-                    actual_path = Path(self.config.output_dir) / presentation.preview_image
-                else:
-                    actual_path = Path(presentation.preview_image)
-
-                if not actual_path.exists():
-                    self.logger.warning(f"Preview image not found for '{presentation.title}': {presentation.preview_image}")
-                    presentation.preview_image = None
+                # FileManager sets paths like "<slug>/preview.<ext>" relative to
+                # the site root.  Validate by checking the output directory.
+                resolved = output_dir / presentation.preview_image
+                if resolved.exists():
                     continue
+                # Path doesn't resolve — clear it and try fallback below.
+                self.logger.warning(
+                    f"Preview image not found for '{presentation.title}': {presentation.preview_image}"
+                )
+                presentation.preview_image = None
 
-                # Create a standardized preview image name
-                preview_filename = f"{presentation.folder_name}-preview{actual_path.suffix}"
-                dest_path = preview_dir / preview_filename
+            # Fallback: search the presentation folder for an image to use.
+            potential_images = (
+                list(Path(presentation.folder_path).glob("*.png"))
+                + list(Path(presentation.folder_path).glob("*.jpg"))
+                + list(Path(presentation.folder_path).glob("*.jpeg"))
+            )
+            slides_dir = Path(presentation.folder_path) / "slides"
+            if slides_dir.exists():
+                potential_images.extend(list(slides_dir.glob("*.png")))
+                potential_images.extend(list(slides_dir.glob("*.jpg")))
+                potential_images.extend(list(slides_dir.glob("*.jpeg")))
 
-                # Update the preview image path to use the web-accessible path
-                presentation.preview_image = f"../images/{preview_filename}"
-            # If no preview image is available, leave it as None (template will handle placeholder)
+            potential_images.sort(key=lambda p: p.name)
+
+            if not potential_images:
+                continue
+
+            src = potential_images[0]
+            dest_dir = output_dir / presentation.slug
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            dest = dest_dir / f"preview{src.suffix}"
+
+            try:
+                import shutil
+                shutil.copy2(src, dest)
+                presentation.preview_image = f"{presentation.slug}/preview{src.suffix}"
+            except Exception as e:
+                self.logger.warning(f"Failed to copy fallback preview for '{presentation.title}': {e}")
+                presentation.preview_image = None
 
     def generate_all_pages(
         self, 

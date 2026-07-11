@@ -221,3 +221,22 @@
 | R9 output/site | 16, 17 |
 | R10 CLI/ops | 5, 16, 21 |
 | R11 quality | 1, 2, 3, 4, 5, 7, 8, 11, 12, 16, 21 |
+
+---
+
+## Changelog
+
+### 2026-07-11: Fix homepage preview images
+
+**Problem:** Cover images on the homepage showed "No Preview" for all presentations despite `FileManager.copy_preview_image()` correctly copying files to `site/<slug>/preview.<ext>`.
+
+**Root cause:** `generator.py:_process_preview_images()` ran after FileManager and failed to recognise the path format FileManager sets (`<slug>/preview.<ext>`). It only checked for `startswith("../")`, so it treated the path as a CWD-relative filesystem path, failed validation, and set `preview_image = None`. Additionally, its fallback branch set paths to `"../images/..."` but never actually copied source files to that destination.
+
+**Fix:**
+- Rewrote `_process_preview_images()` to validate FileManager-set paths against the output directory (`Path(output_dir) / preview_image`). If the file exists, the path is preserved as-is.
+- Fallback (when no preview was found earlier) now copies the first folder image into `site/<slug>/preview.<ext>` — same layout as FileManager — and sets the matching relative path.
+- Updated `tests/test_generator.py::test_process_preview_images` to verify: FileManager paths preserved, fallback copies correctly, empty folders remain None.
+
+**Files:** `generator.py`, `tests/test_generator.py`, `docs/specs/v2/design.md`.
+
+**Verification:** All 381 Python tests + 53 Jest tests pass; local build shows 16/17 presentations with preview images (the one without has no images in its source folder).
