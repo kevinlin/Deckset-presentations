@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-11T17:40:13Z",
+  "title": "Design System: Deckset Presentations",
+  "extensions": {
+    "colorMeta": {
+      "cue-blue": {
+        "role": "primary",
+        "displayName": "Cue Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": ["oklch(15% 0.17 259.8)", "oklch(26% 0.18 259.8)", "oklch(37% 0.188 259.8)", "oklch(48% 0.188 259.8)", "oklch(62% 0.188 259.8)", "oklch(74% 0.13 259.8)", "oklch(85% 0.08 259.8)", "oklch(95% 0.03 259.8)"]
+      },
+      "cue-blue-deep": {
+        "role": "primary",
+        "displayName": "Cue Blue Deep",
+        "canonical": "#2563eb",
+        "tonalRamp": ["oklch(15% 0.17 262)", "oklch(26% 0.19 262)", "oklch(37% 0.2 262)", "oklch(48% 0.21 262)", "oklch(55% 0.21 262)", "oklch(70% 0.14 262)", "oklch(84% 0.08 262)", "oklch(95% 0.03 262)"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["oklch(15% 0.01 255)", "oklch(27% 0.01 255)", "oklch(39% 0.01 255)", "oklch(51% 0.01 255)", "oklch(63% 0.01 255)", "oklch(75% 0.008 255)", "oklch(87% 0.005 255)", "oklch(99% 0 255)"]
+      },
+      "booth-gray": {
+        "role": "neutral",
+        "displayName": "Booth Gray",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["oklch(15% 0.01 255)", "oklch(27% 0.01 255)", "oklch(39% 0.01 255)", "oklch(51% 0.01 255)", "oklch(63% 0.01 255)", "oklch(75% 0.008 255)", "oklch(87% 0.005 255)", "oklch(98% 0.003 255)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1f2937",
+        "tonalRamp": ["oklch(15% 0.02 257)", "oklch(28% 0.03 257)", "oklch(40% 0.03 257)", "oklch(52% 0.025 257)", "oklch(64% 0.02 257)", "oklch(76% 0.015 257)", "oklch(88% 0.01 257)", "oklch(95% 0.005 257)"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "#4b5563",
+        "tonalRamp": ["oklch(15% 0.02 257)", "oklch(28% 0.03 257)", "oklch(43% 0.025 257)", "oklch(52% 0.025 257)", "oklch(64% 0.02 257)", "oklch(76% 0.015 257)", "oklch(88% 0.01 257)", "oklch(95% 0.005 257)"]
+      },
+      "ink-subtle": {
+        "role": "neutral",
+        "displayName": "Ink Subtle",
+        "canonical": "#6b7280",
+        "tonalRamp": ["oklch(15% 0.02 257)", "oklch(28% 0.03 257)", "oklch(40% 0.03 257)", "oklch(55% 0.02 257)", "oklch(64% 0.02 257)", "oklch(76% 0.015 257)", "oklch(88% 0.01 257)", "oklch(95% 0.005 257)"]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e5e7eb",
+        "tonalRamp": ["oklch(15% 0.01 255)", "oklch(27% 0.01 255)", "oklch(39% 0.01 255)", "oklch(51% 0.01 255)", "oklch(63% 0.01 255)", "oklch(75% 0.008 255)", "oklch(92% 0.005 255)", "oklch(98% 0.003 255)"]
+      },
+      "code-slate": {
+        "role": "neutral",
+        "displayName": "Code Slate",
+        "canonical": "#1f2937",
+        "tonalRamp": ["oklch(15% 0.02 257)", "oklch(28% 0.03 257)", "oklch(40% 0.03 257)", "oklch(52% 0.025 257)", "oklch(64% 0.02 257)", "oklch(76% 0.015 257)", "oklch(88% 0.01 257)", "oklch(95% 0.005 257)"]
+      },
+      "on-accent": {
+        "role": "neutral",
+        "displayName": "On Accent",
+        "canonical": "#ffffff",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(27% 0 0)", "oklch(39% 0 0)", "oklch(51% 0 0)", "oklch(63% 0 0)", "oklch(75% 0 0)", "oklch(87% 0 0)", "oklch(100% 0 0)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Slide h1; the projected headline. Themeable via --h1-size/--h1-weight/--h1-tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Slide h2 and section leads." },
+      "title": { "displayName": "Title", "purpose": "Slide h3; rendered in Ink Muted." },
+      "body": { "displayName": "Body", "purpose": "Slide paragraphs and lists on an 18px page base." },
+      "label": { "displayName": "Label", "purpose": "Footers, slide counters, card metadata." },
+      "mono": { "displayName": "Mono", "purpose": "Code inline and blocks; vendored highlight.js does the coloring." }
+    },
+    "shadows": [
+      { "name": "stage-lift", "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1)", "purpose": "Slides and presentation cards at rest; the screen lifted off the booth wall." },
+      { "name": "card-hover", "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)", "purpose": "Card responding to attention." },
+      { "name": "nav-float", "value": "0 10px 25px -5px rgba(0, 0, 0, 0.1)", "purpose": "The fixed slide-navigation pill; highest resting surface." }
+    ],
+    "motion": [
+      { "name": "ease-state", "value": "0.2s ease", "purpose": "Hover/focus state changes on buttons, cards, links." },
+      { "name": "slide-transition", "value": "300ms ease", "purpose": "Deckset fade and push keyframes between slides; disabled under prefers-reduced-motion." },
+      { "name": "slide-entrance", "value": "0.3s ease-out", "purpose": "slideIn: fade + 20px rise when a slide becomes active." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "480px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Slide navigation control; pill-shaped Cue Blue fill.",
+      "html": "<button class=\"ds-btn-primary\">Next</button>",
+      "css": ".ds-btn-primary { background: var(--color-accent, #3b82f6); color: var(--color-on-accent, #ffffff); border: none; border-radius: 1.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s; } .ds-btn-primary:hover { background: var(--color-accent-hover, #2563eb); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #3b82f6); outline-offset: 2px; } .ds-btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }"
+    },
+    {
+      "name": "Presentation Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Homepage deck tile: 16:9 preview above title and metadata.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-preview\"></div><div class=\"ds-card-body\"><h3 class=\"ds-card-title\">Docker &amp; Kubernetes 101</h3><p class=\"ds-card-meta\">24 slides · Updated 2026-06-02</p></div></div>",
+      "css": ".ds-card { background: var(--color-canvas, #ffffff); border-radius: 0.5rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease; max-width: 320px; } .ds-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); } .ds-card-preview { aspect-ratio: 16 / 9; background: var(--color-surface-1, #f8fafc); } .ds-card-body { padding: 1.5rem; } .ds-card-title { margin: 0 0 0.5rem 0; font-size: 1.25rem; font-weight: 600; color: var(--color-ink, #1f2937); } .ds-card-meta { margin: 0; font-size: 0.875rem; color: var(--color-ink-subtle, #6b7280); }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Homepage deck filter with leading icon.",
+      "html": "<div class=\"ds-input-wrap\"><svg class=\"ds-input-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"/></svg><input class=\"ds-input-search\" type=\"text\" placeholder=\"Search presentations...\"></div>",
+      "css": ".ds-input-wrap { position: relative; display: inline-block; } .ds-input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-ink-subtle, #6b7280); pointer-events: none; } .ds-input-search { width: 16rem; padding: 0.5rem 1rem 0.5rem 2.5rem; border: 1px solid var(--color-hairline, #e5e7eb); border-radius: 0.375rem; font-size: 0.875rem; color: var(--color-ink, #1f2937); background: var(--color-canvas, #ffffff); } .ds-input-search:focus { outline: none; box-shadow: 0 0 0 2px var(--color-accent, #3b82f6); border-color: transparent; }"
+    },
+    {
+      "name": "Slide Navigation Pill",
+      "kind": "nav",
+      "refersTo": "button-primary",
+      "description": "Fixed bottom-center floating control cluster on presentation pages.",
+      "html": "<div class=\"ds-nav-pill\"><button class=\"ds-nav-btn\">Previous</button><span class=\"ds-nav-counter\">3 / 24</span><button class=\"ds-nav-btn\">Next</button></div>",
+      "css": ".ds-nav-pill { display: inline-flex; gap: 0.5rem; align-items: center; background: var(--color-canvas, #ffffff); border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 0.5rem; } .ds-nav-btn { background: var(--color-accent, #3b82f6); color: var(--color-on-accent, #ffffff); border: none; border-radius: 1.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s; } .ds-nav-btn:hover { background: var(--color-accent-hover, #2563eb); } .ds-nav-counter { padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; color: var(--color-ink, #374151); }"
+    },
+    {
+      "name": "Slide Number Chip",
+      "kind": "chip",
+      "refersTo": "card",
+      "description": "Corner slide counter overlaid on the slide surface.",
+      "html": "<span class=\"ds-slide-number\"><span class=\"ds-slide-current\">3</span><span class=\"ds-slide-sep\">/</span><span class=\"ds-slide-total\">24</span></span>",
+      "css": ".ds-slide-number { display: inline-block; background: rgba(0, 0, 0, 0.7); color: #ffffff; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; } .ds-slide-current { font-weight: 600; } .ds-slide-sep { margin: 0 0.25rem; opacity: 0.7; } .ds-slide-total { opacity: 0.8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Projection Booth",
+    "overview": "This site is the booth, and the decks are the show. Every visible surface belongs to one of two worlds: the stage (slides, rendered at a strict 16:9, lifted off the page on soft shadow) or the machinery (nav, cards, chrome), which stays engineered, quiet, and exact so the light falls on the work. The system serves a portfolio whose claim is \"the archive itself is the evidence\": chrome precision is itself part of the pitch. The whole visual layer runs through a token contract. Theme stylesheets define only :root custom properties (16 color roles, 3 font stacks, heading scale, radii); base CSS consumes var(--…) and nothing else. Sixteen themes (light, dark, minimal, plus 13 compiled from design-md/) swap through a single stylesheet link at runtime.",
+    "keyCharacteristics": [
+      "Two-world discipline: luminous stage, quiet machinery",
+      "Strict 16:9 slide geometry at every viewport",
+      "One accent color, spent on interaction only",
+      "Theme-proof: every surface styleable through the token contract",
+      "Motion as stagecraft: slide transitions, not decoration"
+    ],
+    "rules": [
+      { "name": "The Token Contract Rule", "body": "Base CSS never hardcodes a color. Every color is var(--color-…, fallback), so all 16 themes restyle the site without touching a selector. A hex value outside a theme file is a defect.", "section": "colors" },
+      { "name": "The Cue Rule", "body": "Cue Blue is reserved for things a visitor can do. Never use it as decoration, background wash, or emphasis on static text.", "section": "colors" },
+      { "name": "The Fit Ceiling Rule", "body": "[fit] headers may scale to 12rem inside a slide, because a slide is a stage. Chrome typography never exceeds Display scale.", "section": "typography" },
+      { "name": "The Two Layers Rule", "body": "Only the stage (slides, cards) and the nav pill cast shadows. Everything else is flat. A third shadow tier means something is on the wrong layer.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do route every color, font, and radius through the token contract (--color-…, --font-…, --radius-…); test changes in at least light, dark, and one compiled design-md theme.",
+      "Do keep slides at exact 16:9 at every breakpoint; content adapts inside the frame, never the frame.",
+      "Do keep body contrast at or above 4.5:1 in every theme (WCAG 2.1 AA), including text over background images via the readability overlay.",
+      "Do give every animation a prefers-reduced-motion: reduce fallback, as the slide transitions already do.",
+      "Do keep the site self-contained: vendored assets, system fonts, zero CDN calls at view time."
+    ],
+    "donts": [
+      "Don't ship corporate slideware: no PowerPoint-export chrome, no SharePoint-era archive tables.",
+      "Don't drift into the generic SaaS landing (hero, three feature cards, testimonial strip) on the homepage; it is an archive shelf, not a pitch page.",
+      "Don't leave surfaces at bare-docs plainness: unstyled lists that undersell the work are the named failure mode.",
+      "Don't spend Cue Blue on decoration; it marks interaction only (The Cue Rule).",
+      "Don't add gradient chrome or badges; the existing enhanced-indicator gradient is legacy, not license.",
+      "Don't hardcode a hex outside a theme file, ever (The Token Contract Rule)."
+    ]
+  }
+}

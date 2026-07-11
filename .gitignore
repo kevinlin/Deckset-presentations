@@ -284,3 +284,6 @@ sample_output/
 
 # Git worktrees
 .worktrees/
+
+# Impeccable live
+.impeccable/live/

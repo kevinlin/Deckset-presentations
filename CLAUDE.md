@@ -90,3 +90,10 @@ Supported Deckset syntax (see `.cursor/rules/deckset-syntax.mdc` for the full li
 `.github/workflows/generate-website.yml` runs on push/PR to `main`/`master`: runs pytest + Jest, then generates and deploys `site/` to GitHub Pages. Repo: https://github.com/kevinlin/Deckset-presentations
 
 Branch naming: `feature/`, `fix/`, `site/`, `test/`. Conventional commit messages.
+
+## Design Context
+
+The generated website is a brand-register surface (a talk portfolio, not a neutral tool). Before UI work, read:
+
+- `PRODUCT.md` — register (brand), audience (peers/evaluators), positioning ("a working portfolio of serious technical talks; the archive itself is the evidence"), anti-references (corporate slideware, generic SaaS landing, bare docs site), WCAG 2.1 AA target.
+- `DESIGN.md` — visual spec ("The Projection Booth"): token-contract rule (all colors/fonts/radii via `var(--…)`, themeable across 16 themes), Cue Blue accent reserved for interaction, strict 16:9 slides, lifted-stage elevation.
