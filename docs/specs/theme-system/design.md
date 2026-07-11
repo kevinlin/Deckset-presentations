@@ -1,7 +1,7 @@
 # Theme System — design-md Designs
 
 Date: 2026-07-12
-Status: draft
+Status: implemented
 Related: `docs/specs/v2/design.md` (Task 18 built the light/dark/minimal themes this extends)
 
 ## Requirement
