@@ -35,8 +35,6 @@ uv run python main.py --validate
 uv run python main.py --verbose
 ```
 
-The generated `site/` directory is a self-contained static website with no CDN dependencies — it works fully offline.
-
 ## Deck folder conventions
 
 Each presentation lives in its own folder at the repo root:
