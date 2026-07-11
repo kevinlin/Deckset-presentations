@@ -4,7 +4,7 @@
 
 **Status:** All 21 tasks completed and merged to `master` (2026-07-11).
 
-**Goal:** Deliver v2 per `docs/specs/v2/requirements.md` and `design.md`: common-use Deckset parity on a python-markdown rendering core, themes/transitions/print, self-hosted assets, restructured output, architecture cleanup.
+**Goal:** Deliver v2 per `docs/specs/03-markdown-converter-v2/requirements.md` and `design.md`: common-use Deckset parity on a python-markdown rendering core, themes/transitions/print, self-hosted assets, restructured output, architecture cleanup.
 
 **Architecture:** Strangler rewrite inside the existing flat-module pipeline (Scanner → Parser → Processor → Renderer → Jinja → Generator). Regression harness lands first and gates every later change.
 
@@ -16,7 +16,7 @@
 - Graceful degradation everywhere: a failing deck logs and skips, never kills the build.
 - Every task: run `uv run pytest` (and `npm test` when JS touched) before commit. Conventional commit messages.
 - Regression harness (Task 1) must pass at the end of every task. When a task intentionally changes output structure, update harness assertions in the same commit and say so in the commit body.
-- Requirement references (R1-R11) point at `docs/specs/v2/requirements.md`.
+- Requirement references (R1-R11) point at `docs/specs/03-markdown-converter-v2/requirements.md`.
 
 ---
 
@@ -198,7 +198,7 @@
 
 ### Task 21: Docs + final sweep
 - [x] Rewrite `README.md`: what the tool is (repo scan → static site → GitHub Pages), commands, deck folder conventions, supported syntax pointer, theme usage.
-- [x] Mark v1 spec (`docs/requirements/…`) as superseded by `docs/specs/v2/`; note non-goal behaviors (stepped highlights, autoadvance, build-lists) in README.
+- [x] Mark v1 spec (`docs/requirements/…`) as superseded by `docs/specs/03-markdown-converter-v2/`; note non-goal behaviors (stepped highlights, autoadvance, build-lists) in README.
 - [x] Final dead-code grep sweep; confirm coverage: `uv run pytest --cov=. --cov-report=term` — no root module below 70%.
 - Files: `README.md`, `docs/requirements/Deckset-markdown-to-HTML-generator-specificaiton.md` (supersession note only), misc.
 - Verify: full pytest + Jest + `--validate` + fresh site build; CI green on PR.
@@ -237,7 +237,7 @@
 - Fallback (when no preview was found earlier) now copies the first folder image into `site/<slug>/preview.<ext>` — same layout as FileManager — and sets the matching relative path.
 - Updated `tests/test_generator.py::test_process_preview_images` to verify: FileManager paths preserved, fallback copies correctly, empty folders remain None.
 
-**Files:** `generator.py`, `tests/test_generator.py`, `docs/specs/v2/design.md`.
+**Files:** `generator.py`, `tests/test_generator.py`, `docs/specs/03-markdown-converter-v2/design.md`.
 
 **Verification:** All 381 Python tests + 53 Jest tests pass; local build shows 16/17 presentations with preview images (the one without has no images in its source folder).
 
@@ -251,9 +251,9 @@
 - Updated `[tool.hatch.build.targets.wheel]` packages to `["src"]`.
 - Updated `.github/workflows/generate-website.yml`: CI now runs `python src/main.py` and no longer needs explicit `PYTHONPATH` env vars.
 - Fixed `tests/test_enhanced_setup.py` standalone-execution `sys.path` to point at `src/`.
-- Updated `docs/specs/v2/design.md` to document the `src/` module layout.
+- Updated `docs/specs/03-markdown-converter-v2/design.md` to document the `src/` module layout.
 
-**Files:** `src/*.py` (moved), `pyproject.toml`, `.github/workflows/generate-website.yml`, `tests/test_enhanced_setup.py`, `docs/specs/v2/design.md`.
+**Files:** `src/*.py` (moved), `pyproject.toml`, `.github/workflows/generate-website.yml`, `tests/test_enhanced_setup.py`, `docs/specs/03-markdown-converter-v2/design.md`.
 
 **Verification:** All 381 Python tests + 53 Jest tests pass; site generation produces 17 presentations with 0 errors; `--validate` exits 0.
 
@@ -273,8 +273,8 @@
 - Moved the `<aside class="speaker-notes">` outside the `<section class="slide">` in `templates/slide.html`, making it a sibling element paired via `data-for-slide="{{ slide.index }}"`.
 - Updated `slide-viewer.js`: added `_updateNotesVisibility()` that shows only the active slide's notes when toggled on. Called from both `toggleNotes()` and `showSlide()` so note visibility stays correct during navigation.
 - Updated `tests/test_slide_processor.py::test_process_slide_with_autoscale` to assert the content is *not* wrapped in a div (matching the corrected behavior).
-- Updated `docs/specs/v2/design.md` to document both architectural decisions.
+- Updated `docs/specs/03-markdown-converter-v2/design.md` to document both architectural decisions.
 
-**Files:** `src/slide_processor.py`, `templates/slide.html`, `templates/assets/js/slide-viewer.js`, `tests/test_slide_processor.py`, `docs/specs/v2/design.md`.
+**Files:** `src/slide_processor.py`, `templates/slide.html`, `templates/assets/js/slide-viewer.js`, `tests/test_slide_processor.py`, `docs/specs/03-markdown-converter-v2/design.md`.
 
 **Verification:** All 381 Python tests + 53 Jest tests pass; local site build of all 17 presentations produces 0 errors; slide 8 renders formatted HTML (heading, ordered list, bold); slide 12 speaker notes appear below the slide when toggled on.

@@ -2,7 +2,7 @@
 
 Date: 2026-07-11
 Status: implemented
-Requirements: `docs/specs/v2/requirements.md`
+Requirements: `docs/specs/03-markdown-converter-v2/requirements.md`
 
 ## Background: gap analysis (2026-07-11)
 

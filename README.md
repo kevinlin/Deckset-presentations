@@ -161,7 +161,7 @@ The following Deckset features are intentionally not implemented:
 
 ## Specifications
 
-- Current: [`docs/specs/v2/`](docs/specs/v2/) — requirements, design, and task plan for the v2 rewrite.
+- Current: [`docs/specs/03-markdown-converter-v2/`](docs/specs/03-markdown-converter-v2/) — requirements, design, and task plan for the v2 rewrite.
 - Legacy: [`docs/requirements/`](docs/requirements/) — original v1 spec (superseded by v2).
 
 ## License

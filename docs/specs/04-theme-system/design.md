@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 Status: draft
-Related: `docs/specs/v2/design.md` (Task 18 built the light/dark/minimal themes this extends)
+Related: `docs/specs/04-theme-system/design.md` (Task 18 built the light/dark/minimal themes this extends)
 
 ## Requirement
 

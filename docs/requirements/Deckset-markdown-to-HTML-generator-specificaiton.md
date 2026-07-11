@@ -1,6 +1,6 @@
 # Deckset Markdown to HTML Slide Generator Specification
 
-> **Superseded.** This v1 spec described a single-file markdown-to-HTML converter. The project has since grown into a multi-presentation static-site generator. See [`docs/specs/v2/requirements.md`](../specs/v2/requirements.md) for the current requirements and [`docs/specs/v2/design.md`](../specs/v2/design.md) for the architecture.
+> **Superseded.** This v1 spec described a single-file markdown-to-HTML converter. The project has since grown into a multi-presentation static-site generator. See [`docs/specs/03-markdown-converter-v2/requirements.md`](../specs/03-markdown-converter-v2/requirements.md) for the current requirements and [`docs/specs/03-markdown-converter-v2/design.md`](../specs/03-markdown-converter-v2/design.md) for the architecture.
 
 ## Overview
 
