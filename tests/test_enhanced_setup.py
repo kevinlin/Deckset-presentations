@@ -8,9 +8,9 @@ and can be imported and instantiated correctly.
 import sys
 import os
 
-# Add parent directory to path for standalone execution
+# Add src directory to path for standalone execution
 if __name__ == "__main__":
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 
 def test_enhanced_models_import():

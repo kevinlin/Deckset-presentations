@@ -54,9 +54,7 @@ jobs:
       
       - name: Run Python tests
         run: |
-          uv run pytest --verbose --tb=short --cov=. --cov-report=xml --cov-report=html --junitxml=pytest-results.xml
-        env:
-          PYTHONPATH: .
+          uv run pytest --verbose --tb=short --cov=src --cov-report=xml --cov-report=html --junitxml=pytest-results.xml
       
       - name: Run JavaScript tests
         run: npm run test:js:coverage
@@ -148,13 +146,11 @@ jobs:
       
       - name: Validate generator configuration
         run: |
-          python main.py --validate
+          python src/main.py --validate
       
       - name: Generate website
         run: |
-          python main.py --verbose --output site
-        env:
-          PYTHONPATH: .
+          python src/main.py --verbose --output site
       
       - name: Check generated files
         run: |
@@ -214,7 +210,7 @@ jobs:
             2. **For test failures:** Run tests locally with \`uv run pytest\` and \`npm run test:js\`
             3. Verify that all presentation markdown files are valid
             4. Ensure all referenced images exist in their respective folders
-            5. Test the generation locally with: \`python main.py --verbose\`
+            5. Test the generation locally with: \`python src/main.py --verbose\`
             
             This issue was automatically created by the GitHub Actions workflow.
             `;

@@ -240,3 +240,19 @@
 **Files:** `generator.py`, `tests/test_generator.py`, `docs/specs/v2/design.md`.
 
 **Verification:** All 381 Python tests + 53 Jest tests pass; local build shows 16/17 presentations with preview images (the one without has no images in its source folder).
+
+### 2026-07-11: Move Python source files to `src/` directory
+
+**Problem:** All 13 Python application modules lived at the repository root alongside presentation folders, tests, config files, and docs. This made the project layout cluttered and mixed application code with content.
+
+**Fix:**
+- Created `src/` directory and moved all Python source modules into it: `main.py`, `scanner.py`, `deckset_parser.py`, `enhanced_processor.py`, `enhanced_templates.py`, `file_manager.py`, `generator.py`, `markdown_renderer.py`, `math_processor.py`, `media_processor.py`, `models.py`, `code_processor.py`, `slide_processor.py`.
+- Added `[tool.pytest.ini_options]` to `pyproject.toml` with `pythonpath = ["src"]` and `testpaths = ["tests"]` so pytest resolves imports from the new location.
+- Updated `[tool.hatch.build.targets.wheel]` packages to `["src"]`.
+- Updated `.github/workflows/generate-website.yml`: CI now runs `python src/main.py` and no longer needs explicit `PYTHONPATH` env vars.
+- Fixed `tests/test_enhanced_setup.py` standalone-execution `sys.path` to point at `src/`.
+- Updated `docs/specs/v2/design.md` to document the `src/` module layout.
+
+**Files:** `src/*.py` (moved), `pyproject.toml`, `.github/workflows/generate-website.yml`, `tests/test_enhanced_setup.py`, `docs/specs/v2/design.md`.
+
+**Verification:** All 381 Python tests + 53 Jest tests pass; site generation produces 17 presentations with 0 errors; `--validate` exits 0.

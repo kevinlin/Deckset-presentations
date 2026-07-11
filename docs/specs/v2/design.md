@@ -16,7 +16,7 @@ Approach chosen: **strangler rewrite** inside the existing repo. Keep the pipeli
 
 ## Architecture
 
-Pipeline shape and flat module layout are kept:
+Pipeline shape is kept; modules now live under `src/`:
 
 ```
 Scanner → DecksetParser → Processor → MarkdownRenderer → Jinja templates → Generator → site/
@@ -24,15 +24,17 @@ Scanner → DecksetParser → Processor → MarkdownRenderer → Jinja templates
 
 ### Module responsibilities
 
-- **`scanner.py`** — unchanged role. Fix slide counting (frontmatter miscount), remove dead frontmatter-title code.
-- **`deckset_parser.py`** — directive parsing only. Strips frontmatter and `<!-- -->` blocks, parses global commands, splits slides (`---` and `slide-dividers:`, composable), parses per-slide commands, extracts speaker notes (multi-line: a `^` line starts a note that continues until a blank line) and media tokens. Output per slide: body markdown text + directive set + media references. No HTML generation.
-- **`markdown_renderer.py`** (new) — one configured python-markdown instance rendering slide body text to HTML. Extensions: `tables`, `footnotes` (scoped per slide, duplicate-ID warning), `pymdownx.tilde` (strikethrough/sub), `pymdownx.caret` (sup), `nl2br` behavior for manual line breaks, custom inline processors for emoji (via the `emoji` package) and `[fit]` heading markers, blockquote attribution treeprocessor (`-- Author` → `<cite>`). The sanitizer allowlist grows to cover `sub/sup/br/cite/mark`.
-- **`enhanced_processor.py`** — orchestration only. Each concern (media, code, math, footnotes, emoji, fit) runs exactly once per slide. The inline-figure and readability-filter heuristics survive but run inside their owning processor, not as extra passes.
-- **`media_processor.py`** — gains: multiple backgrounds per slide (model field becomes a list), global `background-image:` fallback, image-grid assembly (consecutive inline image lines → grid rows), explicit `filtered`/`original` handling (heuristic only when neither present).
-- **`code_processor.py`** — associates each `[.code-highlight]` directive with the block it precedes. Server-side emits plain `<pre><code class="language-x">` with line spans for highlighted lines; tokenization is client-side highlight.js only (kills double processing).
-- **`enhanced_templates.py`** — shrinks to a thin Jinja engine: loads templates, exposes filters, renders pages. All 14 f-string HTML builders move to Jinja macros under `templates/macros/` (media.html, columns.html, footnotes.html, chrome.html for footer/slide-number). Changing markup means editing templates.
-- **`generator.py` / `file_manager.py`** — new output layout (below), per-deck media dirs preserving relative subpaths (fixes collisions), `--single` writes only its own deck's files, vendored asset copying.
-- **`models.py`** — single model set: `PresentationInfo`, `EnhancedPresentation`, `ProcessedSlide`, config classes. Delete `ProcessedPresentation`, basic `Slide`, all three interface ABCs. One exception hierarchy under `GeneratorError`; `DecksetParsingError`, `MediaProcessingError`, `SlideProcessingError` move under it; the duplicate class in `deckset_parser.py` is deleted.
+All application modules live in `src/`. pytest discovers them via `pythonpath = ["src"]` in `pyproject.toml`; CI and CLI invoke `python src/main.py`.
+
+- **`src/scanner.py`** — unchanged role. Fix slide counting (frontmatter miscount), remove dead frontmatter-title code.
+- **`src/deckset_parser.py`** — directive parsing only. Strips frontmatter and `<!-- -->` blocks, parses global commands, splits slides (`---` and `slide-dividers:`, composable), parses per-slide commands, extracts speaker notes (multi-line: a `^` line starts a note that continues until a blank line) and media tokens. Output per slide: body markdown text + directive set + media references. No HTML generation.
+- **`src/markdown_renderer.py`** — one configured python-markdown instance rendering slide body text to HTML. Extensions: `tables`, `footnotes` (scoped per slide, duplicate-ID warning), `pymdownx.tilde` (strikethrough/sub), `pymdownx.caret` (sup), `nl2br` behavior for manual line breaks, custom inline processors for emoji (via the `emoji` package) and `[fit]` heading markers, blockquote attribution treeprocessor (`-- Author` → `<cite>`). The sanitizer allowlist grows to cover `sub/sup/br/cite/mark`.
+- **`src/enhanced_processor.py`** — orchestration only. Each concern (media, code, math, footnotes, emoji, fit) runs exactly once per slide. The inline-figure and readability-filter heuristics survive but run inside their owning processor, not as extra passes.
+- **`src/media_processor.py`** — gains: multiple backgrounds per slide (model field becomes a list), global `background-image:` fallback, image-grid assembly (consecutive inline image lines → grid rows), explicit `filtered`/`original` handling (heuristic only when neither present).
+- **`src/code_processor.py`** — associates each `[.code-highlight]` directive with the block it precedes. Server-side emits plain `<pre><code class="language-x">` with line spans for highlighted lines; tokenization is client-side highlight.js only (kills double processing).
+- **`src/enhanced_templates.py`** — shrinks to a thin Jinja engine: loads templates, exposes filters, renders pages. All 14 f-string HTML builders move to Jinja macros under `templates/macros/` (media.html, columns.html, footnotes.html, chrome.html for footer/slide-number). Changing markup means editing templates.
+- **`src/generator.py` / `src/file_manager.py`** — new output layout (below), per-deck media dirs preserving relative subpaths (fixes collisions), `--single` writes only its own deck's files, vendored asset copying.
+- **`src/models.py`** — single model set: `PresentationInfo`, `EnhancedPresentation`, `ProcessedSlide`, config classes. Delete `ProcessedPresentation`, basic `Slide`, all three interface ABCs. One exception hierarchy under `GeneratorError`; `DecksetParsingError`, `MediaProcessingError`, `SlideProcessingError` move under it; the duplicate class in `deckset_parser.py` is deleted.
 
 ### Data flow per presentation
 
@@ -59,6 +61,18 @@ The homepage template renders `<img src="{{ preview_image }}">` directly, so pat
 - Viewer JS keeps navigation/notes/fit-text/readability features; adds transition handling driven by `data-transition` (`fade`, `push`); duplicated homepage-search code collapses to one implementation.
 - highlight.js and MathJax are vendored under `site/assets/vendor/` at pinned versions.
 - Print CSS verified with a real browser (one slide per page, notes optional).
+
+## Project layout
+
+```
+src/                          # All Python application modules
+  main.py  scanner.py  deckset_parser.py  enhanced_processor.py
+  markdown_renderer.py  media_processor.py  code_processor.py
+  math_processor.py  slide_processor.py  enhanced_templates.py
+  generator.py  file_manager.py  models.py
+templates/                    # Jinja2 templates and static assets
+tests/                        # pytest + Jest test suites
+```
 
 ## Output layout
 

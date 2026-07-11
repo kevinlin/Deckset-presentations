@@ -14,18 +14,18 @@ Python 3.12+, managed with **uv**. Runtime deps: `jinja2`, `markdown`. A JavaScr
 uv sync                              # install deps (creates .venv)
 
 # Run the generator
-uv run python main.py                # scan cwd, generate site/
-uv run python main.py --root <dir>   # scan a specific directory
-uv run python main.py --output <dir> # custom output dir (default: site)
-uv run python main.py --single <folder>   # build one presentation only
-uv run python main.py --validate     # validate config and exit
-uv run python main.py --verbose      # debug logging
+uv run python src/main.py                # scan cwd, generate site/
+uv run python src/main.py --root <dir>   # scan a specific directory
+uv run python src/main.py --output <dir> # custom output dir (default: site)
+uv run python src/main.py --single <folder>   # build one presentation only
+uv run python src/main.py --validate     # validate config and exit
+uv run python src/main.py --verbose      # debug logging
 
 # Python tests (pytest)
 uv run pytest                        # all Python tests
 uv run pytest tests/test_scanner.py  # single file
 uv run pytest tests/test_scanner.py::TestScanner::test_name   # single test
-uv run pytest --cov=. --cov-report=html                       # coverage
+uv run pytest --cov=src --cov-report=html                      # coverage
 
 # JavaScript tests (Jest) — only covers site/templates JS assets
 npm test                             # alias: npm run test:js
@@ -37,24 +37,26 @@ Add deps with `uv add <pkg>` (runtime) or `uv add --dev <pkg>`.
 
 ## Architecture
 
-Modular pipeline, orchestrated by `DecksetWebsiteGenerator` in `main.py`:
+Modular pipeline, orchestrated by `DecksetWebsiteGenerator` in `src/main.py`:
 
 ```
 Scanner → Parser → EnhancedProcessor → [specialized processors] → Templates → Generator → static site
 ```
 
-- **`scanner.py`** (`PresentationScanner`) — discovers presentation folders. A folder is a presentation if it contains a `.md` file. When several exist, it prefers `<folder-name>.md`, else the first alphabetically. `exclude_folders` in `GeneratorConfig` filters folders out.
-- **`deckset_parser.py`** (`DecksetParser`) — parses Deckset global commands and per-slide commands, splits slides on `---`.
-- **`enhanced_processor.py`** (`EnhancedPresentationProcessor`) — the orchestrator. `process_presentation()` drives the parse + all specialized processors and returns an `EnhancedPresentation`.
+All application modules live in `src/`. pytest resolves them via `pythonpath = ["src"]` in `pyproject.toml`.
+
+- **`src/scanner.py`** (`PresentationScanner`) — discovers presentation folders. A folder is a presentation if it contains a `.md` file. When several exist, it prefers `<folder-name>.md`, else the first alphabetically. `exclude_folders` in `GeneratorConfig` filters folders out.
+- **`src/deckset_parser.py`** (`DecksetParser`) — parses Deckset global commands and per-slide commands, splits slides on `---`.
+- **`src/enhanced_processor.py`** (`EnhancedPresentationProcessor`) — the orchestrator. `process_presentation()` drives the parse + all specialized processors and returns an `EnhancedPresentation`.
 - **Specialized processors** (each owns one concern):
-  - `slide_processor.py` — slide content, columns, layout
-  - `media_processor.py` — images/video/audio and placement modifiers
-  - `code_processor.py` — syntax highlighting, line emphasis
-  - `math_processor.py` — LaTeX math
-- **`enhanced_templates.py`** — template engine. **Note:** slide/page/homepage HTML is generated from string templates defined *inside this module*, not only from the files in `templates/`. When changing rendered HTML, check here first.
-- **`generator.py`** (`WebPageGenerator`) — writes presentation pages, the homepage, and copies assets.
-- **`file_manager.py`** — filesystem operations, asset copying, web path resolution.
-- **`models.py`** — all `@dataclass` data models, the config classes, and the exception hierarchy. Read this first to understand data flow.
+  - `src/slide_processor.py` — slide content, columns, layout
+  - `src/media_processor.py` — images/video/audio and placement modifiers
+  - `src/code_processor.py` — syntax highlighting, line emphasis
+  - `src/math_processor.py` — LaTeX math
+- **`src/enhanced_templates.py`** — template engine. **Note:** slide/page/homepage HTML is generated from string templates defined *inside this module*, not only from the files in `templates/`. When changing rendered HTML, check here first.
+- **`src/generator.py`** (`WebPageGenerator`) — writes presentation pages, the homepage, and copies assets.
+- **`src/file_manager.py`** — filesystem operations, asset copying, web path resolution.
+- **`src/models.py`** — all `@dataclass` data models, the config classes, and the exception hierarchy. Read this first to understand data flow.
 
 ### Key data models (`models.py`)
 
@@ -66,7 +68,7 @@ Custom hierarchy rooted at `GeneratorError` (`ScanningError`, `PresentationProce
 
 ## Conventions
 
-- **Flat module layout** at repo root (no `src/` package).
+- **All application modules under `src/`** (not a package — no `__init__.py` — just a source directory).
 - Interfaces are `ABC` + `@abstractmethod` (see `DecksetParserInterface`, `MediaProcessorInterface`, `SlideProcessorInterface` in `models.py`).
 - Use `pathlib.Path` for all file ops; open files with explicit `encoding='utf-8'`.
 - Each component sets up `self.logger = logging.getLogger(...)`; use it with contextual messages.
