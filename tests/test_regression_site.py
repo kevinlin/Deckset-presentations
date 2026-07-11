@@ -59,6 +59,13 @@ def _slug(folder_name: str) -> str:
     return "/".join(slugged)
 
 
+def _load_homepage(site_dir: Path) -> BeautifulSoup:
+    """Load and parse the homepage index.html."""
+    html_path = site_dir / "index.html"
+    assert html_path.exists(), f"Missing homepage: {html_path}"
+    return BeautifulSoup(html_path.read_text(encoding="utf-8"), "html.parser")
+
+
 def _load_presentation(site_dir: Path, folder_name: str) -> BeautifulSoup:
     slug = _slug(folder_name)
     html_path = site_dir / slug / "index.html"
@@ -256,3 +263,36 @@ class TestSlideCounts:
         assert len(slides) >= 2, (
             f"Big text should have at least 2 slides, got {len(slides)}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Theme system (Task 4+)
+# ---------------------------------------------------------------------------
+class TestThemeSystem:
+    """Verify theme compilation, manifest, and CSS links."""
+
+    def test_themes_manifest_exists(self, site_dir):
+        manifest = site_dir / "assets" / "css" / "themes" / "themes.json"
+        assert manifest.exists(), "themes.json manifest missing"
+
+    def test_themes_manifest_has_16_entries(self, site_dir):
+        import json
+        manifest = site_dir / "assets" / "css" / "themes" / "themes.json"
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        assert len(data) >= 16, f"Expected >=16 manifest entries, got {len(data)}"
+
+    def test_theme_css_files_compiled(self, site_dir):
+        css_dir = site_dir / "assets" / "css" / "themes"
+        css_files = list(css_dir.glob("*.css"))
+        assert len(css_files) >= 16, f"Expected >=16 theme CSS files, got {len(css_files)}"
+
+    def test_homepage_links_theme_css(self, site_dir):
+        soup = _load_homepage(site_dir)
+        link = soup.find("link", id="theme-css")
+        assert link is not None, "Homepage missing #theme-css link"
+        assert "themes/light.css" in link["href"]
+
+    def test_presentation_page_links_theme_css(self, site_dir):
+        soup = _load_presentation(site_dir, "01-fix-messaging")
+        link = soup.find("link", id="theme-css")
+        assert link is not None, "Presentation page missing #theme-css link"

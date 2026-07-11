@@ -121,3 +121,10 @@ class TestCLIArgParsing:
                 with pytest.raises(SystemExit) as exc_info:
                     main()
                 assert exc_info.value.code == 1
+
+    def test_theme_cli_flag(self):
+        with patch(
+            "sys.argv", ["main.py", "--theme", "dark", "--validate"]
+        ):
+            with pytest.raises(SystemExit):
+                main()

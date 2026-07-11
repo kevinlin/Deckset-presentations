@@ -380,5 +380,30 @@ class TestHomepage(unittest.TestCase):
         self.assertIn("My Talk", html)
 
 
+class TestThemeRegistry(unittest.TestCase):
+    """Tests for set_theme_registry and resolve_theme."""
+
+    def setUp(self):
+        self.engine = _engine()
+        self.engine.set_theme_registry(
+            {"light", "dark", "minimal", "linear-app"}, "dark"
+        )
+
+    def test_resolve_known_slug(self):
+        assert self.engine.resolve_theme("linear-app") == "linear-app"
+
+    def test_resolve_none_returns_default(self):
+        assert self.engine.resolve_theme(None) == "dark"
+
+    def test_resolve_unknown_returns_default(self):
+        import logging
+        with self.assertLogs(level=logging.WARNING):
+            result = self.engine.resolve_theme("nope")
+        assert result == "dark"
+
+    def test_resolve_builtin(self):
+        assert self.engine.resolve_theme("minimal") == "minimal"
+
+
 if __name__ == "__main__":
     unittest.main()

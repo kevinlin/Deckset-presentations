@@ -5,6 +5,7 @@ This module handles the generation of HTML pages for individual presentations
 and the homepage with presentation listings.
 """
 
+import json
 import os
 import logging
 import shutil
@@ -21,6 +22,7 @@ from models import (
 )
 from enhanced_templates import EnhancedTemplateEngine
 from file_manager import FileManager
+from theme_compiler import ThemeCompiler, ThemeInfo
 
 
 class WebPageGenerator:
@@ -38,6 +40,7 @@ class WebPageGenerator:
         self.logger = logging.getLogger(__name__)
         self.logger.info("Using enhanced template engine")
         self.file_manager = FileManager(config)
+        self.theme_manifest: List[ThemeInfo] = []
 
     def generate_presentation_page(
         self,
@@ -186,12 +189,16 @@ class WebPageGenerator:
                 analytics_enabled = os.environ.get("DISABLE_ANALYTICS", "").lower() not in {"1", "true", "yes", "on"}
                 analytics_measurement_id = os.environ.get("GA_MEASUREMENT_ID", "G-7BHNP61XYB")
                 do_not_track = os.environ.get("DNT", "0") in ("1", "true", "yes", "on")
+                default_theme = self.template_manager.resolve_theme(
+                    self.config.theme
+                )
                 html_content = self.template_manager.render_homepage(
                     sorted_presentations,
                     {
                         "analytics_enabled": analytics_enabled,
                         "analytics_measurement_id": analytics_measurement_id,
                         "do_not_track": do_not_track,
+                        "default_theme": default_theme,
                     },
                 )
             except Exception as e:
@@ -323,6 +330,13 @@ class WebPageGenerator:
         self.file_manager.setup_output_directories()
 
         output_dir_path = Path(output_dir)
+
+        css_themes_dir = output_dir_path / "assets" / "css" / "themes"
+        compiler = ThemeCompiler(Path(self.config.designs_dir))
+        self.theme_manifest = compiler.compile_all(css_themes_dir)
+        self.template_manager.set_theme_registry(
+            {t.slug for t in self.theme_manifest}, self.config.theme
+        )
 
         stats = {
             "total": len(presentations),
