@@ -1,7 +1,7 @@
 # v2 Design — Deckset Website Generator
 
 Date: 2026-07-11
-Status: draft, pending review
+Status: implemented
 Requirements: `docs/specs/v2/requirements.md`
 
 ## Background: gap analysis (2026-07-11)
@@ -10,7 +10,7 @@ Audit of v1 against the original spec found three problem clusters:
 
 1. **Fidelity gaps.** Slide bodies are rendered by a hand-rolled regex parser in `enhanced_templates.py` (lines 262-397), so tables, blockquotes, strikethrough, sub/sup, h5/h6, manual line breaks, and footnote links are missing or broken. The `markdown` library is a dependency but only used for speaker notes. Several parsed configs (`theme`, `build-lists`, global `background-image`) are never rendered. Image grids exist as dead code. Emoji support is 16 hardcoded shortcodes.
 2. **Architecture debt.** Slide HTML lives in ~14 Python f-string methods; Jinja templates are thin shells. Dead models (`ProcessedPresentation`, basic `Slide`), duplicate `DecksetParsingError` classes (models.py and deckset_parser.py define different classes with the same name), three unused ABCs, math processed up to three times per slide, footnotes twice.
-3. **Bugs.** Media filename collisions (all files flatten into one folder per deck keyed by basename), `--single` deletes other decks' output during cleanup, `total_slides` never passed so `slidecount` would render "/ 1", `--validate` misses required templates, Tailwind dev CDN and highlight.js/MathJax CDNs in production pages.
+3. **Bugs.** Media filename collisions (all files flatten into one folder per deck keyed by basename), `--single` deletes other decks' output during cleanup, `total_slides` never passed so `slidecount` would render "/ 1", `--validate` misses required templates, highlight.js/MathJax CDNs in production pages.
 
 Approach chosen: **strangler rewrite** inside the existing repo. Keep the pipeline shape, replace the rendering core, phase by phase, CI green throughout. Rejected alternatives: greenfield rewrite (two codebases, stalling risk), patch-in-place (every fix fights the regex parser), markdown-it-py core (new dependency for little gain since Deckset directives live outside the markdown body).
 
@@ -45,7 +45,7 @@ Scanner → DecksetParser → Processor → MarkdownRenderer → Jinja templates
 ## Themes and viewer
 
 - Three built-in themes as CSS files (`light`, `dark`, `minimal`) sharing a base stylesheet; `theme:` picks one per deck, homepage uses the site default. Unknown names warn and fall back. A deck folder may ship `custom.css`, linked after the theme.
-- Homepage styling moves from Tailwind CDN classes to the same base CSS (small, hand-written).
+- Homepage and presentation header styling use Tailwind CSS via CDN for utility classes.
 - Viewer JS keeps navigation/notes/fit-text/readability features; adds transition handling driven by `data-transition` (`fade`, `push`); duplicated homepage-search code collapses to one implementation.
 - highlight.js and MathJax are vendored under `site/assets/vendor/` at pinned versions.
 - Print CSS verified with a real browser (one slide per page, notes optional).
