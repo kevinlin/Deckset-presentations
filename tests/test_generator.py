@@ -13,10 +13,11 @@ from unittest.mock import patch, MagicMock
 
 from models import (
     PresentationInfo,
-    Slide,
-    ProcessedPresentation,
+    ProcessedSlide,
+    EnhancedPresentation,
+    DecksetConfig,
     GeneratorConfig,
-    TemplateRenderingError
+    TemplateRenderingError,
 )
 from generator import WebPageGenerator
 
@@ -49,19 +50,20 @@ def presentation_info():
 def slides():
     """Create test slides."""
     return [
-        Slide(index=1, content="# Slide 1", notes="Notes for slide 1", image_path="test-presentation/slide1.png"),
-        Slide(index=2, content="# Slide 2", notes="Notes for slide 2", image_path="test-presentation/slide2.png"),
-        Slide(index=3, content="# Slide 3", notes="", image_path=None)
+        ProcessedSlide(index=1, content="# Slide 1", notes="Notes for slide 1"),
+        ProcessedSlide(index=2, content="# Slide 2", notes="Notes for slide 2"),
+        ProcessedSlide(index=3, content="# Slide 3", notes=""),
     ]
 
 
 @pytest.fixture
 def processed_presentation(presentation_info, slides):
     """Create a test processed presentation."""
-    return ProcessedPresentation(
+    return EnhancedPresentation(
         info=presentation_info,
         slides=slides,
-        metadata={"theme": "default"}
+        config=DecksetConfig(),
+        metadata={"theme": "default"},
     )
 
 
@@ -165,19 +167,6 @@ class TestWebPageGenerator:
         # Verify file was not created
         assert not output_path.exists()
 
-    def test_process_slide_images(self, config, processed_presentation):
-        """Test processing slide images with placeholder handling."""
-        # Setup
-        generator = WebPageGenerator(config)
-        
-        # Execute
-        generator._process_slide_images(processed_presentation)
-        
-        # Verify missing image paths are cleared (since test image files don't exist)
-        assert processed_presentation.slides[0].image_path is None
-        assert processed_presentation.slides[1].image_path is None
-        assert processed_presentation.slides[2].image_path is None
-        
     def test_process_preview_images(self, config, presentation_list, tmp_path, monkeypatch):
         """Test processing preview images with fallbacks."""
         # Setup

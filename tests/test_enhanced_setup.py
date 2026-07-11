@@ -40,22 +40,6 @@ def test_enhanced_models_import():
         assert False, f"Failed to import enhanced models: {e}"
 
 
-def test_interfaces_import():
-    """Test that interfaces can be imported."""
-    try:
-        from models import (
-            DecksetParserInterface,
-            MediaProcessorInterface,
-            SlideProcessorInterface,
-        )
-
-        print("✅ Interfaces imported successfully")
-        assert True
-    except ImportError as e:
-        print(f"❌ Failed to import interfaces: {e}")
-        assert False, f"Failed to import interfaces: {e}"
-
-
 def test_implementations_import():
     """Test that implementations can be imported."""
     try:
@@ -137,7 +121,6 @@ def run_all_tests():
 
     tests = [
         test_enhanced_models_import,
-        test_interfaces_import,
         test_implementations_import,
         test_basic_instantiation,
         test_basic_functionality,

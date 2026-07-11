@@ -13,9 +13,10 @@ from datetime import datetime
 
 from models import (
     PresentationInfo,
-    Slide,
-    ProcessedPresentation,
-    GeneratorConfig
+    ProcessedSlide,
+    EnhancedPresentation,
+    DecksetConfig,
+    GeneratorConfig,
 )
 from file_manager import FileManager
 from generator import WebPageGenerator
@@ -96,24 +97,14 @@ def presentations(test_input_dir):
     )
     
     pres1_slides = [
-        Slide(
-            index=1, 
-            content="# Presentation 1", 
-            notes="", 
-            image_path=str(test_input_dir / "presentation1" / "slides" / "1.png")
-        ),
-        Slide(
-            index=2, 
-            content="Slide 2", 
-            notes="Notes for slide 2", 
-            image_path=str(test_input_dir / "presentation1" / "slides" / "2.png")
-        )
+        ProcessedSlide(index=1, content="# Presentation 1", notes=""),
+        ProcessedSlide(index=2, content="Slide 2", notes="Notes for slide 2"),
     ]
-    
-    pres1 = ProcessedPresentation(
+
+    pres1 = EnhancedPresentation(
         info=pres1_info,
         slides=pres1_slides,
-        metadata={}
+        config=DecksetConfig(),
     )
     
     pres2_info = PresentationInfo(
@@ -127,24 +118,14 @@ def presentations(test_input_dir):
     )
     
     pres2_slides = [
-        Slide(
-            index=1, 
-            content="# Presentation 2", 
-            notes="", 
-            image_path=None  # Missing image to test fallback
-        ),
-        Slide(
-            index=2, 
-            content="Slide 2", 
-            notes="", 
-            image_path="nonexistent.png"  # Invalid image to test fallback
-        )
+        ProcessedSlide(index=1, content="# Presentation 2", notes=""),
+        ProcessedSlide(index=2, content="Slide 2", notes=""),
     ]
-    
-    pres2 = ProcessedPresentation(
+
+    pres2 = EnhancedPresentation(
         info=pres2_info,
         slides=pres2_slides,
-        metadata={}
+        config=DecksetConfig(),
     )
     
     return [pres1, pres2]
@@ -168,27 +149,13 @@ class TestFileManagement:
     
 
     
-    def test_slide_image_copying(self, config, presentations, test_output_dir):
-        """Test copying of slide images."""
+    def test_presentation_file_processing(self, config, presentations, test_output_dir):
+        """Test processing files for a presentation via enhanced path."""
         file_manager = FileManager(config)
-        
-        # Process the first presentation with valid images
-        file_manager.copy_slide_images(presentations[0])
-        
-        # Check that slide images were copied
-        pres1_slides_dir = test_output_dir / "slides" / "presentation1"
-        assert pres1_slides_dir.exists()
-        assert (pres1_slides_dir / "1.png").exists()
-        assert (pres1_slides_dir / "2.png").exists()
-        
-        # Process the second presentation with missing images
-        file_manager.copy_slide_images(presentations[1])
-        
-        # Check that no images were copied for the second presentation
-        # (since it has no valid images)
-        pres2_slides_dir = test_output_dir / "slides" / "presentation2"
-        if pres2_slides_dir.exists():
-            assert len(list(pres2_slides_dir.glob("*.png"))) == 0
+        file_manager.setup_output_directories()
+        file_manager.process_presentation_files(presentations[0])
+
+        assert (test_output_dir / "images").exists()
     
     def test_preview_image_copying(self, config, presentations, test_output_dir):
         """Test copying of preview images."""
@@ -236,69 +203,32 @@ class TestFileManagement:
     def test_complete_file_management_workflow(self, config, presentations, test_output_dir):
         """Test the complete file management workflow."""
         file_manager = FileManager(config)
-        
-        # Set up directories
-        file_manager.setup_output_directories()
-        
 
-        
-        # Process all presentations
-        for presentation in presentations:
-            # Update image paths to use absolute paths for testing
-            for slide in presentation.slides:
-                if slide.image_path and not slide.image_path.startswith('/'):
-                    slide_path = Path(presentation.info.folder_path) / slide.image_path
-                    if slide_path.exists():
-                        slide.image_path = str(slide_path)
-        
+        file_manager.setup_output_directories()
         file_manager.process_all_presentations(presentations)
-        
-        # Check directory structure
+
         assert (test_output_dir / "presentations").exists()
         assert (test_output_dir / "slides").exists()
         assert (test_output_dir / "images").exists()
         assert (test_output_dir / "assets").exists()
-        
 
-        
-        # Check that paths were updated
         assert presentations[0].info.preview_image.startswith("../images/")
         assert presentations[1].info.preview_image.startswith("../images/")
-        
-        # Check that slide paths were updated
-        assert presentations[0].slides[0].image_path.startswith("../slides/")
-        assert presentations[0].slides[1].image_path.startswith("../slides/")
-        assert presentations[1].slides[0].image_path is None
-        assert presentations[1].slides[1].image_path is None
     
     def test_integration_with_generator(self, config, presentations, test_output_dir, monkeypatch):
         """Test integration with WebPageGenerator."""
-        # Mock the template rendering to avoid actual HTML generation
         from unittest.mock import patch
-        
+
         with patch.object(WebPageGenerator, '_render_enhanced_presentation', return_value="<html>Test</html>"), \
              patch('enhanced_templates.EnhancedTemplateEngine.render_homepage', return_value="<html>Homepage</html>"):
-            
-            # Create generator
+
             generator = WebPageGenerator(config)
-            
-            # Update image paths to use absolute paths for testing
-            for presentation in presentations:
-                for slide in presentation.slides:
-                    if slide.image_path and not slide.image_path.startswith('/'):
-                        slide_path = Path(presentation.info.folder_path) / slide.image_path
-                        if slide_path.exists():
-                            slide.image_path = str(slide_path)
-            
-            # Generate all pages
             stats = generator.generate_all_pages(presentations)
-            
-            # Check stats
+
             assert stats["total"] == 2
             assert stats["successful"] == 2
             assert stats["failed"] == 0
-            
-            # Check directory structure
+
             assert (test_output_dir / "presentations").exists()
             assert (test_output_dir / "slides").exists()
             assert (test_output_dir / "images").exists()

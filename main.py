@@ -14,7 +14,7 @@ from typing import List, Optional, Dict, Any
 
 from models import (
     GeneratorConfig,
-    ProcessedPresentation,
+    EnhancedPresentation,
     PresentationInfo,
     GeneratorError,
     PresentationProcessingError,
@@ -250,7 +250,7 @@ class DecksetWebsiteGenerator:
 
     def _process_presentations(
         self, presentations_info: List[PresentationInfo]
-    ) -> List[ProcessedPresentation]:
+    ) -> List[EnhancedPresentation]:
         """
         Process presentations with graceful error handling.
 
@@ -311,7 +311,7 @@ class DecksetWebsiteGenerator:
         return processed_presentations
 
     def _generate_website_pages(
-        self, processed_presentations: List[ProcessedPresentation]
+        self, processed_presentations: List[EnhancedPresentation]
     ) -> Dict[str, Any]:
         """
         Generate website pages with error handling.

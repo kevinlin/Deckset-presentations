@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Set
 
-from models import GeneratorConfig, ProcessedPresentation, PresentationInfo, FileOperationError
+from models import GeneratorConfig, EnhancedPresentation, PresentationInfo, FileOperationError
 
 
 class FileManager:
@@ -168,97 +168,6 @@ class FileManager:
                     self.logger.debug(f"Optional icon file not found: {source_path}")
     
 
-    
-    def copy_slide_images(self, presentation: ProcessedPresentation) -> None:
-        """
-        Copy slide images from source folders to output directory.
-        
-        Args:
-            presentation: Processed presentation with slides
-        """
-        output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
-        
-        try:
-            output_slides_dir.mkdir(parents=True, exist_ok=True)
-        except (OSError, PermissionError) as e:
-            self.logger.error(
-                f"Failed to create slides directory for '{presentation.info.title}': {e}",
-                extra={
-                    "presentation_title": presentation.info.title,
-                    "slides_directory": str(output_slides_dir),
-                    "error_type": type(e).__name__
-                }
-            )
-            # Clear image paths for slides that can't be processed
-            for slide in presentation.slides:
-                slide.image_path = None
-            return
-        
-        for slide in presentation.slides:
-            # Skip slides with no image path or already processed web paths
-            if not slide.image_path or slide.image_path.startswith(f"{self.config.slides_dir}/"):
-                continue
-                
-            try:
-                # Get the source image path - this should be the original relative path from the markdown
-                source_path = Path(slide.image_path)
-                if not source_path.is_absolute() and not str(source_path).startswith('/'):
-                    # If it's a relative path, resolve it relative to the presentation folder
-                    source_path = Path(presentation.info.folder_path) / source_path
-                
-                # Skip if source doesn't exist
-                if not source_path.exists():
-                    self.logger.warning(
-                        f"Source image not found for slide {slide.index}: {source_path}",
-                        extra={
-                            "presentation_title": presentation.info.title,
-                            "slide_index": slide.index,
-                            "source_path": str(source_path)
-                        }
-                    )
-                    # Clear image path for missing images
-                    slide.image_path = None
-                    continue
-                    
-                # Determine destination path
-                dest_filename = source_path.name
-                dest_path = output_slides_dir / dest_filename
-                
-                # Copy the image
-                try:
-                    shutil.copy2(source_path, dest_path)
-                    self.logger.debug(f"Copied slide image: {source_path} -> {dest_path}")
-                    
-                    # Update the image path to use the web-accessible path
-                    rel_path = f"{presentation.info.folder_name}/{dest_filename}"
-                    slide.image_path = f"../{self.config.slides_dir}/{rel_path}"
-                    
-                except (OSError, PermissionError, shutil.Error) as e:
-                    self.logger.error(
-                        f"Failed to copy slide image {source_path}: {e}",
-                        extra={
-                            "presentation_title": presentation.info.title,
-                            "slide_index": slide.index,
-                            "source_path": str(source_path),
-                            "dest_path": str(dest_path),
-                            "error_type": type(e).__name__
-                        }
-                    )
-                    # Clear image path for failed copies
-                    slide.image_path = None
-                    
-            except Exception as e:
-                self.logger.error(
-                    f"Unexpected error processing slide {slide.index} image: {e}",
-                    extra={
-                        "presentation_title": presentation.info.title,
-                        "slide_index": slide.index,
-                        "error_type": type(e).__name__
-                    }
-                )
-                # Clear image path for unexpected errors
-                slide.image_path = None
-    
     def copy_preview_image(self, presentation: PresentationInfo) -> None:
         """
         Copy preview image from source folder to output directory.
@@ -311,7 +220,7 @@ class FileManager:
             # Clear preview image on failure
             presentation.preview_image = None
     
-    def cleanup_output_directory(self, presentations: List[ProcessedPresentation]) -> None:
+    def cleanup_output_directory(self, presentations: List[EnhancedPresentation]) -> None:
         """
         Clean up the output directory by removing unused files.
         
@@ -349,7 +258,7 @@ class FileManager:
                     except Exception as e:
                         self.logger.error(f"Failed to remove file {item}: {e}")
     
-    def process_presentation_files(self, presentation: ProcessedPresentation) -> None:
+    def process_presentation_files(self, presentation: EnhancedPresentation) -> None:
         """
         Process all files for a presentation.
         
@@ -358,19 +267,7 @@ class FileManager:
         Args:
             presentation: Processed presentation
         """
-        # Check if this is an enhanced presentation with media processing
-        if hasattr(presentation, 'config') and hasattr(presentation, 'slides'):
-            # Enhanced presentation - process all media types
-            self._process_enhanced_presentation_media(presentation)
-        else:
-            # Basic presentation - use legacy image processing
-            # Copy slide images first (while paths are still original)
-            self.copy_slide_images(presentation)
-            
-            # Then update slide image paths to web-accessible paths
-            self._update_slide_image_paths(presentation)
-        
-        # Copy preview image
+        self._process_enhanced_presentation_media(presentation)
         self.copy_preview_image(presentation.info)
     
     def _process_enhanced_presentation_media(self, presentation) -> None:
@@ -486,45 +383,7 @@ class FileManager:
         except Exception as e:
             self.logger.error(f"Failed to copy processed audio {processed_audio.src_path}: {e}")
         
-    def _update_slide_image_paths(self, presentation: ProcessedPresentation) -> None:
-        """
-        Update slide image paths to use web-accessible paths.
-        This should be called after copy_slide_images().
-        
-        Args:
-            presentation: Processed presentation
-        """
-        output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
-        
-        for slide in presentation.slides:
-            # If the slide has no image path, leave it as None
-            if not slide.image_path:
-                continue
-                
-            # Skip slides already using web paths
-            if slide.image_path.startswith(f"../{self.config.slides_dir}/"):
-                continue
-                
-            # Resolve image path relative to presentation folder if needed
-            image_path = Path(slide.image_path)
-            if not image_path.is_absolute() and not str(image_path).startswith('/'):
-                resolved_image_path = Path(presentation.info.folder_path) / image_path
-            else:
-                resolved_image_path = image_path
-                
-            # Check if the image was successfully copied to the output directory
-            dest_filename = resolved_image_path.name
-            dest_path = output_slides_dir / dest_filename
-            
-            if dest_path.exists():
-                # Image was successfully copied, update to web-accessible path
-                rel_path = f"{presentation.info.folder_name}/{dest_filename}"
-                slide.image_path = f"../{self.config.slides_dir}/{rel_path}"
-            else:
-                # Image was not copied (probably failed), clear the path
-                slide.image_path = None
-    
-    def process_all_presentations(self, presentations: List[ProcessedPresentation]) -> None:
+    def process_all_presentations(self, presentations: List[EnhancedPresentation]) -> None:
         """
         Process files for all presentations.
         

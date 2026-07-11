@@ -27,10 +27,6 @@ class EnhancedTemplateEngine:
             autoescape=False  # We handle HTML escaping manually
         )
 
-        # Load base templates first
-        self._load_templates()
-
-        # Register custom filters and functions
         self._register_template_functions()
 
     def _register_template_functions(self):
@@ -54,12 +50,6 @@ class EnhancedTemplateEngine:
         # Custom filters
         self.env.filters['markdown_to_html'] = self._markdown_to_html
         self.env.filters['escape_html'] = self._escape_html
-
-    def _load_templates(self):
-        """Load templates from files."""
-        # Templates are now loaded automatically by Jinja2 FileSystemLoader
-        # No need to preload them as strings anymore
-        pass
 
     def render_slide(self, slide: ProcessedSlide, config: DecksetConfig, total_slides: int = 1) -> str:
         """Render a complete slide with full Deckset feature support."""

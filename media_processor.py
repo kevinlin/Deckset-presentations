@@ -11,11 +11,11 @@ from typing import List, Optional
 from urllib.parse import urlparse
 from models import (
     ProcessedImage, ProcessedVideo, ProcessedAudio, ImageModifiers, MediaModifiers,
-    ImageGrid, SlideContext, MediaProcessingError, MediaProcessorInterface
+    ImageGrid, SlideContext, MediaProcessingError,
 )
 
 
-class MediaProcessor(MediaProcessorInterface):
+class MediaProcessor:
     """Processor for media files with Deckset modifier support."""
     
     def __init__(self, base_path: str = ".", output_path: str = "site"):

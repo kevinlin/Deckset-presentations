@@ -11,10 +11,8 @@ and configuration.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Set, Tuple
-from abc import ABC, abstractmethod
 
 
-# Basic Models (for backward compatibility)
 @dataclass
 class PresentationInfo:
     """Information about a discovered presentation."""
@@ -25,23 +23,6 @@ class PresentationInfo:
     preview_image: Optional[str] = None
     slide_count: int = 0
     last_modified: Optional[datetime] = None
-
-
-@dataclass
-class Slide:
-    """Represents a single slide in a presentation."""
-    index: int
-    content: str
-    notes: str = ""
-    image_path: Optional[str] = None
-
-
-@dataclass
-class ProcessedPresentation:
-    """A fully processed presentation with all slides and metadata."""
-    info: PresentationInfo
-    slides: List[Slide]
-    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -326,116 +307,3 @@ class SlideProcessingError(GeneratorError):
         if slide_index is not None:
             ctx["slide_index"] = slide_index
         super().__init__(message, context=ctx)
-
-
-# Base Interfaces
-class DecksetParserInterface(ABC):
-    """Interface for Deckset markdown parsing."""
-    
-    @abstractmethod
-    def parse_global_commands(self, content: str) -> DecksetConfig:
-        """Parse global Deckset commands from markdown content."""
-        pass
-    
-    @abstractmethod
-    def parse_slide_commands(self, slide_content: str) -> SlideConfig:
-        """Parse slide-specific commands from slide content."""
-        pass
-    
-    @abstractmethod
-    def extract_slide_separators(self, content: str) -> List[str]:
-        """Extract individual slides from markdown content."""
-        pass
-    
-    @abstractmethod
-    def process_fit_headers(self, content: str, config: DecksetConfig) -> str:
-        """Process [fit] modifiers on headers."""
-        pass
-    
-    @abstractmethod
-    def process_speaker_notes(self, content: str) -> Tuple[str, str]:
-        """Separate speaker notes from slide content."""
-        pass
-    
-    @abstractmethod
-    def process_footnotes(self, content: str) -> Tuple[str, Dict[str, str]]:
-        """Process footnote references and definitions."""
-        pass
-    
-    @abstractmethod
-    def process_emoji_shortcodes(self, content: str) -> str:
-        """Convert emoji shortcodes to Unicode."""
-        pass
-    
-    @abstractmethod
-    def detect_auto_slide_breaks(self, content: str, config: DecksetConfig) -> List[str]:
-        """Detect automatic slide breaks at heading levels."""
-        pass
-
-
-class MediaProcessorInterface(ABC):
-    """Interface for media processing."""
-    
-    @abstractmethod
-    def process_image(self, image_syntax: str, slide_context: SlideContext) -> ProcessedImage:
-        """Process image with Deckset modifiers."""
-        pass
-    
-    @abstractmethod
-    def process_video(self, video_syntax: str, slide_context: SlideContext) -> ProcessedVideo:
-        """Process video with Deckset modifiers."""
-        pass
-    
-    @abstractmethod
-    def process_audio(self, audio_syntax: str, slide_context: SlideContext) -> ProcessedAudio:
-        """Process audio with Deckset modifiers."""
-        pass
-    
-    @abstractmethod
-    def parse_image_modifiers(self, alt_text: str) -> ImageModifiers:
-        """Parse image modifiers from alt text."""
-        pass
-    
-    @abstractmethod
-    def parse_media_modifiers(self, alt_text: str) -> MediaModifiers:
-        """Parse media modifiers from alt text."""
-        pass
-    
-    @abstractmethod
-    def optimize_image_for_web(self, image_path: str, output_path: str) -> str:
-        """Optimize image for web delivery."""
-        pass
-    
-    @abstractmethod
-    def create_image_grid(self, images: List[ProcessedImage]) -> ImageGrid:
-        """Create grid layout for consecutive inline images."""
-        pass
-
-
-class SlideProcessorInterface(ABC):
-    """Interface for slide processing."""
-    
-    @abstractmethod
-    def process_slide(self, slide_content: str, slide_index: int, config: DecksetConfig) -> ProcessedSlide:
-        """Process individual slide with all features."""
-        pass
-    
-    @abstractmethod
-    def process_columns(self, slide_content: str) -> List[ColumnContent]:
-        """Process multi-column layout."""
-        pass
-    
-    @abstractmethod
-    def process_background_image(self, slide_content: str) -> Optional[ProcessedImage]:
-        """Process slide background image."""
-        pass
-    
-    @abstractmethod
-    def remove_code_blocks(self, slide_content: str) -> str:
-        """Remove code blocks."""
-        pass
-    
-    @abstractmethod
-    def apply_autoscale(self, slide_content: str, config: DecksetConfig) -> str:
-        """Apply autoscale to slide content."""
-        pass

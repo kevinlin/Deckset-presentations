@@ -8,12 +8,12 @@ background images, code blocks, math formulas, and autoscaling.
 import re
 import logging
 from typing import List, Optional
-from models import ProcessedSlide, ColumnContent, ProcessedImage,DecksetConfig, SlideProcessingError, SlideProcessorInterface
+from models import ProcessedSlide, ColumnContent, ProcessedImage, DecksetConfig, SlideProcessingError
 
 logger = logging.getLogger(__name__)
 
 
-class SlideProcessor(SlideProcessorInterface):
+class SlideProcessor:
     """Processor for individual slides with advanced layout features."""
     
     def __init__(self):

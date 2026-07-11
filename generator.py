@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from models import (
-    ProcessedPresentation, 
-    PresentationInfo, 
+    EnhancedPresentation,
+    PresentationInfo,
     GeneratorConfig,
     TemplateRenderingError,
     FileOperationError
@@ -40,8 +40,8 @@ class WebPageGenerator:
         self.file_manager = FileManager(config)
 
     def generate_presentation_page(
-        self, 
-        presentation: ProcessedPresentation, 
+        self,
+        presentation: EnhancedPresentation,
         output_path: str
     ) -> None:
         """
@@ -74,14 +74,8 @@ class WebPageGenerator:
             # Note: Image processing is handled by FileManager.process_presentation_files()
             # which is called in generate_all_pages() before this method
 
-            # Render the presentation using the template manager
             try:
-                if hasattr(presentation, 'config'):
-                    # Enhanced presentation with Deckset features
-                    html_content = self._render_enhanced_presentation(presentation)
-                else:
-                    # Basic presentation rendering using EnhancedTemplateEngine
-                    html_content = self._render_enhanced_presentation(presentation)
+                html_content = self._render_enhanced_presentation(presentation)
             except Exception as e:
                 raise TemplateRenderingError(
                     f"Failed to render template for presentation '{presentation.info.title}': {e}",
@@ -247,37 +241,6 @@ class WebPageGenerator:
                 }
             ) from e
 
-    def _process_slide_images(self, presentation: ProcessedPresentation) -> None:
-        """
-        Process slide images and ensure they have proper paths.
-        
-        This method validates image paths and clears invalid ones.
-        The actual copying is handled by FileManager.copy_slide_images().
-        
-        Args:
-            presentation: The presentation to process
-        """
-        for slide in presentation.slides:
-            # If the slide has no image path, leave it as None
-            if not slide.image_path:
-                continue
-
-            # Check if the image exists (resolve relative to presentation folder)
-            image_path = Path(slide.image_path)
-            if not image_path.is_absolute() and not str(image_path).startswith('/'):
-                # Resolve relative to presentation folder
-                resolved_image_path = Path(presentation.info.folder_path) / image_path
-            else:
-                resolved_image_path = image_path
-
-            if not resolved_image_path.exists():
-                self.logger.warning(f"Image not found for slide {slide.index} in '{presentation.info.title}': {resolved_image_path}")
-                slide.image_path = None
-                continue
-
-            # Leave the image_path as-is for now - FileManager will handle the copying
-            # and update the path to the web-accessible location
-
     def _process_preview_images(self, presentations: List[PresentationInfo]) -> None:
         """
         Process preview images for presentations.
@@ -347,7 +310,7 @@ class WebPageGenerator:
 
     def generate_all_pages(
         self, 
-        presentations: List[ProcessedPresentation],
+        presentations: List[EnhancedPresentation],
         output_dir: Optional[str] = None
     ) -> Dict[str, Any]:
         """
