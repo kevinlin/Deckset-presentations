@@ -66,9 +66,9 @@
         {{ slide_number(slide.index, total_slides, config, slide.slide_config) }}
     </div>
     
-    {% if slide.notes %}
-        <aside class="speaker-notes" style="display: none;">
-            {{ slide.notes | markdown_to_html }}
-        </aside>
-    {% endif %}
 </section>
+{% if slide.notes %}
+<aside class="speaker-notes" data-for-slide="{{ slide.index }}" style="display: none;">
+    {{ slide.notes | markdown_to_html }}
+</aside>
+{% endif %}

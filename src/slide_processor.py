@@ -64,14 +64,8 @@ class SlideProcessor:
             # Process background image
             slide.background_image = self.process_background_image(slide.content)
             
-            # Remoce code blocks
+            # Remove code blocks
             slide.content = self.remove_code_blocks(slide.content)
-            
-            # Note: Math formulas are processed by the enhanced processor
-            # to create proper MathFormula objects
-            
-            if config.autoscale or slide.slide_config.autoscale:
-                slide.content = self.apply_autoscale(slide.content, config)
 
             return slide
             

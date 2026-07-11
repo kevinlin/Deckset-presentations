@@ -256,3 +256,25 @@
 **Files:** `src/*.py` (moved), `pyproject.toml`, `.github/workflows/generate-website.yml`, `tests/test_enhanced_setup.py`, `docs/specs/v2/design.md`.
 
 **Verification:** All 381 Python tests + 53 Jest tests pass; site generation produces 17 presentations with 0 errors; `--validate` exits 0.
+
+### 2026-07-12: Fix autoscale breaking markdown rendering + speaker notes clipped by overflow
+
+**Problem 1 — Slide 8 of RAG Workshop renders raw markdown:** The "Strength of RAG" slide (which exceeds the 1000-character content threshold) displayed unformatted markdown text (`# Strength of RAG`, `**bold**` literals) instead of rendered HTML.
+
+**Root cause:** `slide_processor.apply_autoscale()` wrapped raw markdown content in `<div class="autoscale-content">…</div>` *before* the `MarkdownRenderer` processed it. Python-markdown treats content inside HTML block elements as raw text, so the entire slide body bypassed markdown-to-HTML conversion.
+
+**Fix:** Removed the `apply_autoscale` call from `SlideProcessor.process_slide()`. Autoscale is already handled by the Jinja template (`data-autoscale="true"` attribute on the `<section>`) and CSS/JS — the `<div>` wrapper was both redundant and harmful.
+
+**Problem 2 — Slide 12 speaker notes invisible when toggled on:** The "Key Infra Service Required" slide's speaker notes ("We are taking a very opinionated approach here…") did not appear even with the Notes button showing "Hide Notes".
+
+**Root cause:** The `<aside class="speaker-notes">` was rendered *inside* `<section class="slide">`, which has CSS `overflow: hidden` and `aspect-ratio: 16/9`. Notes positioned after slide content, footer, and slide number extended beyond the 16:9 bounding box and were clipped.
+
+**Fix:**
+- Moved the `<aside class="speaker-notes">` outside the `<section class="slide">` in `templates/slide.html`, making it a sibling element paired via `data-for-slide="{{ slide.index }}"`.
+- Updated `slide-viewer.js`: added `_updateNotesVisibility()` that shows only the active slide's notes when toggled on. Called from both `toggleNotes()` and `showSlide()` so note visibility stays correct during navigation.
+- Updated `tests/test_slide_processor.py::test_process_slide_with_autoscale` to assert the content is *not* wrapped in a div (matching the corrected behavior).
+- Updated `docs/specs/v2/design.md` to document both architectural decisions.
+
+**Files:** `src/slide_processor.py`, `templates/slide.html`, `templates/assets/js/slide-viewer.js`, `tests/test_slide_processor.py`, `docs/specs/v2/design.md`.
+
+**Verification:** All 381 Python tests + 53 Jest tests pass; local site build of all 17 presentations produces 0 errors; slide 8 renders formatted HTML (heading, ordered list, bold); slide 12 speaker notes appear below the slide when toggled on.

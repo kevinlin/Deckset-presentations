@@ -131,24 +131,29 @@ Content over background image.
             assert slide.background_image.modifiers.placement == "background"
     
     def test_process_slide_with_autoscale(self):
-        """Test slide processing with autoscale enabled."""
-        content = "# Long Slide\n" + "Very long content. " * 100  # Make it long
+        """Test slide processing with autoscale enabled passes content through unmodified.
+
+        Autoscale is handled by the template via data-autoscale="true" on the
+        <section>, not by wrapping content in a <div>.  The slide processor
+        must NOT wrap raw markdown in HTML (which would prevent the
+        MarkdownRenderer from formatting it).
+        """
+        content = "# Long Slide\n" + "Very long content. " * 100
         config = DecksetConfig(autoscale=True)
-        
+
         with patch('deckset_parser.DecksetParser') as mock_parser_class:
             mock_parser = Mock()
             mock_parser_class.return_value = mock_parser
             mock_parser.parse_slide_commands.return_value = SlideConfig()
             mock_parser.process_speaker_notes.return_value = (content.strip(), "")
             mock_parser.process_footnotes.return_value = (content.strip(), {})
-            # Mock these to return the input unchanged (preserving autoscale wrapper)
             mock_parser.process_fit_headers.side_effect = lambda x, config: x
             mock_parser.process_emoji_shortcodes.side_effect = lambda x: x
-            
+
             slide = self.processor.process_slide(content, 5, config)
-            
-            # Should have autoscale applied due to long content
-            assert 'autoscale-content' in slide.content
+
+            assert 'autoscale-content' not in slide.content
+            assert '# Long Slide' in slide.content
     
     def test_process_slide_error_handling(self):
         """Test error handling in slide processing."""

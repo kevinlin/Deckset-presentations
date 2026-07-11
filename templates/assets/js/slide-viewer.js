@@ -338,6 +338,7 @@ class EnhancedSlideViewer {
         this.updateSlideCounter();
         this.updateNavigationButtons();
         this.activateSlideMedia(index);
+        this._updateNotesVisibility();
         window.location.hash = `slide-${index + 1}`;
         this.announceSlideChange();
     }
@@ -436,19 +437,29 @@ class EnhancedSlideViewer {
     
     toggleNotes() {
         this.notesVisible = !this.notesVisible;
-        const notes = document.querySelectorAll('.speaker-notes');
-        
-        notes.forEach(note => {
-            note.style.display = this.notesVisible ? 'block' : 'none';
-        });
-        
+        this._updateNotesVisibility();
+
         const notesButton = document.getElementById('toggle-notes');
         if (notesButton) {
             notesButton.textContent = this.notesVisible ? 'Hide Notes' : 'Notes';
             notesButton.setAttribute('aria-pressed', this.notesVisible);
         }
-        
+
+        const notes = document.querySelectorAll('.speaker-notes');
         console.log(`Notes toggled: ${this.notesVisible ? 'shown' : 'hidden'} (${notes.length} note elements found)`);
+    }
+
+    _updateNotesVisibility() {
+        const allNotes = document.querySelectorAll('.speaker-notes');
+        const activeSlideIndex = this.currentSlide + 1;
+        allNotes.forEach(note => {
+            const forSlide = parseInt(note.dataset.forSlide, 10);
+            if (this.notesVisible && forSlide === activeSlideIndex) {
+                note.style.display = 'block';
+            } else {
+                note.style.display = 'none';
+            }
+        });
     }
     
     toggleFullscreen() {
