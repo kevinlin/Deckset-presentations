@@ -416,35 +416,42 @@ class DecksetWebsiteGenerator:
                     self.logger.info(f"[{stage}] {error_msg}")
 
     def validate_configuration(self) -> List[str]:
-        """
-        Validate the current configuration and return any issues.
+        """Validate that every render-time requirement is present.
 
         Returns:
             List of validation error messages (empty if valid)
         """
-        issues = []
+        issues: List[str] = []
 
-        # Check template directory
         template_dir = Path(self.config.template_dir)
         if not template_dir.exists():
             issues.append(f"Template directory does not exist: {template_dir}")
-        else:
-            # Check for required templates
-            required_templates = ["homepage.html", "slide.html"]
-            for template in required_templates:
-                template_path = template_dir / template
-                if not template_path.exists():
-                    issues.append(f"Required template missing: {template}")
+            return issues
 
+        required_templates = [
+            "homepage.html",
+            "presentation.html",
+            "slide.html",
+        ]
+        required_assets = [
+            "slide_styles.css",
+            "code_highlighting_styles.css",
+            "assets/js/slide-viewer.js",
+        ]
 
-        # Check output directory parent exists
+        for tpl in required_templates:
+            if not (template_dir / tpl).exists():
+                issues.append(f"Required template missing: {tpl}")
+
+        for asset in required_assets:
+            if not (template_dir / asset).exists():
+                issues.append(f"Required asset missing: {asset}")
+
         output_dir = Path(self.config.output_dir)
         if not output_dir.parent.exists():
             issues.append(
                 f"Output directory parent does not exist: {output_dir.parent}"
             )
-
-
 
         return issues
 

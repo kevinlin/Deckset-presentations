@@ -9,15 +9,9 @@ dependencies = [
     "markdown>=3.10.2",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=9.1.1",
-    "pytest-cov>=7.1.0",
-]
-
 [project.urls]
-Homepage = "https://github.com/yourusername/deckset-presentations"
-Repository = "https://github.com/yourusername/deckset-presentations"
+Homepage = "https://github.com/kevinlin/Deckset-presentations"
+Repository = "https://github.com/kevinlin/Deckset-presentations"
 
 [build-system]
 requires = ["hatchling"]
