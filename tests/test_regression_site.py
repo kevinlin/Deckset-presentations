@@ -46,8 +46,22 @@ def homepage_soup(site_dir):
     return BeautifulSoup(index.read_text(encoding="utf-8"), "html.parser")
 
 
+def _slug(folder_name: str) -> str:
+    """Mirror PresentationInfo.slug logic for test path building."""
+    import re
+    parts = folder_name.split("/")
+    slugged = []
+    for part in parts:
+        s = part.strip().lower()
+        s = re.sub(r"[^\w\s-]", "", s)
+        s = re.sub(r"[\s]+", "-", s)
+        slugged.append(s)
+    return "/".join(slugged)
+
+
 def _load_presentation(site_dir: Path, folder_name: str) -> BeautifulSoup:
-    html_path = site_dir / "presentations" / f"{folder_name}.html"
+    slug = _slug(folder_name)
+    html_path = site_dir / slug / "index.html"
     assert html_path.exists(), f"Missing presentation page: {html_path}"
     return BeautifulSoup(html_path.read_text(encoding="utf-8"), "html.parser")
 
@@ -74,8 +88,9 @@ class TestHomepage:
             assert title_el.get_text(strip=True), "Empty presentation title found"
 
     def test_homepage_cards_have_view_links(self, homepage_soup):
-        links = homepage_soup.select(".presentation-card a[href*='presentations/']")
-        assert len(links) >= 10
+        links = homepage_soup.select(".presentation-card a[href]")
+        view_links = [a for a in links if a["href"].endswith("/")]
+        assert len(view_links) >= 10
 
     def test_homepage_has_search(self, homepage_soup):
         search = homepage_soup.select_one("#search-input")
@@ -108,8 +123,9 @@ class TestPresentationPages:
 
     @pytest.mark.parametrize("deck", SINGLE_DECKS + EXAMPLE_DECKS)
     def test_presentation_html_exists(self, site_dir, deck):
-        path = site_dir / "presentations" / f"{deck}.html"
-        assert path.exists(), f"Presentation page missing for {deck}"
+        slug = _slug(deck)
+        path = site_dir / slug / "index.html"
+        assert path.exists(), f"Presentation page missing for {deck} (slug={slug})"
 
     @pytest.mark.parametrize("deck", SINGLE_DECKS + EXAMPLE_DECKS)
     def test_slides_present(self, site_dir, deck):

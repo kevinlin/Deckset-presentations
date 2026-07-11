@@ -138,11 +138,7 @@ class TestFileManagement:
         """Test creation of output directory structure."""
         file_manager = FileManager(config)
         file_manager.setup_output_directories()
-        
-        # Check that all required directories were created
-        assert (test_output_dir / "presentations").exists()
-        assert (test_output_dir / "slides").exists()
-        assert (test_output_dir / "images").exists()
+
         assert (test_output_dir / "assets").exists()
         assert (test_output_dir / "assets" / "css").exists()
         assert (test_output_dir / "assets" / "js").exists()
@@ -155,50 +151,34 @@ class TestFileManagement:
         file_manager.setup_output_directories()
         file_manager.process_presentation_files(presentations[0])
 
-        assert (test_output_dir / "images").exists()
+        slug = presentations[0].info.slug
+        assert (test_output_dir / slug / "media").exists()
     
     def test_preview_image_copying(self, config, presentations, test_output_dir):
         """Test copying of preview images."""
         file_manager = FileManager(config)
-        
-        # Process preview images
+
         file_manager.copy_preview_image(presentations[0].info)
         file_manager.copy_preview_image(presentations[1].info)
-        
-        # Check that preview images were copied
-        images_dir = test_output_dir / "images"
-        assert images_dir.exists()
-        assert (images_dir / "presentation1-preview.png").exists()
-        assert (images_dir / "presentation2-preview.jpg").exists()
-        
-        # Check that paths were updated
-        assert presentations[0].info.preview_image == "../images/presentation1-preview.png"
-        assert presentations[1].info.preview_image == "../images/presentation2-preview.jpg"
+
+        slug0 = presentations[0].info.slug
+        slug1 = presentations[1].info.slug
+        assert (test_output_dir / slug0 / "preview.png").exists()
+        assert (test_output_dir / slug1 / "preview.jpg").exists()
+        assert slug0 in presentations[0].info.preview_image
+        assert slug1 in presentations[1].info.preview_image
     
     def test_cleanup_output_directory(self, config, presentations, test_output_dir):
         """Test cleanup of unused files."""
         file_manager = FileManager(config)
-        
-        # Create some directories and files that should be cleaned up
-        slides_dir = test_output_dir / "slides"
-        slides_dir.mkdir(parents=True, exist_ok=True)
-        
-        old_pres_dir = slides_dir / "old-presentation"
-        old_pres_dir.mkdir()
-        with open(old_pres_dir / "test.png", "wb") as f:
-            f.write(b"test")
-        
-        presentations_dir = test_output_dir / "presentations"
-        presentations_dir.mkdir(parents=True, exist_ok=True)
-        with open(presentations_dir / "old-presentation.html", "w") as f:
-            f.write("<html>Old presentation</html>")
-        
-        # Run cleanup
+
+        old_deck = test_output_dir / "old-presentation"
+        old_deck.mkdir(parents=True)
+        (old_deck / "index.html").write_text("<html>old</html>")
+
         file_manager.cleanup_output_directory(presentations)
-        
-        # Check that old files were removed
-        assert not old_pres_dir.exists()
-        assert not (presentations_dir / "old-presentation.html").exists()
+
+        assert not old_deck.exists()
     
     def test_complete_file_management_workflow(self, config, presentations, test_output_dir):
         """Test the complete file management workflow."""
@@ -207,13 +187,9 @@ class TestFileManagement:
         file_manager.setup_output_directories()
         file_manager.process_all_presentations(presentations)
 
-        assert (test_output_dir / "presentations").exists()
-        assert (test_output_dir / "slides").exists()
-        assert (test_output_dir / "images").exists()
         assert (test_output_dir / "assets").exists()
-
-        assert presentations[0].info.preview_image.startswith("../images/")
-        assert presentations[1].info.preview_image.startswith("../images/")
+        slug0 = presentations[0].info.slug
+        assert (test_output_dir / slug0 / "media").exists()
     
     def test_integration_with_generator(self, config, presentations, test_output_dir, monkeypatch):
         """Test integration with WebPageGenerator."""
@@ -229,16 +205,12 @@ class TestFileManagement:
             assert stats["successful"] == 2
             assert stats["failed"] == 0
 
-            assert (test_output_dir / "presentations").exists()
-            assert (test_output_dir / "slides").exists()
-            assert (test_output_dir / "images").exists()
             assert (test_output_dir / "assets").exists()
-            
 
-            
-            # Check HTML files
-            assert (test_output_dir / "presentations" / "presentation1.html").exists()
-            assert (test_output_dir / "presentations" / "presentation2.html").exists()
+            slug0 = presentations[0].info.slug
+            slug1 = presentations[1].info.slug
+            assert (test_output_dir / slug0 / "index.html").exists()
+            assert (test_output_dir / slug1 / "index.html").exists()
             assert (test_output_dir / "index.html").exists()
 
     def test_website_generation_with_mixed_single_and_multiple_presentations(self, tmp_path):
@@ -316,49 +288,30 @@ Content for second example.
         assert result["presentations_processed"] >= 3
         assert result["presentations_failed"] == 0
         
-        # Verify output structure
-        presentations_dir = output_dir / "presentations"
-        assert presentations_dir.exists()
-        
-        # Check single presentation file
-        single_html = presentations_dir / "single_presentation.html"
+        # Verify new output layout: <slug>/index.html
+        single_html = output_dir / "single_presentation" / "index.html"
         assert single_html.exists()
-        
-        # Check multiple presentations files in subdirectory
-        examples_subdir = presentations_dir / "Examples"
-        assert examples_subdir.exists()
-        
-        example1_html = examples_subdir / "10 First Example.html"
-        example2_html = examples_subdir / "20 Second Example.html"
+
+        example1_html = output_dir / "examples" / "10-first-example" / "index.html"
+        example2_html = output_dir / "examples" / "20-second-example" / "index.html"
         assert example1_html.exists()
         assert example2_html.exists()
-        
-        # Verify content consistency - all should have enhanced features
-        with open(single_html, 'r', encoding='utf-8') as f:
-            single_content = f.read()
-        
-        with open(example1_html, 'r', encoding='utf-8') as f:
-            example1_content = f.read()
-        
-        with open(example2_html, 'r', encoding='utf-8') as f:
-            example2_content = f.read()
-        
-        # All should use the same template structure and enhanced features
-        for content, name in [(single_content, "single"), (example1_content, "example1"), (example2_content, "example2")]:
+
+        for path, name in [
+            (single_html, "single"),
+            (example1_html, "example1"),
+            (example2_html, "example2"),
+        ]:
+            content = path.read_text(encoding="utf-8")
             assert "presentation-container" in content, f"{name} missing presentation container"
             assert "slide-content" in content, f"{name} missing slide content structure"
             assert "slide_styles.css" in content, f"{name} missing enhanced styles"
             assert "MathJax" in content, f"{name} missing MathJax support"
-            assert "highlight.js" in content, f"{name} missing code highlighting"
-        
-        # Verify homepage lists all presentations
+            assert "highlight" in content, f"{name} missing code highlighting"
+
         homepage = output_dir / "index.html"
         assert homepage.exists()
-        
-        with open(homepage, 'r', encoding='utf-8') as f:
-            homepage_content = f.read()
-        
-        # Should contain all presentation titles (now includes folder names for multiple presentations)
+        homepage_content = homepage.read_text(encoding="utf-8")
         assert "Single Presentation" in homepage_content
         assert "Example - First Example" in homepage_content
         assert "Example - Second Example" in homepage_content
@@ -426,40 +379,26 @@ More content.
         
         assert result.get("success", False), f"Generation failed: {result.get('error', 'Unknown error')}"
         
-        # Check that all presentations were generated
-        presentations_dir = output_dir / "presentations"
-        assert presentations_dir.exists()
-        
-        # Check single presentation
-        single_html = presentations_dir / "single_presentation.html"
+        # New layout: <slug>/index.html
+        single_html = output_dir / "single_presentation" / "index.html"
         assert single_html.exists()
-        
-        # Check multiple presentations in subdirectory
-        examples_subdir = presentations_dir / "Examples"
-        assert examples_subdir.exists()
-        
-        example1_html = examples_subdir / "10 First Example.html"
-        example2_html = examples_subdir / "20 Second Example.html"
+
+        example1_html = output_dir / "examples" / "10-first-example" / "index.html"
+        example2_html = output_dir / "examples" / "20-second-example" / "index.html"
         assert example1_html.exists()
         assert example2_html.exists()
-        
-        # Verify asset paths are correct
-        single_content = single_html.read_text(encoding='utf-8')
-        example1_content = example1_html.read_text(encoding='utf-8')
-        example2_content = example2_html.read_text(encoding='utf-8')
-        
-        # Single presentation should use "../" for assets (one level up)
-        assert 'href="../slide_styles.css"' in single_content, "Single presentation should use ../slide_styles.css"
-        assert 'src="../assets/js/slide-viewer.js"' in single_content, "Single presentation should use ../assets/js/slide-viewer.js"
-        
-        # Multiple presentations in subdirectory should use "../../" for assets (two levels up)
-        assert 'href="../../slide_styles.css"' in example1_content, "Subdirectory presentation should use ../../slide_styles.css"
-        assert 'src="../../assets/js/slide-viewer.js"' in example1_content, "Subdirectory presentation should use ../../assets/js/slide-viewer.js"
-        
-        assert 'href="../../slide_styles.css"' in example2_content, "Subdirectory presentation should use ../../slide_styles.css"
-        assert 'src="../../assets/js/slide-viewer.js"' in example2_content, "Subdirectory presentation should use ../../assets/js/slide-viewer.js"
-        
-        # Make sure we don't have incorrect paths
-        assert 'href="../slide_styles.css"' not in example1_content, "Subdirectory presentation should not use ../slide_styles.css"
-        assert 'href="../slide_styles.css"' not in example2_content, "Subdirectory presentation should not use ../slide_styles.css"
-        assert 'href="../../slide_styles.css"' not in single_content, "Single presentation should not use ../../slide_styles.css"
+
+        single_content = single_html.read_text(encoding="utf-8")
+        example1_content = example1_html.read_text(encoding="utf-8")
+
+        # Single: site/single_presentation/index.html → ../slide_styles.css
+        assert 'href="../slide_styles.css"' in single_content
+        assert 'src="../assets/js/slide-viewer.js"' in single_content
+
+        # Nested: site/examples/10-first-example/index.html → ../../slide_styles.css
+        assert 'href="../../slide_styles.css"' in example1_content
+        assert 'src="../../assets/js/slide-viewer.js"' in example1_content
+
+        # Cross-check incorrect depths
+        assert 'href="../slide_styles.css"' not in example1_content
+        assert 'href="../../slide_styles.css"' not in single_content

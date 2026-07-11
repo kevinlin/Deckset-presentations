@@ -47,7 +47,7 @@ class TestCodeProcessor:
         assert result.language == "python"
         assert result.highlighted_lines == {1, 3}
         assert result.line_numbers is True
-        assert 'class="code-line code-line-highlighted"' in result.content
+        assert 'class="line-highlight"' in result.content
     
     def test_process_code_block_invalid_highlight(self):
         """Test code block processing with invalid highlight configuration."""
@@ -148,43 +148,35 @@ class TestCodeProcessor:
         assert '&lt;tag&gt;' in result
     
     def test_apply_line_highlighting_none(self):
-        """Test line highlighting with no highlighting."""
+        """No-highlight config returns the code unchanged."""
         code = '<pre><code class="language-python">line1\nline2\nline3</code></pre>'
         config = HighlightConfig(highlighted_lines=set(), highlight_type="none")
-        
+
         result = self.processor.apply_line_highlighting(code, config)
-        # Should wrap lines but not add highlighting classes
-        assert 'class="code-line" data-line="1"' in result
-        assert 'class="code-line" data-line="2"' in result
-        assert 'class="code-line" data-line="3"' in result
-        assert 'code-line-highlighted' not in result
-        assert 'code-block-with-highlighting' not in result
-    
+        assert result == code
+        assert 'line-highlight' not in result
+
     def test_apply_line_highlighting_specific_lines(self):
-        """Test line highlighting with specific lines."""
+        """Specific lines get line-highlight spans; others are plain text."""
         code = '<pre><code class="language-python">line1\nline2\nline3</code></pre>'
         config = HighlightConfig(highlighted_lines={1, 3}, highlight_type="lines")
-        
+
         result = self.processor.apply_line_highlighting(code, config)
-        
-        assert 'class="code-line code-line-highlighted" data-line="1"' in result
-        assert 'class="code-line" data-line="2"' in result
-        assert 'class="code-line code-line-highlighted" data-line="3"' in result
-        assert 'data-highlight="true"' in result
-        assert 'data-highlight="false"' in result
-        assert 'class="code-block-with-highlighting"' in result
-    
+        assert '<span class="line-highlight">line1</span>' in result
+        assert '<span class="line-highlight">line3</span>' in result
+        # line2 should NOT be wrapped
+        assert 'line2' in result
+        assert '<span class="line-highlight">line2</span>' not in result
+        assert 'data-highlight-type="lines"' in result
+
     def test_apply_line_highlighting_all_lines(self):
-        """Test line highlighting with all lines highlighted."""
+        """All lines get line-highlight spans."""
         code = '<pre><code class="language-python">line1\nline2</code></pre>'
         config = HighlightConfig(highlighted_lines=set(), highlight_type="all")
-        
+
         result = self.processor.apply_line_highlighting(code, config)
-        
-        assert 'class="code-line code-line-highlighted" data-line="1"' in result
-        assert 'class="code-line code-line-highlighted" data-line="2"' in result
-        assert result.count('data-highlight="true"') == 2
-        assert 'class="code-block-with-highlighting"' in result
+        assert result.count('class="line-highlight"') == 2
+        assert 'data-highlight-type="all"' in result
     
     def test_normalize_language_basic(self):
         """Test basic language normalization."""
@@ -290,48 +282,36 @@ class TestCodeProcessor:
     def test_process_code_block_with_deckset_directive(self):
         """Test processing code blocks with Deckset directives."""
         content = "[.code-highlight: 1,3]\n```python\ndef hello():\n    print('hi')\n    return True\n```"
-        
+
         processed_content, blocks = self.processor.process_code_block_with_deckset_directive(content)
-        
+
         assert len(blocks) == 1
         assert blocks[0].language == "python"
         assert blocks[0].highlighted_lines == {1, 3}
-        assert 'class="code-line code-line-highlighted"' in processed_content
-    
-    def test_apply_line_highlighting_enhanced_classes(self):
-        """Test enhanced line highlighting with better CSS classes."""
-        code = '<pre><code class="language-python">line1\nline2\nline3</code></pre>'
-        config = HighlightConfig(highlighted_lines={1, 3}, highlight_type="lines")
-        
-        result = self.processor.apply_line_highlighting(code, config)
-        
-        assert 'class="code-line code-line-highlighted"' in result
-        assert 'data-highlight="true"' in result
-        assert 'data-highlight="false"' in result
-        assert 'class="code-block-with-highlighting"' in result
-        assert 'data-highlight-type="lines"' in result
-    
-    def test_apply_line_highlighting_all_enhanced(self):
-        """Test enhanced line highlighting with all lines."""
-        code = '<pre><code class="language-python">line1\nline2</code></pre>'
-        config = HighlightConfig(highlighted_lines=set(), highlight_type="all")
-        
-        result = self.processor.apply_line_highlighting(code, config)
-        
-        assert result.count('class="code-line code-line-highlighted"') == 2
-        assert result.count('data-highlight="true"') == 2
-        assert 'data-highlight-type="all"' in result
-    
-    def test_wrap_lines_for_styling(self):
-        """Test wrapping lines for consistent styling."""
-        code = '<pre><code class="language-python">line1\nline2\nline3</code></pre>'
-        
-        result = self.processor._wrap_lines_for_styling(code)
-        
-        assert 'class="code-line" data-line="1"' in result
-        assert 'class="code-line" data-line="2"' in result
-        assert 'class="code-line" data-line="3"' in result
-        assert result.count('class="code-line"') == 3
+        assert 'class="line-highlight"' in processed_content
+
+    def test_directive_associates_with_following_block_only(self):
+        """Directive applies only to the code block it immediately precedes."""
+        content = (
+            "[.code-highlight: 2]\n"
+            "```python\nline1\nline2\nline3\n```\n\n"
+            "```javascript\nalpha\nbeta\n```"
+        )
+        processed, blocks = self.processor.process_code_block_with_deckset_directive(content)
+        assert len(blocks) == 2
+        assert blocks[0].highlighted_lines == {2}
+        assert blocks[1].highlighted_lines == set()
+        assert 'class="line-highlight"' in processed
+        # Second block should have no highlighting spans
+        js_block_start = processed.index('language-javascript')
+        js_section = processed[js_block_start:]
+        assert 'line-highlight' not in js_section
+
+    def test_no_hljs_classes_in_output(self):
+        """Server-side output must not contain hljs-* token classes."""
+        content = "[.code-highlight: 1]\n```python\ndef f():\n    pass\n```"
+        processed, _ = self.processor.process_code_block_with_deckset_directive(content)
+        assert 'hljs-' not in processed
     
     def test_highlight_config_to_string(self):
         """Test converting HighlightConfig back to string format."""
@@ -363,24 +343,17 @@ class TestCodeProcessor:
     return fibonacci(n-1) + fibonacci(n-2)
 
 print(fibonacci(10))"""
-        
+
         result = self.processor.process_code_block(code, "python", "1,3-4")
-        
-        # Check basic properties
+
         assert result.language == "python"
         assert result.highlighted_lines == {1, 3, 4}
         assert result.line_numbers is True
-        
-        # Check enhanced content structure
-        assert '<pre class="code-block-with-highlighting"' in result.content
         assert 'data-highlight-type="lines"' in result.content
-        assert 'class="code-line code-line-highlighted"' in result.content
-        assert 'data-highlight="true"' in result.content
-        assert 'data-highlight="false"' in result.content
-        
-        # Check HTML escaping
+        assert 'class="line-highlight"' in result.content
         assert '&lt;=' in result.content
-    
+        assert 'hljs-' not in result.content
+
     def test_integration_deckset_directive_processing(self):
         """Test full integration with Deckset directive processing."""
         slide_content = """# My Slide
@@ -397,17 +370,12 @@ print(fibonacci(10))
 ```
 
 Some text after code."""
-        
+
         processed_content, blocks = self.processor.process_code_block_with_deckset_directive(slide_content, "text")
-        
-        # Check that directive was removed
+
         assert "[.code-highlight:" not in processed_content
-        
-        # Check that code block was processed
         assert len(blocks) == 1
         assert blocks[0].language == "python"
         assert blocks[0].highlighted_lines == {1, 3, 4}
-        
-        # Check that processed content contains enhanced highlighting
-        assert 'class="code-line code-line-highlighted"' in processed_content
-        assert 'data-highlight="true"' in processed_content
+        assert 'class="line-highlight"' in processed_content
+        assert 'hljs-' not in processed_content

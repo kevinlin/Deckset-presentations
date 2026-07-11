@@ -723,26 +723,43 @@ html {
 
 /* Print styles */
 @media print {
-    /* Render pages at a 16:9 size with minimal margins */
     @page {
-        size: 1280px 720px;
-        margin: 0.5cm;
+        size: landscape;
+        margin: 0;
     }
-    .navigation {
-        display: none;
-    }
-    
-    .slide {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        margin-bottom: 1rem;
-        aspect-ratio: 16 / 9;
-    }
-    
+
+    .navigation,
+    .slide-progress,
     .speaker-notes {
-        display: block !important;
+        display: none !important;
     }
-    
+
+    .slides-container {
+        display: block;
+    }
+
+    .slide {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 2rem;
+        box-sizing: border-box;
+        break-after: page;
+        break-inside: avoid;
+        page-break-after: always;
+        page-break-inside: avoid;
+        animation: none !important;
+    }
+
+    .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
     .MathJax[display="true"] {
         break-inside: avoid;
         page-break-inside: avoid;
@@ -815,5 +832,28 @@ html {
     
     .nav-button {
         border: 2px solid #000;
+    }
+}
+
+/* Slide transition keyframes */
+@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeOut { from { opacity: 1 } to { opacity: 0 } }
+@keyframes pushInRight  { from { transform: translateX(100%)  } to { transform: translateX(0) } }
+@keyframes pushInLeft   { from { transform: translateX(-100%) } to { transform: translateX(0) } }
+@keyframes pushOutLeft  { from { transform: translateX(0) }     to { transform: translateX(-100%) } }
+@keyframes pushOutRight { from { transform: translateX(0) }     to { transform: translateX(100%) } }
+
+.slide-fade-in    { animation: fadeIn  300ms ease forwards }
+.slide-fade-out   { animation: fadeOut 300ms ease forwards }
+.slide-push-in-right  { animation: pushInRight  300ms ease forwards }
+.slide-push-in-left   { animation: pushInLeft   300ms ease forwards }
+.slide-push-out-left  { animation: pushOutLeft  300ms ease forwards }
+.slide-push-out-right { animation: pushOutRight 300ms ease forwards }
+
+@media (prefers-reduced-motion: reduce) {
+    .slide-fade-in, .slide-fade-out,
+    .slide-push-in-right, .slide-push-in-left,
+    .slide-push-out-left, .slide-push-out-right {
+        animation: none !important;
     }
 }

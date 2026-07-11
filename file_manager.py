@@ -1,401 +1,277 @@
 """
 File and asset management for the Deckset Website Generator.
 
-This module handles file operations such as copying slide images,
-creating directory structures, and managing assets for the generated website.
+New output layout::
+
+    site/
+    ├── index.html
+    ├── assets/              (CSS, JS, icons — copied from templates/)
+    │   ├── css/
+    │   ├── js/
+    │   └── favicon.png
+    ├── <deck-slug>/
+    │   ├── index.html
+    │   └── media/           (preserve source sub-paths)
+    │       ├── image.jpg
+    │       └── subfolder/
+    │           └── image.png
+    └── ...
 """
 
 import os
 import shutil
 import logging
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Set
+from typing import List, Optional
 
 from models import GeneratorConfig, EnhancedPresentation, PresentationInfo, FileOperationError
 
 
 class FileManager:
     """Manages file operations for the website generator."""
-    
+
     def __init__(self, config: GeneratorConfig):
-        """
-        Initialize the file manager with configuration.
-        
-        Args:
-            config: Generator configuration object
-        """
         self.config = config
         self.logger = logging.getLogger(__name__)
-        
+
+    # ------------------------------------------------------------------
+    # Directory setup
+    # ------------------------------------------------------------------
+
     def setup_output_directories(self) -> None:
-        """
-        Create the necessary output directory structure.
-        
-        Creates the following directories:
-        - output_dir (e.g., site/)
-        - presentations directory (e.g., site/presentations/)
-        - slides directory (e.g., site/slides/)
-        - images directory (e.g., site/images/)
-        - assets directory (e.g., site/assets/)
-        
-        Raises:
-            FileOperationError: If directory creation fails
-        """
+        """Create the top-level output structure and copy template assets."""
         output_dir = Path(self.config.output_dir)
-        
-        directories_to_create = [
-            (output_dir, "main output"),
-            (output_dir / "presentations", "presentations"),
-            (output_dir / self.config.slides_dir, "slides"),
-            (output_dir / "images", "images"),
-            (output_dir / "assets", "assets"),
-            (output_dir / "assets" / "css", "assets/css"),
-            (output_dir / "assets" / "js", "assets/js")
-        ]
-        
-        for dir_path, description in directories_to_create:
+
+        for sub in [
+            output_dir,
+            output_dir / "assets",
+            output_dir / "assets" / "css",
+            output_dir / "assets" / "js",
+        ]:
             try:
-                dir_path.mkdir(parents=True, exist_ok=True)
-                self.logger.debug(f"Created {description} directory: {dir_path}")
+                sub.mkdir(parents=True, exist_ok=True)
             except (OSError, PermissionError) as e:
                 raise FileOperationError(
-                    f"Failed to create {description} directory {dir_path}: {e}",
-                    context={
-                        "directory_path": str(dir_path),
-                        "directory_type": description,
-                        "output_dir": self.config.output_dir
-                    }
+                    f"Failed to create directory {sub}: {e}",
+                    context={"directory_path": str(sub)},
                 )
-        
-        self.logger.info(f"Successfully set up output directory structure in {output_dir}")
-        
-        # Copy template assets (CSS files)
-        self.copy_template_assets()
-        
-    def copy_template_assets(self) -> None:
-        """
-        Copy template assets (CSS, JS, and icon files) to the output directory.
-        
-        Copies:
-        - code_highlighting_styles.css to output root
-        - slide_styles.css to output root (if exists)
-        - slide-viewer.js to assets/js/ directory
-        - favicon.png and other icons to assets/ directory
-        """
-        output_dir = Path(self.config.output_dir)
-        
-        # List of CSS files to copy from templates directory to output root
-        css_files = [
-            "code_highlighting_styles.css",
-            "slide_styles.css"
-        ]
-        
-        for css_file in css_files:
-            source_path = Path("templates") / css_file
-            dest_path = output_dir / css_file
-            
-            if source_path.exists():
-                try:
-                    shutil.copy2(source_path, dest_path)
-                    self.logger.debug(f"Copied CSS file: {source_path} -> {dest_path}")
-                except Exception as e:
-                    self.logger.warning(f"Failed to copy CSS file {css_file}: {e}")
-            else:
-                self.logger.warning(f"CSS file not found: {source_path}")
-        
-        # Copy JavaScript files to assets/js directory
-        js_source_dir = Path("templates") / "assets" / "js"
-        js_dest_dir = output_dir / "assets" / "js"
-        
-        if js_source_dir.exists():
-            try:
-                # Ensure destination directory exists
-                js_dest_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Copy all JavaScript files
-                for js_file in js_source_dir.glob("*.js"):
-                    dest_path = js_dest_dir / js_file.name
-                    shutil.copy2(js_file, dest_path)
-                    self.logger.debug(f"Copied JS file: {js_file} -> {dest_path}")
-                    
-            except Exception as e:
-                self.logger.warning(f"Failed to copy JavaScript files: {e}")
-        else:
-            self.logger.warning(f"JavaScript source directory not found: {js_source_dir}")
-        
-        # Copy favicon and icon assets to assets/ directory
-        self._copy_favicon_assets()
-    
-    def _copy_favicon_assets(self) -> None:
-        """
-        Copy favicon and icon assets to the output assets directory.
-        
-        Copies:
-        - favicon.png to assets/ directory
-        - Any other icon files found in templates/assets/
-        """
-        output_dir = Path(self.config.output_dir)
-        assets_source_dir = Path("templates") / "assets"
-        assets_dest_dir = output_dir / "assets"
-        
-        # Ensure assets destination directory exists
-        assets_dest_dir.mkdir(parents=True, exist_ok=True)
-        
-        # List of icon files to copy
-        icon_files = [
-            "favicon.png",
-            "apple-touch-icon.png",  # Common Apple touch icon name
-            "icon-192x192.png",  # PWA icons
-            "icon-512x512.png",
-            "deckset-icon.png"
-        ]
-        
-        for icon_file in icon_files:
-            source_path = assets_source_dir / icon_file
-            dest_path = assets_dest_dir / icon_file
-            
-            if source_path.exists():
-                try:
-                    shutil.copy2(source_path, dest_path)
-                    self.logger.debug(f"Copied icon file: {source_path} -> {dest_path}")
-                except Exception as e:
-                    self.logger.warning(f"Failed to copy icon file {icon_file}: {e}")
-            else:
-                # Only log debug for favicon.png since it's required, others are optional
-                if icon_file == "favicon.png":
-                    self.logger.warning(f"Required favicon file not found: {source_path}")
-                else:
-                    self.logger.debug(f"Optional icon file not found: {source_path}")
-    
 
-    def copy_preview_image(self, presentation: PresentationInfo) -> None:
-        """
-        Copy preview image from source folder to output directory.
-        
-        Args:
-            presentation: Presentation info with preview image
-        """
-        # Skip if no preview image
-        if not presentation.preview_image:
-            return
-            
-        # Get the source image path
-        source_path = Path(presentation.preview_image)
-        if not source_path.is_absolute():
-            # If it's a relative path, resolve it relative to the presentation folder
-            source_path = Path(presentation.folder_path) / source_path
-        
-        # Skip if source doesn't exist
-        if not source_path.exists():
-            self.logger.warning(f"Preview image not found: {source_path}")
-            presentation.preview_image = None
-            return
-        
-        # Determine destination path
-        preview_dir = Path(self.config.output_dir) / "images"
-        
-        # For multiple presentations (e.g., Examples/10 Deckset basics), create subdirectory
-        if "/" in presentation.folder_name:
-            # Create subdirectory in images folder (e.g., images/Examples/)
-            subfolder = presentation.folder_name.split("/")[0]
-            preview_subdir = preview_dir / subfolder
-            preview_subdir.mkdir(parents=True, exist_ok=True)
-            preview_filename = f"{presentation.folder_name}-preview{source_path.suffix}"
-            dest_path = preview_dir / preview_filename
-        else:
-            # Single presentations go directly in images folder
-            preview_dir.mkdir(parents=True, exist_ok=True)
-            preview_filename = f"{presentation.folder_name}-preview{source_path.suffix}"
-            dest_path = preview_dir / preview_filename
-        
-        # Copy the image
-        try:
-            shutil.copy2(source_path, dest_path)
-            self.logger.debug(f"Copied preview image: {source_path} -> {dest_path}")
-            
-            # Update preview image path to web-accessible path
-            presentation.preview_image = f"../images/{preview_filename}"
-        except Exception as e:
-            self.logger.error(f"Failed to copy preview image {source_path}: {e}")
-            # Clear preview image on failure
-            presentation.preview_image = None
-    
-    def cleanup_output_directory(self, presentations: List[EnhancedPresentation]) -> None:
-        """
-        Clean up the output directory by removing unused files.
-        
-        This helps keep the generated website organized and removes old files
-        that are no longer needed.
-        
-        Args:
-            presentations: List of processed presentations
-        """
-        # Get list of valid presentation folders
-        valid_folders = {p.info.folder_name for p in presentations}
-        
-        # Clean up slides directory
-        slides_dir = Path(self.config.output_dir) / self.config.slides_dir
-        if slides_dir.exists():
-            for item in slides_dir.iterdir():
-                if item.is_dir() and item.name not in valid_folders:
-                    # This is a slides folder for a presentation that no longer exists
-                    try:
-                        shutil.rmtree(item)
-                        self.logger.info(f"Removed unused slides directory: {item}")
-                    except Exception as e:
-                        self.logger.error(f"Failed to remove directory {item}: {e}")
-        
-        # Clean up presentations directory
-        presentations_dir = Path(self.config.output_dir) / "presentations"
-        if presentations_dir.exists():
-            valid_html_files = {f"{name}.html" for name in valid_folders}
-            for item in presentations_dir.iterdir():
-                if item.is_file() and item.suffix == '.html' and item.name not in valid_html_files:
-                    # This is an HTML file for a presentation that no longer exists
-                    try:
-                        item.unlink()
-                        self.logger.info(f"Removed unused presentation file: {item}")
-                    except Exception as e:
-                        self.logger.error(f"Failed to remove file {item}: {e}")
-    
+        self.logger.info(f"Set up output directory structure in {output_dir}")
+        self.copy_template_assets()
+
+    # ------------------------------------------------------------------
+    # Template asset copying
+    # ------------------------------------------------------------------
+
+    def copy_template_assets(self) -> None:
+        """Copy CSS, JS, and icon files from *templates/* to *site/assets/*."""
+        output_dir = Path(self.config.output_dir)
+
+        css_files = ["code_highlighting_styles.css", "slide_styles.css"]
+        for css_file in css_files:
+            source = Path(self.config.template_dir) / css_file
+            if source.exists():
+                try:
+                    shutil.copy2(source, output_dir / css_file)
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy CSS {css_file}: {e}")
+
+        css_src = Path(self.config.template_dir) / "assets" / "css"
+        css_dst = output_dir / "assets" / "css"
+        if css_src.exists():
+            css_dst.mkdir(parents=True, exist_ok=True)
+            for f in css_src.rglob("*.css"):
+                rel = f.relative_to(css_src)
+                dest = css_dst / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    shutil.copy2(f, dest)
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy CSS asset {rel}: {e}")
+
+        js_src = Path(self.config.template_dir) / "assets" / "js"
+        js_dst = output_dir / "assets" / "js"
+        if js_src.exists():
+            js_dst.mkdir(parents=True, exist_ok=True)
+            for js_file in js_src.glob("*.js"):
+                try:
+                    shutil.copy2(js_file, js_dst / js_file.name)
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy JS {js_file.name}: {e}")
+
+        self._copy_favicon_assets()
+        self._copy_vendor_assets()
+
+    def _copy_favicon_assets(self) -> None:
+        assets_src = Path(self.config.template_dir) / "assets"
+        assets_dst = Path(self.config.output_dir) / "assets"
+        assets_dst.mkdir(parents=True, exist_ok=True)
+
+        for icon in ["favicon.png", "apple-touch-icon.png", "deckset-icon.png"]:
+            src = assets_src / icon
+            if src.exists():
+                try:
+                    shutil.copy2(src, assets_dst / icon)
+                except Exception as e:
+                    self.logger.warning(f"Failed to copy icon {icon}: {e}")
+
+    def _copy_vendor_assets(self) -> None:
+        """Copy vendored libraries (highlight.js, MathJax) to *site/assets/vendor/*."""
+        vendor_src = Path(self.config.template_dir) / "assets" / "vendor"
+        vendor_dst = Path(self.config.output_dir) / "assets" / "vendor"
+        if vendor_src.exists():
+            try:
+                if vendor_dst.exists():
+                    shutil.rmtree(vendor_dst)
+                shutil.copytree(vendor_src, vendor_dst)
+                self.logger.debug(f"Copied vendor assets: {vendor_src} -> {vendor_dst}")
+            except Exception as e:
+                self.logger.warning(f"Failed to copy vendor assets: {e}")
+
+    # ------------------------------------------------------------------
+    # Per-deck media handling
+    # ------------------------------------------------------------------
+
+    def deck_output_dir(self, info: PresentationInfo) -> Path:
+        """Return ``site/<slug>/``."""
+        return Path(self.config.output_dir) / info.slug
+
+    def deck_media_dir(self, info: PresentationInfo) -> Path:
+        """Return ``site/<slug>/media/``."""
+        return self.deck_output_dir(info) / "media"
+
     def process_presentation_files(self, presentation: EnhancedPresentation) -> None:
-        """
-        Process all files for a presentation.
-        
-        This is a convenience method that handles all file operations for a single presentation.
-        
-        Args:
-            presentation: Processed presentation
-        """
-        self._process_enhanced_presentation_media(presentation)
+        """Copy all media for *presentation* into ``site/<slug>/media/``."""
+        media_dir = self.deck_media_dir(presentation.info)
+        media_dir.mkdir(parents=True, exist_ok=True)
+
+        folder = Path(presentation.info.folder_path)
+
+        for slide in presentation.slides:
+            for img in slide.background_images:
+                self._copy_media(img, folder, media_dir, presentation.info)
+            for img in slide.inline_images:
+                self._copy_media(img, folder, media_dir, presentation.info)
+            for vid in slide.videos:
+                if vid.embed_type == "local":
+                    self._copy_media(vid, folder, media_dir, presentation.info)
+            for aud in slide.audio:
+                self._copy_media(aud, folder, media_dir, presentation.info)
+
         self.copy_preview_image(presentation.info)
-    
-    def _process_enhanced_presentation_media(self, presentation) -> None:
+        self._copy_custom_css(presentation.info)
+        self.logger.info(f"Processed media for: {presentation.info.title}")
+
+    def _copy_media(self, media_obj, source_folder: Path, media_dir: Path, info: PresentationInfo) -> None:
+        """Copy a single media file preserving its relative sub-path.
+
+        ``src_path`` is typically relative to the presentation folder.  We
+        preserve any sub-directories so that two files named ``1.png`` in
+        different sub-folders don't collide.
         """
-        Process media files for enhanced presentations with full Deckset support.
-        
-        Args:
-            presentation: EnhancedPresentation object
+        src = Path(media_obj.src_path)
+        if not src.is_absolute():
+            src = source_folder / src
+
+        if not src.exists():
+            self.logger.warning(f"Media source not found: {src}")
+            return
+
+        try:
+            rel = src.relative_to(source_folder)
+        except ValueError:
+            rel = Path(src.name)
+
+        dest = media_dir / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            shutil.copy2(src, dest)
+        except Exception as e:
+            self.logger.warning(f"Failed to copy media {src}: {e}")
+            return
+
+        media_obj.web_path = f"media/{rel.as_posix()}"
+        self.logger.debug(f"Copied media: {src} -> {dest}")
+
+    def _copy_custom_css(self, info: PresentationInfo) -> None:
+        """Copy ``custom.css`` from the deck folder into ``site/<slug>/custom.css``."""
+        src = Path(info.folder_path) / "custom.css"
+        if not src.exists():
+            return
+        dest = self.deck_output_dir(info) / "custom.css"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(src, dest)
+            self.logger.debug(f"Copied custom CSS for {info.title}")
+        except Exception as e:
+            self.logger.warning(f"Failed to copy custom.css for {info.title}: {e}")
+
+    # ------------------------------------------------------------------
+    # Preview images
+    # ------------------------------------------------------------------
+
+    def copy_preview_image(self, info: PresentationInfo) -> None:
+        if not info.preview_image:
+            return
+
+        src = Path(info.preview_image)
+        if not src.is_absolute():
+            src = Path(info.folder_path) / src
+
+        if not src.exists():
+            self.logger.warning(f"Preview image not found: {src}")
+            info.preview_image = None
+            return
+
+        dest_dir = self.deck_output_dir(info)
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"preview{src.suffix}"
+
+        try:
+            shutil.copy2(src, dest)
+            info.preview_image = f"{info.slug}/preview{src.suffix}"
+        except Exception as e:
+            self.logger.warning(f"Failed to copy preview: {e}")
+            info.preview_image = None
+
+    # ------------------------------------------------------------------
+    # Cleanup
+    # ------------------------------------------------------------------
+
+    def cleanup_output_directory(
+        self, presentations: List[EnhancedPresentation], *, single: Optional[str] = None
+    ) -> None:
+        """Remove deck directories that no longer exist in source.
+
+        When *single* is set, only that deck's directory is touched.
         """
-        try:
-            from media_processor import MediaProcessor
-            media_processor = MediaProcessor()
-            
-            # Create output directories for this presentation
-            output_slides_dir = Path(self.config.output_dir) / self.config.slides_dir / presentation.info.folder_name
-            output_slides_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Process each slide's media
-            for slide in presentation.slides:
-                # Process background image
-                if slide.background_image:
-                    self._copy_processed_image(slide.background_image, output_slides_dir, presentation.info.folder_name)
-                
-                # Process inline images
-                for image in slide.inline_images:
-                    self._copy_processed_image(image, output_slides_dir, presentation.info.folder_name)
-                
-                # Process videos
-                for video in slide.videos:
-                    if video.embed_type == "local":
-                        self._copy_processed_video(video, output_slides_dir, presentation.info.folder_name)
-                
-                # Process audio
-                for audio in slide.audio:
-                    self._copy_processed_audio(audio, output_slides_dir, presentation.info.folder_name)
-            
-            self.logger.info(f"Processed enhanced media for presentation: {presentation.info.title}")
-            
-        except ImportError:
-            self.logger.warning("Enhanced media processor not available, falling back to basic image processing")
-            # Fallback to basic processing
-            self.copy_slide_images(presentation)
-            self._update_slide_image_paths(presentation)
-        except Exception as e:
-            self.logger.error(f"Failed to process enhanced media for {presentation.info.title}: {e}")
-            # Fallback to basic processing
-            self.copy_slide_images(presentation)
-            self._update_slide_image_paths(presentation)
-    
-    def _copy_processed_image(self, processed_image, output_dir: Path, presentation_folder: str) -> None:
-        """Copy a processed image to the output directory."""
-        try:
-            source_path = Path(processed_image.src_path)
-            if not source_path.exists():
-                self.logger.warning(f"Processed image source not found: {source_path}")
-                return
-            
-            dest_filename = source_path.name
-            dest_path = output_dir / dest_filename
-            
-            # Copy the image
-            shutil.copy2(source_path, dest_path)
-            
-            # Update web path to be relative to presentations directory
-            processed_image.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
-            
-            self.logger.debug(f"Copied processed image: {source_path} -> {dest_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to copy processed image {processed_image.src_path}: {e}")
-    
-    def _copy_processed_video(self, processed_video, output_dir: Path, presentation_folder: str) -> None:
-        """Copy a processed video to the output directory."""
-        try:
-            source_path = Path(processed_video.src_path)
-            if not source_path.exists():
-                self.logger.warning(f"Processed video source not found: {source_path}")
-                return
-            
-            dest_filename = source_path.name
-            dest_path = output_dir / dest_filename
-            
-            # Copy the video
-            shutil.copy2(source_path, dest_path)
-            
-            # Update web path to be relative to presentations directory
-            processed_video.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
-            
-            self.logger.debug(f"Copied processed video: {source_path} -> {dest_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to copy processed video {processed_video.src_path}: {e}")
-    
-    def _copy_processed_audio(self, processed_audio, output_dir: Path, presentation_folder: str) -> None:
-        """Copy a processed audio file to the output directory."""
-        try:
-            source_path = Path(processed_audio.src_path)
-            if not source_path.exists():
-                self.logger.warning(f"Processed audio source not found: {source_path}")
-                return
-            
-            dest_filename = source_path.name
-            dest_path = output_dir / dest_filename
-            
-            # Copy the audio
-            shutil.copy2(source_path, dest_path)
-            
-            # Update web path to be relative to presentations directory
-            processed_audio.web_path = f"../{self.config.slides_dir}/{presentation_folder}/{dest_filename}"
-            
-            self.logger.debug(f"Copied processed audio: {source_path} -> {dest_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to copy processed audio {processed_audio.src_path}: {e}")
-        
+        output = Path(self.config.output_dir)
+        valid_slugs = {p.info.slug for p in presentations}
+
+        if single:
+            return
+
+        for item in output.iterdir():
+            if not item.is_dir():
+                continue
+            if item.name == "assets":
+                continue
+            if item.name not in valid_slugs and not any(
+                slug.startswith(item.name + "/") for slug in valid_slugs
+            ):
+                try:
+                    shutil.rmtree(item)
+                    self.logger.info(f"Removed stale deck directory: {item}")
+                except Exception as e:
+                    self.logger.error(f"Failed to remove {item}: {e}")
+
+    # ------------------------------------------------------------------
+    # Batch helper
+    # ------------------------------------------------------------------
+
     def process_all_presentations(self, presentations: List[EnhancedPresentation]) -> None:
-        """
-        Process files for all presentations.
-        
-        Args:
-            presentations: List of processed presentations
-        """
-        # Set up output directories
         self.setup_output_directories()
-        
-        # Process each presentation
-        for presentation in presentations:
-            self.process_presentation_files(presentation)
-        
-        # Clean up unused files
+        for p in presentations:
+            self.process_presentation_files(p)
         self.cleanup_output_directory(presentations)

@@ -1,5 +1,7 @@
 # Deckset Markdown to HTML Slide Generator Specification
 
+> **Superseded.** This v1 spec described a single-file markdown-to-HTML converter. The project has since grown into a multi-presentation static-site generator. See [`docs/specs/v2/requirements.md`](../specs/v2/requirements.md) for the current requirements and [`docs/specs/v2/design.md`](../specs/v2/design.md) for the architecture.
+
 ## Overview
 
 The Markdown-to-webpage generator is a tool that **converts a Deckset-compatible Markdown file into a responsive static HTML website**. The output preserves Deckset’s slide-based layout logic, allowing users to author presentations in Markdown and view them in any web browser. Each section of the Markdown becomes an HTML “slide” with content formatted according to Deckset’s syntax and extended features. A clean, default theme is applied for readability (e.g. simple fonts, high-contrast text on a plain background), and the generated site is responsive for various screen sizes.

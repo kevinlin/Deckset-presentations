@@ -1,0 +1,27 @@
+{# Code block #}
+{% macro code_block(block) %}
+{% if block %}
+<div class="code-container">
+    {{ block.content }}
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Math formula #}
+{% macro math_formula(formula) %}
+{% if formula %}
+{% if formula.formula_type == "display" %}
+<div class="math-display" data-formula-type="display">
+    \[{{ formula.content | e }}\]
+</div>
+{% elif formula.formula_type == "inline" %}
+<span class="math-inline" data-formula-type="inline">
+    \({{ formula.content | e }}\)
+</span>
+{% else %}
+<span class="math-unknown" data-formula-type="{{ formula.formula_type }}">
+    {{ formula.content | e }}
+</span>
+{% endif %}
+{% endif %}
+{% endmacro %}

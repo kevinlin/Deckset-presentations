@@ -129,7 +129,27 @@ Some content here
         assert config.columns is True
         assert config.background_image == "test.jpg"
         assert config.hide_footer is True
-    
+
+    def test_parse_slide_footer_override(self):
+        content = "[.footer: **Custom** footer text]\nSome content"
+        config = self.parser.parse_slide_commands(content)
+        assert config.footer == "**Custom** footer text"
+
+    def test_parse_slide_footer_empty(self):
+        content = "[.footer:]\nSome content"
+        config = self.parser.parse_slide_commands(content)
+        assert config.footer == ""
+
+    def test_slidenumbers_false_hides(self):
+        content = "[.slidenumbers: false]\nContent"
+        config = self.parser.parse_slide_commands(content)
+        assert config.hide_slide_numbers is True
+
+    def test_slidenumbers_false_case_insensitive(self):
+        content = "[.SLIDENUMBERS: false]\nContent"
+        config = self.parser.parse_slide_commands(content)
+        assert config.hide_slide_numbers is True
+
     def test_extract_slide_separators_standard(self):
         """Test extraction of slides using standard --- separators."""
         content = """
@@ -360,7 +380,7 @@ This is :fire: content!
         assert ':smile:' not in processed
         assert ':fire:' not in processed
         assert ':thumbs_up:' not in processed
-        assert '😊' in processed
+        assert '😄' in processed
         assert '🔥' in processed
         assert '👍' in processed
     
@@ -439,7 +459,93 @@ Final slide content
         processed = self.parser.process_fit_headers(slides[0], global_config)
         processed = self.parser.process_emoji_shortcodes(processed)
         assert '{.fit}' in processed
-        assert '😊' in processed
+        assert '😄' in processed
+
+
+class TestHtmlCommentStripping:
+    """Tests for stripping <!-- … --> blocks before slide splitting."""
+
+    def setup_method(self):
+        self.parser = DecksetParser()
+
+    def test_hidden_slide_removed(self):
+        """A slide consisting only of a comment should vanish."""
+        md = "# Slide 1\n\n---\n\n<!-- hidden slide -->\n\n---\n\n# Slide 3"
+        slides = self.parser.extract_slide_separators(md)
+        texts = [s.strip() for s in slides]
+        assert "# Slide 1" in texts
+        assert "# Slide 3" in texts
+        assert not any("hidden" in s for s in texts)
+
+    def test_inline_comment_stripped(self):
+        """Comments within a slide should be stripped."""
+        md = "# Title\n\nVisible <!-- secret --> content"
+        slides = self.parser.extract_slide_separators(md)
+        assert "secret" not in slides[0]
+        assert "Visible" in slides[0]
+
+    def test_multiline_comment_stripped(self):
+        md = "# Title\n\n<!--\nmulti\nline\n-->\n\nContent"
+        slides = self.parser.extract_slide_separators(md)
+        assert "multi" not in slides[0]
+        assert "Content" in slides[0]
+
+
+class TestSlideDividerComposition:
+    """Tests for slide-dividers composing with --- separators."""
+
+    def setup_method(self):
+        self.parser = DecksetParser()
+
+    def test_both_separators_used(self):
+        """A file using both --- and header-based dividers should split correctly."""
+        md = (
+            "# First\n\nContent one\n\n"
+            "---\n\n"
+            "Content two\n\n"
+            "# Third\n\nContent three"
+        )
+        config = DecksetConfig(slide_dividers=["#"])
+        slides = self.parser.detect_auto_slide_breaks(md, config)
+        assert len(slides) == 3
+
+    def test_divider_only(self):
+        """slide-dividers without --- should still work."""
+        md = "# One\n\nText\n\n# Two\n\nMore text"
+        config = DecksetConfig(slide_dividers=["#"])
+        slides = self.parser.detect_auto_slide_breaks(md, config)
+        assert len(slides) == 2
+
+
+class TestMultiLineSpeakerNotes:
+    """Tests for multi-line speaker notes (^ continues until blank line)."""
+
+    def setup_method(self):
+        self.parser = DecksetParser()
+
+    def test_single_line_note(self):
+        content = "# Title\n\n^ A single-line note"
+        cleaned, notes = self.parser.process_speaker_notes(content)
+        assert "single-line" in notes
+        assert "^" not in cleaned
+
+    def test_multiline_note(self):
+        """^ starts a note that continues until a blank line."""
+        content = "# Title\n\n^ First line of note\nSecond line of note\nThird line\n\nVisible content"
+        cleaned, notes = self.parser.process_speaker_notes(content)
+        assert "First line" in notes
+        assert "Second line" in notes
+        assert "Third line" in notes
+        assert "Visible content" in cleaned
+        assert "First line" not in cleaned
+
+    def test_two_note_blocks(self):
+        """Two separate ^ blocks should be collected together."""
+        content = "# Title\n\n^ Note A\n\nVisible\n\n^ Note B"
+        cleaned, notes = self.parser.process_speaker_notes(content)
+        assert "Note A" in notes
+        assert "Note B" in notes
+        assert "Visible" in cleaned
 
 
 class TestDecksetParsingError:
@@ -479,6 +585,91 @@ class TestDecksetParsingError:
             pass
         except Exception:
             pytest.fail("Parser should raise a GeneratorError subclass")
+
+
+class TestFootnoteResolution:
+    """Tests for cross-slide footnote resolution in EnhancedPresentationProcessor."""
+
+    def _make_slides(self, *contents_and_footnotes):
+        """Build a list of ProcessedSlide objects for testing.
+
+        Each argument is a ``(content, footnotes_dict)`` tuple.
+        """
+        from models import ProcessedSlide
+        slides = []
+        for idx, (content, fns) in enumerate(contents_and_footnotes, start=1):
+            slides.append(ProcessedSlide(index=idx, content=content, footnotes=fns))
+        return slides
+
+    def setup_method(self):
+        from enhanced_processor import EnhancedPresentationProcessor
+        self.processor = EnhancedPresentationProcessor()
+
+    def test_per_slide_namespacing(self):
+        """Footnote keys are namespaced per slide."""
+        slides = self._make_slides(
+            ("Text[^1] here.", {"1": "First footnote"}),
+        )
+        self.processor._resolve_footnotes(slides)
+
+        assert "fn-slide1-1" in slides[0].footnotes
+        assert slides[0].footnotes["fn-slide1-1"] == "First footnote"
+
+    def test_refs_become_superscript_links(self):
+        """[^1] references are replaced with <sup><a> links."""
+        slides = self._make_slides(
+            ("Text[^1] more.", {"1": "A note"}),
+        )
+        self.processor._resolve_footnotes(slides)
+
+        assert '<sup><a href="#fn-slide1-1">1</a></sup>' in slides[0].content
+        assert "[^1]" not in slides[0].content
+
+    def test_cross_slide_resolution(self):
+        """A definition on slide 1 satisfies a reference on slide 2."""
+        slides = self._make_slides(
+            ("Defined here.\n\n[^1]: Global def", {"1": "Global def"}),
+            ("Ref here[^1].", {}),
+        )
+        self.processor._resolve_footnotes(slides)
+
+        assert "fn-slide2-1" in slides[1].footnotes
+        assert slides[1].footnotes["fn-slide2-1"] == "Global def"
+
+    def test_duplicate_footnote_warns(self, caplog):
+        """Duplicate footnote IDs log a warning; first definition wins."""
+        import logging
+        slides = self._make_slides(
+            ("Slide one[^x].", {"x": "first def"}),
+            ("Slide two[^x].", {"x": "second def"}),
+        )
+        with caplog.at_level(logging.WARNING, logger="enhanced_processor"):
+            pool = self.processor._resolve_footnotes(slides)
+
+        assert pool["x"] == "first def"
+        assert any("Duplicate footnote [^x]" in r.message for r in caplog.records)
+
+    def test_missing_ref_warns(self, caplog):
+        """A reference with no definition anywhere logs a warning."""
+        import logging
+        slides = self._make_slides(
+            ("Ref[^missing] here.", {}),
+        )
+        with caplog.at_level(logging.WARNING, logger="enhanced_processor"):
+            self.processor._resolve_footnotes(slides)
+
+        assert any("has no definition" in r.message for r in caplog.records)
+        assert slides[0].footnotes == {}
+
+    def test_global_pool_returned(self):
+        """_resolve_footnotes returns the full global pool (unnamespaced)."""
+        slides = self._make_slides(
+            ("A[^a].", {"a": "alpha"}),
+            ("B[^b].", {"b": "beta"}),
+        )
+        pool = self.processor._resolve_footnotes(slides)
+
+        assert pool == {"a": "alpha", "b": "beta"}
 
 
 if __name__ == "__main__":

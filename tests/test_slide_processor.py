@@ -68,26 +68,20 @@ Main content here.
             
             assert slide.notes == notes
     
-    def test_process_slide_with_footnotes(self):
-        """Test slide processing with footnotes."""
-        content = """
-# Slide with Footnotes
-Content with reference[^1].
-        """
-        footnotes = {"1": "This is a footnote"}
-        
+    def test_process_slide_preserves_footnote_defs(self):
+        """Footnote definitions are kept in content for enhanced_processor to handle."""
+        content = "# Slide\nContent[^1].\n\n[^1]: A footnote"
+
         with patch('deckset_parser.DecksetParser') as mock_parser_class:
             mock_parser = Mock()
             mock_parser_class.return_value = mock_parser
             mock_parser.parse_slide_commands.return_value = SlideConfig()
-            mock_parser.process_speaker_notes.return_value = (content.strip(), "")
-            mock_parser.process_footnotes.return_value = (content.strip(), footnotes)
-            mock_parser.process_fit_headers.return_value = content.strip()
-            mock_parser.process_emoji_shortcodes.return_value = content.strip()
-            
+            mock_parser.process_speaker_notes.return_value = (content, "")
+
             slide = self.processor.process_slide(content, 2, self.config)
-            
-            assert slide.footnotes == footnotes
+
+            assert slide.footnotes == {}
+            assert "[^1]" in slide.content
     
     def test_process_slide_with_columns(self):
         """Test slide processing with column layout."""

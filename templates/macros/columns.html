@@ -1,0 +1,12 @@
+{# Multi-column layout #}
+{% macro columns(cols) %}
+{% if cols %}
+<div class="columns-container">
+{% for col in cols %}
+    <div class="column" style="width: {{ "%.1f" | format(col.width_percentage) }}%;">
+        {{ col.content | markdown_to_html }}
+    </div>
+{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}

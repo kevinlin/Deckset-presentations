@@ -437,6 +437,8 @@ class DecksetWebsiteGenerator:
             "slide_styles.css",
             "code_highlighting_styles.css",
             "assets/js/slide-viewer.js",
+            "assets/css/themes/light.css",
+            "assets/vendor/highlight/highlight.min.js",
         ]
 
         for tpl in required_templates:

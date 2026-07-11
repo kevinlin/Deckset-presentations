@@ -5,17 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ presentation.info.title }}</title>
     <!-- Favicon and Apple Touch Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset_path_prefix }}/assets/favicon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset_path_prefix }}/assets/favicon.png">
-    <link rel="apple-touch-icon" href="{{ asset_path_prefix }}/assets/favicon.png">
-    <link rel="shortcut icon" href="{{ asset_path_prefix }}/assets/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset_path_prefix }}assets/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset_path_prefix }}assets/favicon.png">
+    <link rel="apple-touch-icon" href="{{ asset_path_prefix }}assets/favicon.png">
+    <link rel="shortcut icon" href="{{ asset_path_prefix }}assets/favicon.png">
     <!-- Additional meta tags for favicon support -->
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="theme-color" content="#2563eb">
     <link rel="stylesheet" href="{{ asset_path_prefix }}slide_styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    {% for link in theme_links %}{{ link }}
+    {% endfor %}
+    <link rel="stylesheet" href="{{ asset_path_prefix }}assets/vendor/highlight/default.min.css">
+    <script id="MathJax-script" async src="{{ asset_path_prefix }}assets/vendor/mathjax/tex-mml-chtml.js"></script>
     {% if analytics_enabled %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_measurement_id }}"></script>
     <script>
@@ -67,7 +68,7 @@
     </div>
     
     <!-- Enhanced JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="{{ asset_path_prefix }}assets/vendor/highlight/highlight.min.js"></script>
     <script src="{{ asset_path_prefix }}assets/js/slide-viewer.js"></script>
     
     <!-- MathJax Configuration -->

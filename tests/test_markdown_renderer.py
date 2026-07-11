@@ -96,6 +96,28 @@ class TestBlockquotes:
         html = renderer.render("> A wise quote", "s1")
         assert "<blockquote>" in html
 
+    def test_blockquote_with_attribution(self, renderer):
+        md = "> The best way to predict the future is to invent it.\n\n-- Alan Kay"
+        html = renderer.render(md, "s1")
+        assert "<blockquote>" in html
+        assert "<cite>" in html
+        assert "Alan Kay" in html
+
+    def test_blockquote_without_attribution(self, renderer):
+        md = "> Just a regular quote.\n\nSome other text."
+        html = renderer.render(md, "s1")
+        assert "<blockquote>" in html
+        assert "<cite>" not in html
+
+    def test_blockquote_cite_inside_blockquote(self, renderer):
+        """The <cite> element must be a child of the <blockquote>."""
+        md = "> Simplicity is prerequisite for reliability.\n\n-- Edsger Dijkstra"
+        html = renderer.render(md, "s1")
+        import re
+        bq = re.search(r"<blockquote>(.*?)</blockquote>", html, re.DOTALL)
+        assert bq is not None
+        assert "<cite>" in bq.group(1)
+
 
 class TestTables:
     def test_pipe_table(self, renderer):

@@ -51,13 +51,9 @@ class SlideProcessor:
             parser = DecksetParser()
             slide.slide_config = parser.parse_slide_commands(slide_content)
 
-            # Process speaker notes and footnotes
             content_without_notes, notes = parser.process_speaker_notes(slide_content)
-            content_without_footnotes, footnotes = parser.process_footnotes(content_without_notes)
-            
             slide.notes = notes
-            slide.footnotes = footnotes
-            slide.content = content_without_footnotes
+            slide.content = content_without_notes
             
             # Process columns if present
             if slide.slide_config.columns:
@@ -74,16 +70,9 @@ class SlideProcessor:
             # Note: Math formulas are processed by the enhanced processor
             # to create proper MathFormula objects
             
-            # Apply autoscale if needed
             if config.autoscale or slide.slide_config.autoscale:
                 slide.content = self.apply_autoscale(slide.content, config)
-            
-            # Process fit headers
-            slide.content = parser.process_fit_headers(slide.content, config)
-            
-            # Process emoji shortcodes
-            slide.content = parser.process_emoji_shortcodes(slide.content)
-            
+
             return slide
             
         except Exception as e:

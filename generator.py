@@ -329,11 +329,9 @@ class WebPageGenerator:
         if output_dir is None:
             output_dir = self.config.output_dir
 
-        # Set up output directories
         self.file_manager.setup_output_directories()
 
         output_dir_path = Path(output_dir)
-        presentations_dir = output_dir_path / "presentations"
 
         stats = {
             "total": len(presentations),
@@ -342,66 +340,41 @@ class WebPageGenerator:
             "errors": []
         }
 
-        # Generate individual presentation pages
         presentation_infos = []
         for presentation in presentations:
             try:
-                # Update presentation metadata
                 if not presentation.info.last_modified:
-                    # Set last modified time based on markdown file
                     md_path = Path(presentation.info.markdown_path)
                     if md_path.exists():
                         presentation.info.last_modified = datetime.fromtimestamp(md_path.stat().st_mtime)
 
-                # Set slide count if not already set
                 if presentation.info.slide_count == 0:
                     presentation.info.slide_count = len(presentation.slides)
 
-                # Process files for this presentation (this handles image copying and path updates)
                 self.file_manager.process_presentation_files(presentation)
 
-                # Generate the presentation page
-                output_path = presentations_dir / f"{presentation.info.folder_name}.html"
+                deck_dir = self.file_manager.deck_output_dir(presentation.info)
+                deck_dir.mkdir(parents=True, exist_ok=True)
+                output_path = deck_dir / "index.html"
                 self.generate_presentation_page(presentation, output_path)
                 presentation_infos.append(presentation.info)
                 stats["successful"] += 1
             except Exception as e:
                 stats["failed"] += 1
-                error_info = {
+                stats["errors"].append({
                     "presentation": presentation.info.title,
-                    "error": str(e)
-                }
-                stats["errors"].append(error_info)
+                    "error": str(e),
+                })
                 self.logger.error(f"Failed to generate page for '{presentation.info.title}': {e}")
-                # Continue with other presentations despite errors
 
-                # Generate homepage - adjust preview image paths for root level
         try:
-            # Create a copy of presentation_infos with adjusted paths for homepage
-            homepage_presentation_infos = []
-            for presentation_info in presentation_infos:
-                # Create a copy to avoid modifying the original
-                from copy import copy
-                homepage_info = copy(presentation_info)
-
-                # Adjust preview image paths for homepage (remove ../ prefix)
-                if homepage_info.preview_image and homepage_info.preview_image.startswith("../"):
-                    homepage_info.preview_image = homepage_info.preview_image[3:]  # Remove "../"
-
-                homepage_presentation_infos.append(homepage_info)
-
             homepage_path = output_dir_path / "index.html"
-            self.generate_homepage(homepage_presentation_infos, homepage_path)
+            self.generate_homepage(presentation_infos, homepage_path)
         except Exception as e:
-            stats["errors"].append({
-                "presentation": "homepage",
-                "error": str(e)
-            })
+            stats["errors"].append({"presentation": "homepage", "error": str(e)})
             self.logger.error(f"Failed to generate homepage: {e}")
 
-        # Clean up unused files
         self.file_manager.cleanup_output_directory(presentations)
-
         return stats
 
     def _render_enhanced_presentation(self, presentation) -> str:
@@ -419,7 +392,9 @@ class WebPageGenerator:
             slides_html = []
             anchor_index = {}
             for slide in presentation.slides:
-                slide_html = self.template_manager.render_slide(slide, presentation.config)
+                slide_html = self.template_manager.render_slide(
+                    slide, presentation.config, total_slides=len(presentation.slides)
+                )
                 # Build a simple anchor index by scanning for id="..." and <a name="...">
                 try:
                     import re as _re
@@ -435,13 +410,21 @@ class WebPageGenerator:
             asset_path_prefix = self._calculate_asset_path_prefix(presentation.info.folder_name)
 
             # Prepare template context
+            theme_links = self.template_manager.theme_stylesheets(
+                presentation.config, asset_path_prefix
+            )
+            custom_css = Path(presentation.info.folder_path) / "custom.css"
+            if custom_css.exists():
+                theme_links.append('<link rel="stylesheet" href="custom.css">')
+
             template_context = {
                 'presentation': presentation,
                 'slides_html': "".join(slides_html),
                 'total_slides': len(presentation.slides),
                 'asset_path_prefix': asset_path_prefix,
                 'mathjax_config': self._get_mathjax_config(),
-                'anchor_index': anchor_index
+                'anchor_index': anchor_index,
+                'theme_links': theme_links,
             }
 
             # Analytics context for presentation pages
@@ -479,25 +462,12 @@ class WebPageGenerator:
             """
 
     def _calculate_asset_path_prefix(self, folder_name: str) -> str:
-        """
-        Calculate the correct relative path prefix for assets based on presentation nesting.
-        
-        Args:
-            folder_name: The folder name/path for the presentation (e.g., "single-pres" or "Examples/10 Deckset basics")
-            
-        Returns:
-            Relative path prefix (e.g., "../" or "../../")
-        """
-        # Count the number of path separators to determine nesting depth
-        # Examples:
-        # "single-presentation" -> 0 separators -> "../" (presentations/single.html -> ../assets)
-        # "Examples/10 Deckset basics" -> 1 separator -> "../../" (presentations/Examples/file.html -> ../../assets)
-        path_parts = folder_name.split('/')
-        depth = len(path_parts)
+        """Calculate the relative path from a deck's ``index.html`` to the site root.
 
-        # We need depth "../" segments to go back to the root from the presentation file
-        # Single presentations: presentations/file.html -> ../
-        # Nested presentations: presentations/subfolder/file.html -> ../../
+        Layout: ``site/<slug>/index.html`` — slug depth mirrors folder_name depth.
+        ``"01-foo"`` → ``"../"``; ``"Examples/10 basics"`` → ``"../../"``.
+        """
+        depth = folder_name.count("/") + 1
         return "../" * depth
 
     def _get_mathjax_config(self) -> str:

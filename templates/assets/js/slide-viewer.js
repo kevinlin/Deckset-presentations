@@ -313,43 +313,100 @@ class EnhancedSlideViewer {
         }
     }
     
-    showSlide(index) {
+    showSlide(index, direction) {
         if (index < 0 || index >= this.totalSlides) return;
-        
-        // Hide all slides using CSS classes
-        this.slides.forEach((slide, i) => {
-            if (i === index) {
-                slide.classList.add('active');
-                slide.style.display = 'block'; // Fallback for older browsers
-            } else {
-                slide.classList.remove('active');
-                slide.style.display = 'none'; // Fallback for older browsers
-            }
-        });
-        
+
+        const prevIndex = this.currentSlide;
+        const transition = this._getTransition();
+        const useTransition = transition !== 'none' && prevIndex !== index;
+
+        if (useTransition && this.slides[prevIndex]) {
+            this._animateTransition(prevIndex, index, transition, direction);
+        } else {
+            this.slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                    slide.style.display = 'block';
+                } else {
+                    slide.classList.remove('active');
+                    slide.style.display = 'none';
+                }
+            });
+        }
+
         this.currentSlide = index;
         this.updateSlideCounter();
         this.updateNavigationButtons();
-        
-        // Trigger any slide-specific animations or media
         this.activateSlideMedia(index);
-        
-        // Update URL hash for bookmarking
         window.location.hash = `slide-${index + 1}`;
-        
-        // Announce slide change for screen readers
         this.announceSlideChange();
+    }
+
+    _getTransition() {
+        const reducedMotion = typeof window !== 'undefined'
+            && window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reducedMotion) return 'none';
+
+        const container = typeof document !== 'undefined'
+            && document.querySelector('.slides-container');
+        if (container && container.dataset.transition) {
+            return container.dataset.transition;
+        }
+        if (this.slides[this.currentSlide] && this.slides[this.currentSlide].dataset.transition) {
+            return this.slides[this.currentSlide].dataset.transition;
+        }
+        return 'none';
+    }
+
+    _animateTransition(fromIdx, toIdx, transition, direction) {
+        const from = this.slides[fromIdx];
+        const to = this.slides[toIdx];
+        if (!from || !to) return;
+
+        const dir = direction || (toIdx > fromIdx ? 'next' : 'prev');
+
+        to.style.display = 'block';
+        from.classList.remove('active');
+
+        if (transition === 'fade') {
+            from.classList.add('slide-fade-out');
+            to.classList.add('slide-fade-in', 'active');
+            const cleanup = () => {
+                from.classList.remove('slide-fade-out');
+                from.style.display = 'none';
+                to.classList.remove('slide-fade-in');
+            };
+            to.addEventListener('animationend', cleanup, { once: true });
+            setTimeout(cleanup, 400);
+        } else if (transition === 'push') {
+            const outClass = dir === 'next' ? 'slide-push-out-left' : 'slide-push-out-right';
+            const inClass = dir === 'next' ? 'slide-push-in-right' : 'slide-push-in-left';
+
+            from.classList.add(outClass);
+            to.classList.add(inClass, 'active');
+            const cleanup = () => {
+                from.classList.remove(outClass);
+                from.style.display = 'none';
+                to.classList.remove(inClass);
+            };
+            to.addEventListener('animationend', cleanup, { once: true });
+            setTimeout(cleanup, 400);
+        } else {
+            from.style.display = 'none';
+            to.classList.add('active');
+        }
     }
     
     nextSlide() {
         if (this.currentSlide < this.totalSlides - 1) {
-            this.showSlide(this.currentSlide + 1);
+            this.showSlide(this.currentSlide + 1, 'next');
         }
     }
-    
+
     previousSlide() {
         if (this.currentSlide > 0) {
-            this.showSlide(this.currentSlide - 1);
+            this.showSlide(this.currentSlide - 1, 'prev');
         }
     }
     
@@ -702,23 +759,9 @@ class SlideUtils {
     }
     
     static enablePrintMode() {
-        // Show all slides for printing
         const slides = document.querySelectorAll('.slide');
         slides.forEach(slide => {
             slide.style.display = 'block';
-            slide.style.pageBreakAfter = 'always';
-        });
-        
-        // Hide navigation
-        const navigation = document.querySelector('.navigation');
-        if (navigation) {
-            navigation.style.display = 'none';
-        }
-        
-        // Show all speaker notes
-        const notes = document.querySelectorAll('.speaker-notes');
-        notes.forEach(note => {
-            note.style.display = 'block';
         });
     }
 }
@@ -749,44 +792,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.slideViewer = viewer;
     }
     
-    // Initialize homepage search if present
-    if (document.getElementById('search-input')) {
-        initializeHomepageSearch();
-    }
 });
-
-function initializeHomepageSearch() {
-    const searchInput = document.getElementById('search-input');
-    const presentationCards = document.querySelectorAll('.presentation-card');
-    const presentationsGrid = document.getElementById('presentations-grid');
-    const noResults = document.getElementById('no-results');
-    
-    if (!searchInput) return;
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-        let matchCount = 0;
-        
-        presentationCards.forEach(card => {
-            const title = card.querySelector('.presentation-title');
-            if (title && title.textContent.toLowerCase().includes(searchTerm)) {
-                card.classList.remove('hidden');
-                matchCount++;
-            } else {
-                card.classList.add('hidden');
-            }
-        });
-        
-        // Show/hide no results message
-        if (matchCount === 0 && searchTerm !== '') {
-            if (presentationsGrid) presentationsGrid.classList.add('hidden');
-            if (noResults) noResults.classList.remove('hidden');
-        } else {
-            if (presentationsGrid) presentationsGrid.classList.remove('hidden');
-            if (noResults) noResults.classList.add('hidden');
-        }
-    });
-}
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {

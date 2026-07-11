@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, Set
 import logging
 
+import emoji as emoji_lib
+
 from models import DecksetConfig, SlideConfig, DecksetParsingError
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ class DecksetParser:
             'build_lists': re.compile(r'^build-lists:\s*(true|false|yes|no|on|off|1|0)$', re.MULTILINE | re.IGNORECASE),
             'slide_transition': re.compile(r'^slide-transition:\s*(.+)$', re.MULTILINE | re.IGNORECASE),
             'code_language': re.compile(r'^code-language:\s*(.+)$', re.MULTILINE | re.IGNORECASE),
-            'fit_headers': re.compile(r'^fit-headers:\s*(.+)$', re.MULTILINE | re.IGNORECASE),
+            'fit_headers': re.compile(r'^fit-headers?:\s*(.+)$', re.MULTILINE | re.IGNORECASE),
             'slide_dividers': re.compile(r'^slide-dividers:\s*(.+)$', re.MULTILINE | re.IGNORECASE),
         }
         
@@ -39,8 +41,9 @@ class DecksetParser:
         self._slide_command_patterns = {
             'column': re.compile(r'^\[\.column\]$', re.MULTILINE | re.IGNORECASE),
             'background_image': re.compile(r'^\[\.background-image:\s*([^\]]+)\]$', re.MULTILINE | re.IGNORECASE),
+            'footer': re.compile(r'^\[\.footer:\s*([^\]]*)\]$', re.MULTILINE | re.IGNORECASE),
             'hide_footer': re.compile(r'^\[\.hide-footer\]$', re.MULTILINE | re.IGNORECASE),
-            'hide_slide_numbers': re.compile(r'^\[\.hide-slide-numbers\]$', re.MULTILINE | re.IGNORECASE),
+            'hide_slide_numbers': re.compile(r'^\[\.(?:hide-slide-numbers|slidenumbers:\s*false)\]$', re.MULTILINE | re.IGNORECASE),
             'autoscale': re.compile(r'^\[\.autoscale:\s*(true|false|yes|no|on|off|1|0)\]$', re.MULTILINE | re.IGNORECASE),
             'slide_transition': re.compile(r'^\[\.slide-transition:\s*([^\]]+)\]$', re.MULTILINE | re.IGNORECASE),
         }
@@ -66,28 +69,7 @@ class DecksetParser:
         # Fit header pattern
         self._fit_header_pattern = re.compile(r'^(#{1,6})\s*\[fit\]\s*(.+)$', re.MULTILINE)
         
-        # Emoji shortcode pattern
         self._emoji_pattern = re.compile(r':([a-zA-Z0-9_+-]+):')
-        
-        # Common emoji mappings
-        self._emoji_map = {
-            'smile': '😊',
-            'heart': '❤️',
-            'thumbs_up': '👍',
-            'thumbs_down': '👎',
-            'fire': '🔥',
-            'star': '⭐',
-            'check': '✅',
-            'x': '❌',
-            'warning': '⚠️',
-            'info': 'ℹ️',
-            'question': '❓',
-            'exclamation': '❗',
-            'arrow_right': '➡️',
-            'arrow_left': '⬅️',
-            'arrow_up': '⬆️',
-            'arrow_down': '⬇️',
-        }
     
     def parse_global_commands(self, content: str) -> DecksetConfig:
         """
@@ -162,6 +144,8 @@ class DecksetParser:
                         elif command == 'autoscale':
                             value = match.group(1).strip()
                             config.autoscale = self._parse_boolean(value)
+                        elif command == 'footer':
+                            config.footer = match.group(1).strip()
                         elif command in ['background_image', 'slide_transition']:
                             value = match.group(1).strip()
                             setattr(config, command, value)
@@ -184,7 +168,17 @@ class DecksetParser:
     def _parse_boolean(self, value: str) -> bool:
         """Parse boolean values from string."""
         return value.strip().lower() in ('true', 'yes', 'on', '1')
-    
+
+    _HTML_COMMENT_RE = re.compile(r'<!--.*?-->', re.DOTALL)
+
+    def strip_html_comments(self, content: str) -> str:
+        """Strip ``<!-- … -->`` comment blocks (including multi-line) from content.
+
+        Whole slides that consist only of a comment are removed, preventing
+        hidden slides from leaking into output.
+        """
+        return self._HTML_COMMENT_RE.sub('', content)
+
     def extract_slide_separators(self, content: str) -> List[str]:
         """
         Extract slides by splitting on various separator formats.
@@ -199,7 +193,7 @@ class DecksetParser:
             DecksetParsingError: If extraction fails
         """
         try:
-            # Remove any frontmatter or global commands from the beginning
+            content = self.strip_html_comments(content)
             content = self._remove_frontmatter_and_globals(content)
             
             # Try different separator patterns until one works
@@ -251,8 +245,9 @@ class DecksetParser:
             DecksetParsingError: If detection fails
         """
         try:
+            content = self.strip_html_comments(content)
+
             if not config.slide_dividers:
-                # No auto-breaks configured, return original slide separation
                 return self.extract_slide_separators(content)
             
             # Remove frontmatter and globals
@@ -267,35 +262,36 @@ class DecksetParser:
                     pattern = re.compile(f'^#{{{level}}}\\s+(.+)$', re.MULTILINE)
                     header_patterns.append(pattern)
             
-            if not header_patterns:
-                # No valid header patterns, fall back to regular separation
-                return self.extract_slide_separators(content)
-            
-            # Find all header positions
+            # Also include standard --- separators so both compose
+            separator_re = re.compile(r'^-{3,}\s*$', re.MULTILINE)
+
             break_positions = []
             for pattern in header_patterns:
                 for match in pattern.finditer(content):
-                    break_positions.append(match.start())
-            
-            # Sort break positions
-            break_positions.sort()
-            
+                    break_positions.append((match.start(), False))
+
+            for match in separator_re.finditer(content):
+                break_positions.append((match.start(), True))
+
+            break_positions.sort(key=lambda t: t[0])
+
             if not break_positions:
-                # No auto-breaks found, return as single slide
                 return [content]
             
-            # Split content at break positions
             slides = []
             start = 0
-            
-            for pos in break_positions:
+
+            for pos, is_sep in break_positions:
                 if start < pos:
                     slide_content = content[start:pos].strip()
                     if slide_content:
                         slides.append(slide_content)
-                start = pos
-            
-            # Add final slide
+                if is_sep:
+                    end_of_sep = content.find('\n', pos)
+                    start = (end_of_sep + 1) if end_of_sep != -1 else len(content)
+                else:
+                    start = pos
+
             if start < len(content):
                 final_slide = content[start:].strip()
                 if final_slide:
@@ -307,60 +303,50 @@ class DecksetParser:
         except Exception as e:
             raise DecksetParsingError(f"Failed to detect auto slide breaks: {e}")
     
+    _NOTE_START_RE = re.compile(r'^\^(.*)$')
+
     def process_speaker_notes(self, content: str) -> Tuple[str, str]:
-        """
-        Extract speaker notes from slide content.
-        
-        Args:
-            content: Slide content with potential speaker notes
-            
-        Returns:
-            Tuple of (cleaned_content, notes_html)
-            
-        Raises:
-            DecksetParsingError: If processing fails
+        """Extract speaker notes from slide content.
+
+        A line starting with ``^`` begins a note block.  Subsequent non-blank
+        lines are part of the same note block (multi-line notes).  A blank line
+        ends the current note block.
+
+        Returns ``(cleaned_content, notes_html)``.
         """
         try:
-            note_lines = []
-            cleaned_lines = []
-            
-            # Process line by line to separate notes from content
+            note_lines: list[str] = []
+            cleaned_lines: list[str] = []
+            in_note = False
+
             for line in content.split('\n'):
-                is_note = False
-                
-                # Check each note pattern
-                for pattern in self._note_patterns:
-                    match = pattern.match(line)
-                    if match:
-                        note_text = match.group(1).strip()
-                        if note_text:
-                            note_lines.append(note_text)
-                        is_note = True
-                        break
-                
-                if not is_note:
+                m = self._NOTE_START_RE.match(line)
+                if m:
+                    note_lines.append(m.group(1).strip())
+                    in_note = True
+                elif in_note:
+                    if line.strip() == '':
+                        in_note = False
+                        cleaned_lines.append(line)
+                    else:
+                        note_lines.append(line.strip())
+                else:
                     cleaned_lines.append(line)
-            
-            # Join cleaned content
+
             cleaned_content = '\n'.join(cleaned_lines).strip()
-            
-            # Convert notes to markdown if any found
+
             notes_html = ""
             if note_lines:
                 try:
-                    import markdown
-                    notes_text = '\n'.join(note_lines)
-                    notes_html = markdown.markdown(notes_text)
-                except ImportError:
-                    # Fallback if markdown not available
-                    notes_html = '<br>'.join(note_lines)
+                    import markdown as _md
+                    notes_html = _md.markdown('\n'.join(note_lines))
                 except Exception as e:
                     logger.warning(f"Failed to convert notes to HTML: {e}")
                     notes_html = '\n'.join(note_lines)
-            
+
             logger.debug(f"Extracted {len(note_lines)} note lines")
             return cleaned_content, notes_html
-            
+
         except Exception as e:
             raise DecksetParsingError(f"Failed to process speaker notes: {e}")
     
@@ -471,34 +457,12 @@ class DecksetParser:
             raise DecksetParsingError(f"Failed to process fit headers: {e}")
     
     def process_emoji_shortcodes(self, content: str) -> str:
-        """
-        Convert emoji shortcodes to Unicode emojis.
-        
-        Args:
-            content: Content with potential emoji shortcodes
-            
-        Returns:
-            Content with emojis converted
-            
-        Raises:
-            DecksetParsingError: If processing fails
+        """Convert emoji shortcodes to Unicode via the ``emoji`` package.
+
+        Unknown shortcodes pass through unchanged.
         """
         try:
-            def replace_emoji(match):
-                emoji_name = match.group(1)
-                return self._emoji_map.get(emoji_name, match.group(0))  # Return original if not found
-            
-            processed_content = self._emoji_pattern.sub(replace_emoji, content)
-            
-            # Count how many emojis were converted
-            emoji_matches = self._emoji_pattern.findall(content)
-            converted_count = sum(1 for emoji in emoji_matches if emoji in self._emoji_map)
-            
-            if converted_count > 0:
-                logger.debug(f"Converted {converted_count} emoji shortcodes")
-            
-            return processed_content
-            
+            return emoji_lib.emojize(content, language="alias")
         except Exception as e:
             raise DecksetParsingError(f"Failed to process emoji shortcodes: {e}")
     

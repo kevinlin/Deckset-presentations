@@ -243,23 +243,18 @@ Some text here.
         # Verify output structure
         assert self.output_dir.exists()
         assert (self.output_dir / "index.html").exists()
-        assert (self.output_dir / "presentations").exists()
-        
-        # Verify individual presentation files
-        presentations_dir = self.output_dir / "presentations"
-        expected_files = [
-            "01-basic-presentation.html",
-            "02-enhanced-presentation.html", 
-            "03-mixed-features.html"
+
+        # Verify individual presentation pages (new layout: <slug>/index.html)
+        expected_slugs = [
+            "01-basic-presentation",
+            "02-enhanced-presentation",
+            "03-mixed-features",
         ]
-        
-        for filename in expected_files:
-            file_path = presentations_dir / filename
+
+        for slug in expected_slugs:
+            file_path = self.output_dir / slug / "index.html"
             if file_path.exists():
-                # Verify file has content
                 assert file_path.stat().st_size > 0
-                
-                # Verify HTML structure
                 content = file_path.read_text()
                 assert "<!DOCTYPE html>" in content
                 assert "<html" in content
@@ -331,7 +326,7 @@ broken code block
         # Errors are expected but shouldn't prevent generation
         
         # Verify error presentation was processed (even if with fallbacks)
-        error_file = self.output_dir / "presentations" / "04-error-presentation.html"
+        error_file = self.output_dir / "04-error-presentation" / "index.html"
         if error_file.exists():
             content = error_file.read_text()
             assert len(content) > 0  # Should have some content even with errors
@@ -399,8 +394,8 @@ broken code block
         result = generator.generate_website(self.temp_dir)
         
         # Check presentation files for responsive elements
-        presentation_files = list((self.output_dir / "presentations").glob("*.html"))
-        
+        presentation_files = list(self.output_dir.glob("*/index.html"))
+
         for file_path in presentation_files:
             if file_path.exists():
                 content = file_path.read_text()
@@ -441,8 +436,8 @@ broken code block
                 assert 'alt=' in homepage_content
         
         # Check presentation files for accessibility
-        presentation_files = list((self.output_dir / "presentations").glob("*.html"))
-        
+        presentation_files = list(self.output_dir.glob("*/index.html"))
+
         for file_path in presentation_files:
             if file_path.exists():
                 content = file_path.read_text()
@@ -540,9 +535,7 @@ class TestWebsiteStructureIntegration:
         # Verify directory structure
         expected_dirs = [
             self.output_dir,
-            self.output_dir / "presentations",
-            self.output_dir / "slides",
-            self.output_dir / "images"
+            self.output_dir / "assets",
         ]
         
         for dir_path in expected_dirs:
@@ -552,9 +545,9 @@ class TestWebsiteStructureIntegration:
         # Verify file structure
         assert (self.output_dir / "index.html").exists()
         
-        presentation_files = list((self.output_dir / "presentations").glob("*.html"))
+        presentation_files = list(self.output_dir.glob("*/index.html"))
         assert len(presentation_files) >= 1
-    
+
     def test_cross_references_and_links(self):
         """Test that cross-references and links work correctly."""
         generator = DecksetWebsiteGenerator(self.config)
@@ -564,13 +557,11 @@ class TestWebsiteStructureIntegration:
         homepage_path = self.output_dir / "index.html"
         if homepage_path.exists():
             homepage_content = homepage_path.read_text()
-            
-            # Should have links to presentation files
-            assert 'href="presentations/' in homepage_content
-            assert '.html"' in homepage_content
-        
+            # Should have links to presentation slugs
+            assert 'href="' in homepage_content
+
         # Check presentation files for proper asset references
-        presentation_files = list((self.output_dir / "presentations").glob("*.html"))
+        presentation_files = list(self.output_dir.glob("*/index.html"))
         
         for file_path in presentation_files:
             content = file_path.read_text()

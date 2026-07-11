@@ -1,0 +1,149 @@
+{# Background image #}
+{% macro background_image(image) %}
+{% if image %}
+{% set css = ["background-image"] %}
+{% set sty = ["background-image: url('" ~ image.web_path ~ "')"] %}
+{% if image.modifiers.placement in ["left", "right"] %}{% set _ = css.append(image.modifiers.placement) %}{% endif %}
+{% if image.modifiers.filter == "filtered" %}{% set _ = css.append("filtered") %}{% endif %}
+{% if image.modifiers.scaling == "fit" %}{% set _ = sty.append("background-size: contain") %}
+{% elif image.modifiers.scaling == "cover" %}{% set _ = sty.append("background-size: cover") %}
+{% elif image.modifiers.scaling.endswith("%") %}{% set _ = sty.append("background-size: " ~ image.modifiers.scaling) %}{% endif %}
+{% if image.modifiers.corner_radius %}{% set _ = sty.append("border-radius: " ~ image.modifiers.corner_radius ~ "px") %}{% endif %}
+<div class="{{ css | join(' ') }}" style="{{ sty | join('; ') }}"
+     aria-label="{{ image.alt_text | e }}">
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Single inline image #}
+{% macro inline_image(image) %}
+{% set css = ["inline-image"] %}
+{% set sty = [] %}
+{% if image.modifiers.scaling == "fill" %}{% set _ = css.append("fill") %}
+{% elif image.modifiers.scaling == "fit" %}{% set _ = sty.extend(["max-width: 100%", "max-height: 100%", "object-fit: contain"]) %}
+{% elif image.modifiers.scaling.endswith("%") %}{% set _ = sty.extend(["width: " ~ image.modifiers.scaling, "max-width: 100%", "height: auto"]) %}{% endif %}
+{% if image.modifiers.corner_radius %}{% set _ = sty.append("border-radius: " ~ image.modifiers.corner_radius ~ "px") %}{% endif %}
+<img class="{{ css | join(' ') }}"{% if sty %} style="{{ sty | join('; ') }}"{% endif %}
+     src="{{ image.web_path }}"
+     alt="{{ image.alt_text | e }}"
+     loading="lazy" decoding="async">
+{% endmacro %}
+
+{# Inline images (auto-grids when > 1) #}
+{% macro inline_images(images) %}
+{% if images %}
+{% set inlines = images | selectattr("modifiers.placement", "equalto", "inline") | list %}
+{% if inlines | length > 1 %}
+{{ image_grid_from_list(inlines) }}
+{% else %}
+{% for img in images %}{{ inline_image(img) }}{% endfor %}
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{# Inline figure (image + caption) #}
+{% macro inline_figure(fig) %}
+<figure class="inline-figure">
+    <img class="inline-image"{% if fig.image.modifiers.corner_radius %} style="border-radius: {{ fig.image.modifiers.corner_radius }}px"{% endif %}
+         src="{{ fig.image.web_path }}"
+         alt="{{ fig.image.alt_text | e }}"
+         loading="lazy">
+    <figcaption class="inline-figcaption">{{ fig.caption | markdown_to_html }}</figcaption>
+</figure>
+{% endmacro %}
+
+{# Inline figures list #}
+{% macro inline_figures(figures) %}
+{% if figures %}{% for f in figures %}{{ inline_figure(f) }}{% endfor %}{% endif %}
+{% endmacro %}
+
+{# Image grid #}
+{% macro image_grid(grid) %}
+{% if grid and grid.images %}
+{% set css = ["image-grid"] %}
+{% if grid.columns == 2 %}{% set _ = css.append("two-columns") %}
+{% elif grid.columns == 3 %}{% set _ = css.append("three-columns") %}
+{% elif grid.columns > 3 %}{% set _ = css.append("multi-columns") %}{% endif %}
+<div class="{{ css | join(' ') }}" style="grid-template-columns: repeat({{ grid.columns }}, 1fr); gap: {{ grid.gap }};">
+{% for img in grid.images %}
+    <div class="grid-image-container">
+        <img class="grid-image"{% if img.modifiers.corner_radius %} style="border-radius: {{ img.modifiers.corner_radius }}px"{% endif %}
+             src="{{ img.web_path }}"
+             alt="{{ img.alt_text | e }}"
+             loading="lazy">
+    </div>
+{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Helper: build a grid from a plain list of images #}
+{% macro image_grid_from_list(images) %}
+{% set cols = [2, images | length] | min %}
+<div class="image-grid {% if cols == 2 %}two-columns{% elif cols == 3 %}three-columns{% else %}multi-columns{% endif %}" style="grid-template-columns: repeat({{ cols }}, 1fr); gap: 10px;">
+{% for img in images %}
+    <div class="grid-image-container">
+        <img class="grid-image"{% if img.modifiers.corner_radius %} style="border-radius: {{ img.modifiers.corner_radius }}px"{% endif %}
+             src="{{ img.web_path }}"
+             alt="{{ img.alt_text | e }}"
+             loading="lazy">
+    </div>
+{% endfor %}
+</div>
+{% endmacro %}
+
+{# Video player #}
+{% macro video_player(video) %}
+{% if video %}
+{% set css = ["video-player"] %}
+{% set sty = [] %}
+{% set attrs = [] %}
+{% if video.modifiers.placement in ["left", "right"] %}{% set _ = css.append(video.modifiers.placement) %}{% endif %}
+{% if video.modifiers.scaling.endswith("%") %}{% set _ = sty.append("width: " ~ video.modifiers.scaling) %}
+{% elif video.modifiers.scaling == "fill" %}{% set _ = sty.append("width: 100%") %}{% endif %}
+{% if video.modifiers.autoplay %}{% set _ = attrs.extend(["autoplay", "muted", 'data-autoplay="true"']) %}
+{% elif video.modifiers.mute %}{% set _ = attrs.append("muted") %}{% endif %}
+{% if video.modifiers.loop %}{% set _ = attrs.append("loop") %}{% endif %}
+{% if video.modifiers.hide %}{% set _ = sty.append("display: none") %}{% endif %}
+{% if not video.modifiers.hide %}{% set _ = attrs.append("controls") %}{% endif %}
+{% if video.embed_type == "youtube" %}
+{% set qp = [] %}
+{% if video.modifiers.autoplay %}{% set _ = qp.append("autoplay=1") %}{% endif %}
+{% if video.modifiers.loop %}{% set _ = qp.append("loop=1") %}{% endif %}
+{% if video.modifiers.mute %}{% set _ = qp.append("mute=1") %}{% endif %}
+{% set eurl = video.embed_url ~ ("?" ~ qp | join("&") if qp else "") %}
+<div class="{{ css | join(' ') }}"{% if sty %} style="{{ sty | join('; ') }}"{% endif %}>
+    <iframe src="{{ eurl }}" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+</div>
+{% else %}
+<video class="{{ css | join(' ') }}"{% if sty %} style="{{ sty | join('; ') }}"{% endif %} {{ attrs | join(' ') }}>
+    <source src="{{ video.web_path }}" type="video/mp4">
+    <p>Your browser doesn't support HTML5 video. <a href="{{ video.web_path }}">Download the video</a> instead.</p>
+</video>
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{# Audio player #}
+{% macro audio_player(audio) %}
+{% if audio %}
+{% set css = ["audio-player"] %}
+{% set sty = [] %}
+{% set attrs = [] %}
+{% if audio.modifiers.placement in ["left", "right"] %}{% set _ = css.append(audio.modifiers.placement) %}{% endif %}
+{% if audio.modifiers.scaling.endswith("%") %}{% set _ = sty.append("width: " ~ audio.modifiers.scaling) %}
+{% elif audio.modifiers.scaling == "fill" %}{% set _ = sty.append("width: 100%") %}{% endif %}
+{% if audio.modifiers.autoplay %}{% set _ = attrs.append("autoplay") %}{% endif %}
+{% if audio.modifiers.loop %}{% set _ = attrs.append("loop") %}{% endif %}
+{% if audio.modifiers.mute %}{% set _ = attrs.append("muted") %}{% endif %}
+{% if audio.modifiers.hide %}{% set _ = sty.append("display: none") %}{% endif %}
+{% if not audio.modifiers.hide %}{% set _ = attrs.append("controls") %}{% endif %}
+<audio class="{{ css | join(' ') }}"{% if sty %} style="{{ sty | join('; ') }}"{% endif %} {{ attrs | join(' ') }}>
+    <source src="{{ audio.web_path }}" type="audio/mpeg">
+    <source src="{{ audio.web_path }}" type="audio/ogg">
+    <p>Your browser doesn't support HTML5 audio. <a href="{{ audio.web_path }}">Download the audio</a> instead.</p>
+</audio>
+{% endif %}
+{% endmacro %}

@@ -181,43 +181,63 @@ class CodeProcessor:
         # Wrap in pre/code structure for highlight.js
         return f'<pre><code class="language-{hljs_language}">{escaped_code}</code></pre>'
     
-    def process_code_block_with_deckset_directive(self, slide_content: str, default_language: str = "") -> Tuple[str, List[ProcessedCodeBlock]]:
+    # Matches a [.code-highlight:] line optionally followed by blank lines and
+    # then a fenced code block.  The directive is consumed and its config is
+    # applied only to the immediately following block.
+    _DIRECTIVE_THEN_FENCE_RE = re.compile(
+        r'\[\.code-highlight:\s*([^\]]+)\]\s*\n'   # directive line
+        r'(```(\w*)\n(.*?)\n```)',                  # fenced block
+        re.DOTALL | re.IGNORECASE,
+    )
+    _BARE_FENCE_RE = re.compile(r'```(\w*)\n(.*?)\n```', re.DOTALL)
+
+    def process_code_block_with_deckset_directive(
+        self, slide_content: str, default_language: str = ""
+    ) -> Tuple[str, List[ProcessedCodeBlock]]:
+        """Process code blocks in slide content with Deckset highlight directives.
+
+        Each ``[.code-highlight:]`` directive is associated with the fenced code
+        block it immediately precedes.  If multiple directives appear before the
+        same block the last one wins.  Code blocks without a preceding directive
+        receive no line highlighting.
         """
-        Process code blocks in slide content with Deckset highlight directives.
-        
-        Args:
-            slide_content: Full slide content
-            default_language: Default language if none specified
-            
-        Returns:
-            Tuple of (processed_content, list_of_processed_code_blocks)
-        """
-        # Parse highlight directive
-        cleaned_content, highlight_config = self.parse_deckset_highlight_directive(slide_content)
-        
-        # Find fenced code blocks in the cleaned content
-        code_block_pattern = re.compile(r'```(\w*)\n(.*?)\n```', re.DOTALL)
-        processed_blocks = []
-        
-        def replace_code_block(match):
+        processed_blocks: List[ProcessedCodeBlock] = []
+        placeholders: dict = {}
+        counter = [0]
+
+        def _placeholder() -> str:
+            counter[0] += 1
+            return f"\x00CODEBLOCK{counter[0]}\x00"
+
+        # Pass 1 — directive+block pairs (placeholder replaces HTML output)
+        def _replace_directive_block(match: re.Match) -> str:
+            directive_text = match.group(1).strip()
+            language = match.group(3) or default_language
+            code_content = match.group(4)
+            block = self.process_code_block(code_content, language, directive_text)
+            processed_blocks.append(block)
+            ph = _placeholder()
+            placeholders[ph] = block.content
+            return ph
+
+        result = self._DIRECTIVE_THEN_FENCE_RE.sub(_replace_directive_block, slide_content)
+
+        # Pass 2 — remaining bare fences (no directive)
+        def _replace_bare_fence(match: re.Match) -> str:
             language = match.group(1) or default_language
             code_content = match.group(2)
-            
-            # Process the code block
-            processed_block = self.process_code_block(
-                code_content, 
-                language, 
-                self._highlight_config_to_string(highlight_config)
-            )
-            processed_blocks.append(processed_block)
-            
-            return processed_block.content
-        
-        # Replace all fenced code blocks with processed versions
-        final_content = code_block_pattern.sub(replace_code_block, cleaned_content)
+            block = self.process_code_block(code_content, language, "")
+            processed_blocks.append(block)
+            ph = _placeholder()
+            placeholders[ph] = block.content
+            return ph
 
-        # Detect and process indented code blocks (4 spaces or tab)
-        indented_pattern = re.compile(r'(?:(?<=\n)|^)((?:(?: {4}|\t).*(?:\n|$))+)', re.MULTILINE)
+        result = self._BARE_FENCE_RE.sub(_replace_bare_fence, result)
+
+        # Pass 3 — indented code blocks (safe now; placeholders contain no spaces)
+        indented_pattern = re.compile(
+            r'(?:(?<=\n)|^)((?:(?: {4}|\t).*(?:\n|$))+)', re.MULTILINE
+        )
 
         def _strip_indent(line: str) -> str:
             if line.startswith('    '):
@@ -228,117 +248,66 @@ class CodeProcessor:
 
         def _is_probably_list_item(line: str) -> bool:
             core = _strip_indent(line).lstrip()
-            return core.startswith('- ') or core.startswith('* ') or core.startswith('+ ') or re.match(r'^\d+\.\s', core)
+            return (
+                core.startswith('- ') or core.startswith('* ')
+                or core.startswith('+ ') or bool(re.match(r'^\d+\.\s', core))
+            )
 
-        def replace_indented_block(match: re.Match) -> str:
+        def _replace_indented(match: re.Match) -> str:
             block = match.group(1)
             lines = [ln for ln in block.split('\n') if ln.strip() != '']
             if not lines:
                 return block
-            # If all lines appear to be list items after one indent removal, keep as-is (nested list)
             if all(_is_probably_list_item(ln) for ln in lines):
                 return block
+            stripped = [_strip_indent(ln) for ln in block.split('\n')]
+            code_content = '\n'.join(stripped).strip('\n')
+            pb = self.process_code_block(code_content, default_language or "text", "")
+            processed_blocks.append(pb)
+            ph = _placeholder()
+            placeholders[ph] = pb.content
+            return ph + "\n"
 
-            # Treat as code: strip one indent and process as code block with default language
-            stripped_lines = [_strip_indent(ln) for ln in block.split('\n')]
-            code_content = '\n'.join(stripped_lines).strip('\n')
+        result = indented_pattern.sub(_replace_indented, result)
 
-            processed_block = self.process_code_block(
-                code_content,
-                default_language or "text",
-                self._highlight_config_to_string(highlight_config)
-            )
-            processed_blocks.append(processed_block)
-            return processed_block.content + "\n"
+        # Restore placeholders and clean up orphaned directives
+        for ph, html in placeholders.items():
+            result = result.replace(ph, html)
+        result = self.highlight_directive_pattern.sub('', result).strip()
 
-        final_content = indented_pattern.sub(replace_indented_block, final_content)
-        
-        return final_content, processed_blocks
+        return result, processed_blocks
     
     def apply_line_highlighting(self, code: str, highlight_config: HighlightConfig) -> str:
-        """
-        Apply line highlighting to syntax-highlighted code with enhanced features.
-        
-        Args:
-            code: Syntax-highlighted HTML code
-            highlight_config: Line highlighting configuration
-            
-        Returns:
-            Code with line highlighting applied
+        """Apply per-line highlighting spans.
+
+        Emits ``<span class="line-highlight">`` only on highlighted lines.
+        Non-highlighted lines are left as plain text (tokenization is
+        client-side highlight.js only).
         """
         if highlight_config.highlight_type == "none":
-            return self._wrap_lines_for_styling(code)
-        
-        # Extract code content from pre/code wrapper
+            return code
+
         code_match = re.search(r'<code[^>]*>(.*?)</code>', code, re.DOTALL)
         if not code_match:
             return code
-        
+
         code_content = code_match.group(1)
         code_lines = code_content.split('\n')
-        
-        # Apply highlighting based on configuration
-        if highlight_config.highlight_type == "all":
-            # Highlight all lines
-            highlighted_lines = []
-            for i, line in enumerate(code_lines, 1):
-                highlighted_lines.append(
-                    f'<span class="code-line code-line-highlighted" '
-                    f'data-line="{i}" data-highlight="true">{line}</span>'
-                )
-            highlighted_content = '\n'.join(highlighted_lines)
-        else:
-            # Highlight specific lines
-            highlighted_lines = []
-            for i, line in enumerate(code_lines, 1):
-                if i in highlight_config.highlighted_lines:
-                    highlighted_lines.append(
-                        f'<span class="code-line code-line-highlighted" '
-                        f'data-line="{i}" data-highlight="true">{line}</span>'
-                    )
-                else:
-                    highlighted_lines.append(
-                        f'<span class="code-line" data-line="{i}" data-highlight="false">{line}</span>'
-                    )
-            highlighted_content = '\n'.join(highlighted_lines)
-        
-        # Reconstruct the full HTML with enhanced wrapper
-        enhanced_code = code.replace(code_content, highlighted_content)
-        
-        # Add line highlighting metadata to the pre element
-        if highlight_config.highlight_type != "none":
-            enhanced_code = enhanced_code.replace(
-                '<pre>',
-                f'<pre class="code-block-with-highlighting" data-highlight-type="{highlight_config.highlight_type}">'
-            )
-        
-        return enhanced_code
-    
-    def _wrap_lines_for_styling(self, code: str) -> str:
-        """
-        Wrap code lines in spans for consistent styling even without highlighting.
-        
-        Args:
-            code: HTML code content
-            
-        Returns:
-            Code with lines wrapped in spans
-        """
-        # Extract code content from pre/code wrapper
-        code_match = re.search(r'<code[^>]*>(.*?)</code>', code, re.DOTALL)
-        if not code_match:
-            return code
-        
-        code_content = code_match.group(1)
-        code_lines = code_content.split('\n')
-        
-        # Wrap each line in a span for consistent styling
-        wrapped_lines = []
+        out_lines: list = []
+
         for i, line in enumerate(code_lines, 1):
-            wrapped_lines.append(f'<span class="code-line" data-line="{i}">{line}</span>')
-        
-        wrapped_content = '\n'.join(wrapped_lines)
-        return code.replace(code_content, wrapped_content)
+            if highlight_config.highlight_type == "all" or i in highlight_config.highlighted_lines:
+                out_lines.append(f'<span class="line-highlight">{line}</span>')
+            else:
+                out_lines.append(line)
+
+        enhanced = code.replace(code_content, '\n'.join(out_lines))
+        enhanced = enhanced.replace(
+            '<pre>',
+            f'<pre data-highlight-type="{highlight_config.highlight_type}">',
+            1,
+        )
+        return enhanced
     
     def _normalize_language(self, language: str) -> str:
         """

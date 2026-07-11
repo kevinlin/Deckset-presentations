@@ -1,0 +1,17 @@
+{# Footnotes block (keys are namespaced like fn-slide3-1) #}
+{% macro footnotes(fns) %}
+{% if fns %}
+<div class="footnotes">
+    <div class="footnotes-separator"></div>
+    <div class="footnotes-list">
+    {% for ns_key, content in fns | dictsort %}
+        {% set marker = ns_key.rsplit("-", 1)[-1] if "-" in ns_key else ns_key %}
+        <div class="footnote-item" id="{{ ns_key }}">
+            <span class="footnote-marker">{{ marker }}</span>
+            <span class="footnote-content">{{ content | markdown_to_html }}</span>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endmacro %}

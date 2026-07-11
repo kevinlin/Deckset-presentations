@@ -7,15 +7,17 @@ full Deckset compatibility.
 """
 
 import logging
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 
-from models import PresentationInfo, PresentationProcessingError
+from models import PresentationInfo, PresentationProcessingError, ProcessedImage, ImageModifiers
 from models import (
     ProcessedSlide, EnhancedPresentation, DecksetConfig, SlideConfig,
     SlideContext, DecksetParsingError, MediaProcessingError, SlideProcessingError
 )
 from deckset_parser import DecksetParser
+from markdown_renderer import MarkdownRenderer
 from media_processor import MediaProcessor
 from slide_processor import SlideProcessor
 from code_processor import CodeProcessor
@@ -30,6 +32,7 @@ class EnhancedPresentationProcessor:
     def __init__(self):
         """Initialize the enhanced presentation processor."""
         self.deckset_parser = DecksetParser()
+        self.markdown_renderer = MarkdownRenderer()
         self.media_processor = MediaProcessor()
         self.slide_processor = SlideProcessor()
         self.code_processor = CodeProcessor()
@@ -77,10 +80,13 @@ class EnhancedPresentationProcessor:
             processed_slides = self._process_slides(slide_contents, config, presentation_info)
             logger.debug(f"Processed {len(processed_slides)} slides with enhanced features")
 
-            # Step 4: Extract global footnotes
-            global_footnotes = self._extract_global_footnotes(content)
+            # Step 4: Apply global background to slides without their own
+            if config.background_image:
+                self._apply_global_background(processed_slides, config, presentation_info)
 
-            # Update presentation info with slide count
+            # Step 5: Cross-slide footnote resolution (single consolidated pass)
+            global_footnotes = self._resolve_footnotes(processed_slides)
+
             presentation_info.slide_count = len(processed_slides)
 
             return EnhancedPresentation(
@@ -176,13 +182,13 @@ class EnhancedPresentationProcessor:
                 # - True if there's an unmodified image used as a background (no placement modifiers)
                 #   AND there is other text content on the slide
                 # - False in all other cases (e.g., left/right/inline/fit modifiers or image-only slides)
-                has_bg = processed_slide.background_image is not None
+                has_bg = bool(processed_slide.background_images)
                 visible_text = bool((processed_slide.content or '').strip())
 
                 unmodified_background = False
                 if has_bg:
                     try:
-                        mods = processed_slide.background_image.modifiers
+                        mods = processed_slide.background_images[0].modifiers
                         # Unmodified means default placement 'background' and no explicit left/right/inline
                         # and no explicit scaling like 'fit' or percentage
                         is_background = mods.placement == 'background'
@@ -242,8 +248,14 @@ class EnhancedPresentationProcessor:
             # Process media elements (use original content to find media references)
             slide = self._process_slide_media(slide, original_content, context)
 
-            # Detect inline figures (image followed immediately by caption line without a blank line)
             slide = self._detect_inline_figures(slide, original_content, context)
+
+            # Render slide content to HTML (single pass via MarkdownRenderer).
+            # Protect MathJax delimiters from being mangled by markdown.
+            render_text, math_map = self._protect_math(slide.content)
+            slide_id = f"slide-{slide.index}"
+            rendered = self.markdown_renderer.render(render_text, slide_id)
+            slide.body_html = self._restore_math(rendered, math_map)
 
             return slide
 
@@ -283,6 +295,7 @@ class EnhancedPresentationProcessor:
                             # Categorize image based on modifiers
                             if processed_image.modifiers.placement == "background":
                                 slide.background_image = processed_image
+                                slide.background_images.append(processed_image)
                             else:
                                 slide.inline_images.append(processed_image)
                             processed_media_refs.append(media_ref)
@@ -379,8 +392,8 @@ class EnhancedPresentationProcessor:
             images_by_name = {}
             for img in slide.inline_images:
                 images_by_name.setdefault(img.web_path.split('/')[-1], []).append(img)
-            if slide.background_image:
-                images_by_name.setdefault(slide.background_image.web_path.split('/')[-1], []).append(slide.background_image)
+            for bg in slide.background_images:
+                images_by_name.setdefault(bg.web_path.split('/')[-1], []).append(bg)
 
             i = 0
             while i < len(lines) - 1:
@@ -498,11 +511,95 @@ class EnhancedPresentationProcessor:
 
         return any(path_lower.endswith(ext) for ext in audio_extensions)
 
-    def _extract_global_footnotes(self, content: str) -> Dict[str, str]:
-        """Extract global footnotes that apply to the entire presentation."""
-        try:
-            _, footnotes = self.deckset_parser.process_footnotes(content)
-            return footnotes
-        except Exception as e:
-            logger.warning(f"Failed to extract global footnotes: {e}")
-            return {}
+    def _apply_global_background(
+        self,
+        slides: List[ProcessedSlide],
+        config: DecksetConfig,
+        presentation_info: PresentationInfo,
+    ) -> None:
+        """Apply ``DecksetConfig.background_image`` to slides lacking their own."""
+        for slide in slides:
+            if not slide.background_images:
+                mods = ImageModifiers(placement="background", scaling="cover", filter="original")
+                global_bg = ProcessedImage(
+                    src_path=config.background_image,
+                    web_path=config.background_image,
+                    modifiers=mods,
+                    alt_text="",
+                )
+                slide.background_image = global_bg
+                slide.background_images.append(global_bg)
+
+    _MATH_DELIM_RE = re.compile(r'(\\\([^)]+?\\\)|\\\[[\s\S]+?\\\])')
+
+    @staticmethod
+    def _protect_math(text: str) -> tuple[str, dict[str, str]]:
+        """Replace MathJax delimiters with unique placeholders."""
+        mapping: dict[str, str] = {}
+        counter = 0
+
+        def _repl(m: re.Match) -> str:
+            nonlocal counter
+            token = f"\x00MATH{counter}\x00"
+            mapping[token] = m.group(0)
+            counter += 1
+            return token
+
+        protected = EnhancedPresentationProcessor._MATH_DELIM_RE.sub(_repl, text)
+        return protected, mapping
+
+    @staticmethod
+    def _restore_math(html: str, mapping: dict[str, str]) -> str:
+        """Restore MathJax delimiters from placeholders."""
+        for token, original in mapping.items():
+            html = html.replace(token, original)
+        return html
+
+    _FOOTNOTE_REF_RE = re.compile(r'\[\^([^\]]+)\](?!:)')
+
+    def _resolve_footnotes(self, slides: List[ProcessedSlide]) -> Dict[str, str]:
+        """Consolidate footnotes across all slides.
+
+        1. Collect every definition from every slide into a single pool.
+           Duplicates are logged as warnings and first-definition-wins.
+        2. For each slide, find which footnote IDs are *referenced* in its
+           content and assign only those definitions.
+        3. Namespace footnote keys per slide (``fn-slideN-ID``).
+        4. Transform ``[^ID]`` references in content to superscript anchor links.
+
+        Returns the global definition pool (unnamespaced) for ``EnhancedPresentation.global_footnotes``.
+        """
+        global_pool: Dict[str, str] = {}
+
+        for slide in slides:
+            for fn_id, fn_text in slide.footnotes.items():
+                if fn_id in global_pool:
+                    logger.warning(
+                        "Duplicate footnote [^%s] on slide %d; keeping first definition",
+                        fn_id,
+                        slide.index,
+                    )
+                else:
+                    global_pool[fn_id] = fn_text
+
+        for slide in slides:
+            refs = set(self._FOOTNOTE_REF_RE.findall(slide.content))
+            resolved: Dict[str, str] = {}
+            for ref_id in refs:
+                if ref_id in global_pool:
+                    ns_key = f"fn-slide{slide.index}-{ref_id}"
+                    resolved[ns_key] = global_pool[ref_id]
+                else:
+                    logger.warning(
+                        "Footnote [^%s] on slide %d has no definition", ref_id, slide.index
+                    )
+
+            def _ref_to_sup(m: re.Match) -> str:
+                fid = m.group(1)
+                ns = f"fn-slide{slide.index}-{fid}"
+                return f'<sup><a href="#{ns}">{fid}</a></sup>'
+
+            slide.content = self._FOOTNOTE_REF_RE.sub(_ref_to_sup, slide.content)
+            slide.footnotes = resolved
+
+        return global_pool

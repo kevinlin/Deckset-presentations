@@ -1,0 +1,24 @@
+{# Slide footer — per-slide [.footer:] overrides the global setting #}
+{% macro slide_footer(config, slide_config) %}
+{% if not slide_config.hide_footer %}
+{% set footer_text = slide_config.footer if slide_config.footer is not none else config.footer %}
+{% if footer_text %}
+<div class="footer-content">
+    {{ footer_text | markdown_to_html }}
+</div>
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{# Slide number — hidden by [.hide-slide-numbers] or [.slidenumbers: false] #}
+{% macro slide_number(slide_index, total_slides, config, slide_config) %}
+{% if config.slide_numbers and not slide_config.hide_slide_numbers %}
+{% if config.slide_count %}
+<span class="slide-number-current">{{ slide_index }}</span>
+<span class="slide-number-separator"> / </span>
+<span class="slide-number-total">{{ total_slides }}</span>
+{% else %}
+<span class="slide-number-current">{{ slide_index }}</span>
+{% endif %}
+{% endif %}
+{% endmacro %}

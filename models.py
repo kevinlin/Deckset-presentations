@@ -24,6 +24,23 @@ class PresentationInfo:
     slide_count: int = 0
     last_modified: Optional[datetime] = None
 
+    @property
+    def slug(self) -> str:
+        """URL-safe slug derived from *folder_name*.
+
+        Preserves ``/`` for nested presentations so that the output layout
+        mirrors the source hierarchy (e.g. ``Examples/10-deckset-basics``).
+        """
+        import re as _re
+        parts = self.folder_name.split("/")
+        slugged = []
+        for part in parts:
+            s = part.strip().lower()
+            s = _re.sub(r"[^\w\s-]", "", s)
+            s = _re.sub(r"[\s]+", "-", s)
+            slugged.append(s)
+        return "/".join(slugged)
+
 
 @dataclass
 class GeneratorConfig:
@@ -56,6 +73,7 @@ class DecksetConfig:
 class SlideConfig:
     """Slide-specific configuration overrides."""
     background_image: Optional[str] = None
+    footer: Optional[str] = None
     hide_footer: bool = False
     hide_slide_numbers: bool = False
     autoscale: Optional[bool] = None
@@ -174,9 +192,12 @@ class ProcessedSlide:
     """Enhanced slide with full Deckset feature support."""
     index: int
     content: str
+    body_html: str = ""
+    footnotes_html: str = ""
     notes: str = ""
     columns: List[ColumnContent] = field(default_factory=list)
-    background_image: Optional[ProcessedImage] = None
+    background_image: Optional[ProcessedImage] = None  # kept for compat; prefer background_images
+    background_images: List[ProcessedImage] = field(default_factory=list)
     inline_images: List[ProcessedImage] = field(default_factory=list)
     inline_figures: List[InlineFigure] = field(default_factory=list)
     videos: List[ProcessedVideo] = field(default_factory=list)
