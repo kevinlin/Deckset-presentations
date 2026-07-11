@@ -30,8 +30,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 def site_dir():
     """Generate the full site from the repo root into a temp directory."""
     tmp = tempfile.mkdtemp(prefix="regression_site_")
-    config = GeneratorConfig()
-    config.output_dir = tmp
+    config = GeneratorConfig(output_dir=tmp)
+    config.exclude_folders = [f for f in config.exclude_folders if f != "Examples"]
     generator = DecksetWebsiteGenerator(config)
     result = generator.generate_website(root_path=str(REPO_ROOT), output_dir=tmp)
     assert result["success"], f"Site generation failed: {result.get('errors', [])}"

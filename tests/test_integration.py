@@ -218,8 +218,8 @@ class TestFileManagement:
         from main import DecksetWebsiteGenerator
         from models import GeneratorConfig
         
-        # Create configuration
         config = GeneratorConfig()
+        config.exclude_folders = [f for f in config.exclude_folders if f != "Examples"]
         generator = DecksetWebsiteGenerator(config)
         
         # Create test repository
@@ -371,8 +371,8 @@ This is the second example.
 More content.
             """)
         
-        # Generate website
         config = GeneratorConfig()
+        config.exclude_folders = [f for f in config.exclude_folders if f != "Examples"]
         generator = DecksetWebsiteGenerator(config)
         output_dir = test_repo / "output"
         result = generator.generate_website(str(test_repo), str(output_dir))
