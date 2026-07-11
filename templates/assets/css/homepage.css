@@ -1,4 +1,17 @@
-/* Supplementary homepage styles (Tailwind handles utilities) */
+/* Supplementary styles: var-driven classes for themed chrome */
+
+body { background: var(--color-canvas, #f9fafb); color: var(--color-ink, #374151); }
+.site-header { background: var(--color-surface-1, #fff); border-bottom: 1px solid var(--color-hairline, #e5e7eb); }
+.site-header a, .site-title { color: var(--color-ink, #111827); font-family: var(--font-display, inherit); }
+.site-nav-link { color: var(--color-ink-muted, #4b5563); }
+.site-nav-link:hover { color: var(--color-ink, #111827); }
+.site-footer { background: var(--color-surface-1, #fff); border-top: 1px solid var(--color-hairline, #e5e7eb); color: var(--color-ink-subtle, #6b7280); }
+.presentation-card { background: var(--color-surface-1, #fff); border-radius: var(--radius-lg, 0.5rem); }
+.card-title a { color: var(--color-ink, #111827); }
+.card-title a:hover { color: var(--color-link, #2563eb); }
+.card-meta { color: var(--color-ink-muted, #4b5563); }
+.card-cta { background: var(--color-accent, #dbeafe); color: var(--color-on-accent, #1d4ed8); border-radius: var(--radius-sm, 0.375rem); }
+.card-cta:hover { background: var(--color-accent-hover, #bfdbfe); }
 
 .presentation-card {
     transition: box-shadow 0.2s ease;

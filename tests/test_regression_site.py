@@ -296,3 +296,16 @@ class TestThemeSystem:
         soup = _load_presentation(site_dir, "01-fix-messaging")
         link = soup.find("link", id="theme-css")
         assert link is not None, "Presentation page missing #theme-css link"
+
+    def test_homepage_header_has_site_header_class(self, site_dir):
+        soup = _load_homepage(site_dir)
+        header = soup.find("header")
+        assert header is not None
+        assert "site-header" in header.get("class", [])
+        assert "bg-white" not in header.get("class", [])
+
+    def test_presentation_header_has_site_header_class(self, site_dir):
+        soup = _load_presentation(site_dir, "01-fix-messaging")
+        header = soup.find("header")
+        assert header is not None
+        assert "site-header" in header.get("class", [])

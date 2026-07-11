@@ -13,6 +13,7 @@
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset_path_prefix }}assets/css/homepage.css">
     <link rel="stylesheet" href="{{ asset_path_prefix }}slide_styles.css">
     {% for link in theme_links %}{{ link }}
     {% endfor %}
@@ -33,20 +34,20 @@
 </head>
 <body>
     <!-- Navigation Header -->
-    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header class="site-header shadow-sm sticky top-0 z-50">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ asset_path_prefix }}index.html" class="text-xl font-semibold text-gray-900 flex items-center">
+                    <a href="{{ asset_path_prefix }}index.html" class="site-title text-xl font-semibold flex items-center">
                         <img src="{{ asset_path_prefix }}assets/deckset-icon.png" alt="Deckset" class="h-8 w-8 mr-2">
                         <span>Deckset Presentations</span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
-                       class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
+                       class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
                     <a href="{{ asset_path_prefix }}index.html" 
-                       class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                       class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">
                         ← Back to Home
                     </a>
                 </div>
