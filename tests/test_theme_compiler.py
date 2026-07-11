@@ -1,13 +1,24 @@
 """Tests for theme_compiler: DESIGN.md parsing, reference resolution,
 token mapping, CSS emission, and manifest generation."""
 
+import json
 import tempfile
 import shutil
 from pathlib import Path
 
 import pytest
 
-from theme_compiler import parse_design_file, resolve_references
+from theme_compiler import (
+    parse_design_file,
+    resolve_references,
+    slugify,
+    map_tokens,
+    render_css,
+    ThemeCompiler,
+    ThemeInfo,
+    _font_stack,
+    GENERIC_SANS,
+)
 from models import ThemeCompileError
 
 DESIGN_MD_DIR = Path(__file__).resolve().parent.parent / "design-md"
@@ -124,3 +135,155 @@ class TestAllRepoDesignsParse:
             resolved = resolve_references(data)
             assert isinstance(resolved, dict), f"Failed for {path.parent.name}"
             assert "colors" in resolved, f"No colors in {path.parent.name}"
+
+
+# ---- Task 3 tests ----
+
+
+class TestSlugify:
+    def test_slugify_dot(self):
+        assert slugify("linear.app") == "linear-app"
+
+    def test_slugify_underscore(self):
+        assert slugify("Some_Folder") == "some-folder"
+
+    def test_slugify_spaces(self):
+        assert slugify("My Theme Name") == "my-theme-name"
+
+    def test_slugify_collapse_repeats(self):
+        assert slugify("a--b..c") == "a-b-c"
+
+
+class TestFontStack:
+    def test_known_family(self):
+        result = _font_stack("Linear Display")
+        assert result.startswith('"SF Pro Display"')
+
+    def test_unknown_family(self):
+        result = _font_stack("Mystery Sans")
+        assert result.startswith('"Mystery Sans"')
+        assert "-apple-system" in result
+
+
+class TestMapTokens:
+    def _minimal_design(self) -> dict:
+        return {
+            "colors": {
+                "canvas": "#010102",
+                "ink": "#f7f8f8",
+                "primary": "#5e6ad2",
+            },
+            "typography": {
+                "display-lg": {
+                    "fontFamily": "Test Display",
+                    "fontSize": "56px",
+                    "fontWeight": 600,
+                    "letterSpacing": "-1.8px",
+                },
+                "body": {
+                    "fontFamily": "Test Body",
+                    "fontSize": "16px",
+                    "fontWeight": 400,
+                },
+            },
+        }
+
+    def test_map_tokens_direct_and_fallback(self):
+        design = self._minimal_design()
+        result = map_tokens(design)
+        assert result["--color-canvas"] == "#010102"
+        assert result["--color-ink"] == "#f7f8f8"
+        assert result["--color-accent"] == "#5e6ad2"
+        assert result["--color-surface-2"] == "#010102"
+        assert result["--color-on-accent"] == "#ffffff"
+        assert result["--h1-size"] == "3.5em"
+
+    def test_map_tokens_missing_required_raises(self):
+        design = {
+            "colors": {"canvas": "#fff", "primary": "#abc"},
+            "typography": {},
+        }
+        with pytest.raises(ThemeCompileError, match="Missing required.*ink"):
+            map_tokens(design)
+
+
+class TestRenderCss:
+    def test_render_css_var_only(self):
+        variables = {
+            "--color-canvas": "#fff",
+            "--color-ink": "#000",
+            "--color-accent": "#abc",
+        }
+        css = render_css(variables)
+        assert css.startswith(":root {")
+        lines = css.split("\n")
+        brace_lines = [l for l in lines if "{" in l and ":root" not in l.split("{")[0].strip()]
+        assert len(brace_lines) == 0
+
+
+class TestCompileAll:
+    def setup_method(self):
+        self.temp_dir = Path(tempfile.mkdtemp())
+        self.css_out = self.temp_dir / "css_out"
+        self.designs = self.temp_dir / "designs"
+
+    def teardown_method(self):
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def _write_design(self, folder: str, yaml_content: str) -> None:
+        d = self.designs / folder
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "DESIGN.md").write_text(
+            f"---\n{yaml_content}\n---\n# Notes\n", encoding="utf-8"
+        )
+
+    def test_compile_all_writes_css_and_manifest(self):
+        self._write_design(
+            "good-design",
+            'colors:\n  canvas: "#fff"\n  ink: "#000"\n  primary: "#abc"\n'
+            "typography:\n  body:\n    fontFamily: Test\n    fontSize: 16px\n    fontWeight: 400\n",
+        )
+        self._write_design(
+            "broken",
+            'colors:\n  canvas: "#fff"\n',
+        )
+        compiler = ThemeCompiler(self.designs)
+        manifest = compiler.compile_all(self.css_out)
+
+        assert (self.css_out / "good-design.css").exists()
+        assert not (self.css_out / "broken.css").exists()
+
+        manifest_path = self.css_out / "themes.json"
+        assert manifest_path.exists()
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        slugs = [e["slug"] for e in data]
+        assert "light" in slugs
+        assert "dark" in slugs
+        assert "minimal" in slugs
+        assert "good-design" in slugs
+        assert len(data) == 4
+
+    def test_compile_all_builtin_collision_skipped(self, caplog):
+        self._write_design(
+            "dark",
+            'colors:\n  canvas: "#111"\n  ink: "#eee"\n  primary: "#abc"\n'
+            "typography:\n  body:\n    fontFamily: X\n    fontSize: 16px\n    fontWeight: 400\n",
+        )
+        compiler = ThemeCompiler(self.designs)
+        manifest = compiler.compile_all(self.css_out)
+        slugs = [t.slug for t in manifest]
+        assert slugs.count("dark") == 1
+        assert "collides with built-in" in caplog.text
+
+    def test_compile_all_real_designs(self):
+        if not DESIGN_MD_DIR.exists():
+            pytest.skip("design-md/ not found")
+        compiler = ThemeCompiler(DESIGN_MD_DIR)
+        manifest = compiler.compile_all(self.css_out)
+        css_files = list(self.css_out.glob("*.css"))
+        assert len(css_files) >= 13, f"Expected >=13 CSS files, got {len(css_files)}"
+        assert len(manifest) >= 16, f"Expected >=16 manifest entries, got {len(manifest)}"
+        manifest_data = json.loads(
+            (self.css_out / "themes.json").read_text(encoding="utf-8")
+        )
+        assert len(manifest_data) >= 16
