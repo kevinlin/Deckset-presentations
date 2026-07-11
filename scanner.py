@@ -138,14 +138,13 @@ class PresentationScanner:
         logger.debug(f"No markdown files found in {folder_path}")
         return None
 
-    def extract_presentation_title(self, markdown_path: str, use_filename_fallback: bool = False) -> str:
+    def extract_presentation_title(self, markdown_path: str) -> str:
         """
         Extract presentation title from markdown filename.
-        
+
         Args:
             markdown_path: Path to the markdown file
-            use_filename_fallback: Legacy parameter, kept for compatibility but now ignored since we always use filename
-            
+
         Returns:
             Presentation title formatted from the filename
         """
@@ -164,44 +163,6 @@ class PresentationScanner:
                 }
             )
             return Path(markdown_path).stem
-
-    def _extract_title_from_frontmatter(self, content: str) -> Optional[str]:
-        """
-        Extract title from YAML frontmatter if present.
-        
-        Args:
-            content: Markdown content
-            
-        Returns:
-            Title from frontmatter or None if not found
-        """
-        try:
-            # Check if content has standard frontmatter (between --- markers)
-            if content.startswith('---'):
-                end_idx = content.find('---', 3)
-                if end_idx != -1:
-                    frontmatter = content[3:end_idx].strip()
-                    for line in frontmatter.split('\n'):
-                        if line.startswith('title:'):
-                            return line.split('title:', 1)[1].strip().strip('"\'')
-
-            # Check for Deckset-style frontmatter (no --- delimiters, just key: value at start)
-            lines = content.split('\n')
-            for i, line in enumerate(lines):
-                line = line.strip()
-                if not line or ':' not in line:
-                    # If we hit an empty line or line without colon, we're done with frontmatter
-                    if line.startswith('#'):
-                        # Found first header, stop looking
-                        break
-                    continue
-
-                if line.startswith('title:'):
-                    return line.split('title:', 1)[1].strip().strip('"\'')
-
-        except Exception:
-            pass
-        return None
 
     def is_presentation_folder(self, folder_path: str) -> bool:
         """
@@ -236,42 +197,62 @@ class PresentationScanner:
         return has_markdown
 
     def count_slides(self, markdown_path: str) -> int:
-        """
-        Count the number of slides in a markdown file.
-        
-        Args:
-            markdown_path: Path to the markdown file
-            
-        Returns:
-            Number of slides (separated by "---")
+        """Count the number of slides in a markdown file.
+
+        Strips YAML frontmatter before counting so a leading ``---``
+        fence is not mis-counted as a slide separator. Handles ``---``
+        at the very end of the file as well.
         """
         try:
             with open(markdown_path, 'r', encoding='utf-8') as f:
                 content = f.read()
 
-            # Count slide separators and add 1 for the first slide
-            slide_count = content.count('\n---\n') + 1
-            return slide_count
+            content = self._strip_frontmatter(content)
+
+            # Split on blank-line-surrounded --- (Deckset rule)
+            parts = re.split(r'\n\s*\n---\s*\n', content)
+            # Also handle --- at the very start after frontmatter removal
+            if parts and parts[0].strip().startswith('---'):
+                first = parts[0].strip()
+                if first == '---':
+                    parts.pop(0)
+                elif first.startswith('---\n') or first.startswith('---\r'):
+                    parts[0] = first[3:].lstrip('\r\n')
+
+            return max(len(parts), 1)
         except (IOError, OSError, UnicodeDecodeError) as e:
             logger.warning(
                 f"Failed to count slides in {markdown_path}: {e}",
                 extra={
                     "markdown_path": markdown_path,
                     "error_type": type(e).__name__,
-                    "fallback_count": 0
-                }
+                    "fallback_count": 0,
+                },
             )
             return 0
-        except Exception as e:
-            logger.error(
-                f"Unexpected error counting slides in {markdown_path}: {e}",
-                extra={
-                    "markdown_path": markdown_path,
-                    "error_type": type(e).__name__,
-                    "fallback_count": 0
-                }
-            )
-            return 0
+
+    @staticmethod
+    def _strip_frontmatter(content: str) -> str:
+        """Remove YAML frontmatter (``--- ... ---``) from content.
+
+        Only strips when the block between the two ``---`` fences
+        contains no blank lines (frontmatter is contiguous key-value
+        lines). A blank line between the fences indicates slide content.
+        """
+        if not content.startswith('---'):
+            return content
+        # Search for closing --- on its own line
+        end = content.find('\n---', 3)
+        if end == -1:
+            return content
+        # Frontmatter must be contiguous (no blank lines inside)
+        between = content[3:end]
+        if '\n\n' in between or '\r\n\r\n' in between:
+            return content
+        after = end + 4
+        if after < len(content) and content[after] in '\r\n':
+            after += 1
+        return content[after:]
 
     def find_preview_image(self, folder_path: str) -> Optional[str]:
         """

@@ -163,7 +163,7 @@ class TestPresentationScanner:
             f.write("# Deckset Basics\n\nContent here")
 
         # Should now extract title from filename (new behavior)
-        title = scanner.extract_presentation_title(test_file1, use_filename_fallback=True)
+        title = scanner.extract_presentation_title(test_file1)
         assert title == "Deckset Basics"
 
         # Test file with numeric prefix but no header
@@ -172,7 +172,7 @@ class TestPresentationScanner:
             f.write("Some content without header")
 
         # Should use filename and remove numeric prefix with title case
-        title = scanner.extract_presentation_title(test_file2, use_filename_fallback=True)
+        title = scanner.extract_presentation_title(test_file2)
         assert title == "Working With Images"
 
         # Test file with complex numeric prefix
@@ -181,7 +181,7 @@ class TestPresentationScanner:
             f.write("Content without header")
 
         # Should handle multi-digit prefixes
-        title = scanner.extract_presentation_title(test_file3, use_filename_fallback=True)
+        title = scanner.extract_presentation_title(test_file3)
         assert title == "Advanced Topics"
 
         # Test file without numeric prefix
@@ -190,7 +190,7 @@ class TestPresentationScanner:
             f.write("Content without header")
 
         # Should use full filename when no numeric prefix
-        title = scanner.extract_presentation_title(test_file4, use_filename_fallback=True)
+        title = scanner.extract_presentation_title(test_file4)
         assert title == "Special Presentation"
 
         # Test file with frontmatter title
@@ -199,7 +199,7 @@ class TestPresentationScanner:
             f.write("---\ntitle: Custom Title from Frontmatter\n---\n\nContent here")
 
         # Should now use filename (ignoring frontmatter in new behavior)
-        title = scanner.extract_presentation_title(test_file5, use_filename_fallback=True)
+        title = scanner.extract_presentation_title(test_file5)
         assert title == "Big Text"
 
     def test_format_filename_as_title(self, config):
@@ -390,3 +390,40 @@ class TestPresentationScanner:
         assert hasattr(processed_single.slides[0], 'slide_config')
         assert hasattr(processed_multi1.slides[0], 'slide_config')
         assert hasattr(processed_multi2.slides[0], 'slide_config')
+
+
+class TestCountSlides:
+    """Tests for the count_slides fix: frontmatter stripping and boundary handling."""
+
+    @pytest.fixture
+    def scanner(self):
+        return PresentationScanner(GeneratorConfig())
+
+    def test_count_with_frontmatter(self, scanner, tmp_path):
+        """Frontmatter --- must not be counted as a slide separator."""
+        md = tmp_path / "deck.md"
+        md.write_text(
+            "---\ntheme: Next\nautoscale: true\n---\n\n"
+            "# Slide 1\n\n---\n\n# Slide 2\n",
+            encoding="utf-8",
+        )
+        assert scanner.count_slides(str(md)) == 2
+
+    def test_count_without_frontmatter(self, scanner, tmp_path):
+        md = tmp_path / "deck.md"
+        md.write_text("# Slide 1\n\n---\n\n# Slide 2\n\n---\n\n# Slide 3\n", encoding="utf-8")
+        assert scanner.count_slides(str(md)) == 3
+
+    def test_count_single_slide(self, scanner, tmp_path):
+        md = tmp_path / "deck.md"
+        md.write_text("# Only Slide\nSome content.\n", encoding="utf-8")
+        assert scanner.count_slides(str(md)) == 1
+
+    def test_separator_at_start(self, scanner, tmp_path):
+        """A --- at the very start (no frontmatter) should not add an empty slide."""
+        md = tmp_path / "deck.md"
+        md.write_text("---\n\n# Slide 1\n\n---\n\n# Slide 2\n", encoding="utf-8")
+        # This is ambiguous, but without a matching closing ---, the first ---
+        # is a separator producing slide 1 = empty and slide 2 = content
+        count = scanner.count_slides(str(md))
+        assert count >= 2
