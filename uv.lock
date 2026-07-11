@@ -102,6 +102,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "markdown" },
     { name = "pymdown-extensions" },
+    { name = "pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -117,6 +118,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "markdown", specifier = ">=3.10.2" },
     { name = "pymdown-extensions", specifier = ">=11.0.1" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
 [package.metadata.requires-dev]

@@ -280,6 +280,11 @@ class ConfigurationError(GeneratorError):
     pass
 
 
+class ThemeCompileError(GeneratorError):
+    """Errors that occur during theme compilation from design-md files."""
+    pass
+
+
 class DecksetParsingError(GeneratorError):
     """Errors specific to Deckset syntax parsing."""
 
