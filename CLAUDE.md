@@ -66,7 +66,7 @@ Custom hierarchy rooted at `GeneratorError` (`ScanningError`, `PresentationProce
 
 ## Conventions
 
-- **Flat module layout** at repo root (no `src/` package). The `.cursor/rules/python.mdc` file describes a generic src-layout/Flask template that does **not** reflect this project — ignore its Flask/SQLAlchemy sections.
+- **Flat module layout** at repo root (no `src/` package).
 - Interfaces are `ABC` + `@abstractmethod` (see `DecksetParserInterface`, `MediaProcessorInterface`, `SlideProcessorInterface` in `models.py`).
 - Use `pathlib.Path` for all file ops; open files with explicit `encoding='utf-8'`.
 - Each component sets up `self.logger = logging.getLogger(...)`; use it with contextual messages.
