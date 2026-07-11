@@ -405,16 +405,18 @@ class TestMediaProcessingError:
     def test_error_with_media_info(self):
         """Test error creation with media path and type."""
         error = MediaProcessingError("Test error", media_path="/test.jpg", media_type="image")
-        
-        assert str(error) == "Test error"
+
+        assert error.message == "Test error"
         assert error.media_path == "/test.jpg"
         assert error.media_type == "image"
-    
+        assert error.context["media_path"] == "/test.jpg"
+        assert error.context["media_type"] == "image"
+
     def test_error_minimal(self):
         """Test error creation with minimal information."""
         error = MediaProcessingError("Simple error")
-        
-        assert str(error) == "Simple error"
+
+        assert error.message == "Simple error"
         assert error.media_path is None
         assert error.media_type is None
 

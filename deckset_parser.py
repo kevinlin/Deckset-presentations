@@ -10,28 +10,9 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, Set
 import logging
 
-from models import DecksetConfig, SlideConfig
+from models import DecksetConfig, SlideConfig, DecksetParsingError
 
 logger = logging.getLogger(__name__)
-
-
-class DecksetParsingError(Exception):
-    """Exception raised when Deckset parsing fails."""
-    
-    def __init__(self, message: str, line_number: Optional[int] = None, context: Optional[str] = None):
-        self.message = message
-        self.line_number = line_number
-        self.context = context
-        super().__init__(message)  # Pass only the message to the parent class
-    
-    def get_formatted_message(self) -> str:
-        """Get the error message with context formatting."""
-        parts = [self.message]
-        if self.line_number:
-            parts.append(f"Line {self.line_number}")
-        if self.context:
-            parts.append(f"Context: {self.context}")
-        return " | ".join(parts)
 
 
 class DecksetParser:

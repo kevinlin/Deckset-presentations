@@ -276,31 +276,56 @@ class ConfigurationError(GeneratorError):
     pass
 
 
-# Enhanced Error Classes
-class DecksetParsingError(Exception):
+class DecksetParsingError(GeneratorError):
     """Errors specific to Deckset syntax parsing."""
-    
-    def __init__(self, message: str, line_number: Optional[int] = None, context: Optional[str] = None):
+
+    def __init__(
+        self,
+        message: str,
+        line_number: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         self.line_number = line_number
-        self.context = context
-        super().__init__(message)
+        ctx: Dict[str, Any] = dict(context) if context else {}
+        if line_number is not None:
+            ctx["line_number"] = line_number
+        super().__init__(message, context=ctx)
 
 
-class MediaProcessingError(Exception):
+class MediaProcessingError(GeneratorError):
     """Errors in media file processing."""
-    
-    def __init__(self, message: str, media_path: Optional[str] = None, media_type: Optional[str] = None):
+
+    def __init__(
+        self,
+        message: str,
+        media_path: Optional[str] = None,
+        media_type: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         self.media_path = media_path
         self.media_type = media_type
-        super().__init__(message)
+        ctx: Dict[str, Any] = dict(context) if context else {}
+        if media_path is not None:
+            ctx["media_path"] = media_path
+        if media_type is not None:
+            ctx["media_type"] = media_type
+        super().__init__(message, context=ctx)
 
 
-class SlideProcessingError(Exception):
+class SlideProcessingError(GeneratorError):
     """Errors in slide processing."""
-    
-    def __init__(self, message: str, slide_index: Optional[int] = None):
+
+    def __init__(
+        self,
+        message: str,
+        slide_index: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         self.slide_index = slide_index
-        super().__init__(message)
+        ctx: Dict[str, Any] = dict(context) if context else {}
+        if slide_index is not None:
+            ctx["slide_index"] = slide_index
+        super().__init__(message, context=ctx)
 
 
 # Base Interfaces

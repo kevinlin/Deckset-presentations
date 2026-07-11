@@ -6,7 +6,8 @@ required for Deckset markdown compatibility.
 """
 
 import pytest
-from deckset_parser import DecksetParser, DecksetConfig, SlideConfig, DecksetParsingError
+from deckset_parser import DecksetParser, DecksetConfig, SlideConfig
+from models import DecksetParsingError, GeneratorError
 
 
 class TestDecksetParser:
@@ -443,22 +444,41 @@ Final slide content
 
 class TestDecksetParsingError:
     """Test suite for DecksetParsingError exception."""
-    
+
     def test_error_with_line_number_and_context(self):
         """Test error creation with line number and context."""
-        error = DecksetParsingError("Test error", line_number=42, context="test context")
-        
-        assert str(error) == "Test error"
+        error = DecksetParsingError("Test error", line_number=42, context={"source": "test"})
+
+        assert error.message == "Test error"
         assert error.line_number == 42
-        assert error.context == "test context"
-    
+        assert error.context["line_number"] == 42
+        assert error.context["source"] == "test"
+
     def test_error_minimal(self):
         """Test error creation with minimal information."""
         error = DecksetParsingError("Simple error")
-        
-        assert str(error) == "Simple error"
+
+        assert error.message == "Simple error"
         assert error.line_number is None
-        assert error.context is None
+        assert error.context == {}
+
+    def test_inherits_from_generator_error(self):
+        """DecksetParsingError must be catchable as GeneratorError."""
+        error = DecksetParsingError("parse fail", line_number=10)
+        assert isinstance(error, GeneratorError)
+
+        with pytest.raises(GeneratorError):
+            raise error
+
+    def test_parser_raises_catchable_as_generator_error(self):
+        """A real parser failure should be catchable via GeneratorError."""
+        parser = DecksetParser()
+        try:
+            parser.extract_slide_separators(None)
+        except GeneratorError:
+            pass
+        except Exception:
+            pytest.fail("Parser should raise a GeneratorError subclass")
 
 
 if __name__ == "__main__":

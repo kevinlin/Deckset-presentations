@@ -150,7 +150,7 @@ class CodeProcessor:
         except ValueError as e:
             raise DecksetParsingError(
                 f"Invalid highlight directive '{directive}': {str(e)}",
-                context=f"directive: {directive}"
+                context={"directive": directive},
             )
         
         return HighlightConfig(
