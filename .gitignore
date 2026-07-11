@@ -281,3 +281,6 @@ Thumbs.db
 
 # Sample output
 sample_output/
+
+# Git worktrees
+.worktrees/
