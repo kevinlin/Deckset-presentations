@@ -309,3 +309,30 @@ class TestThemeSystem:
         header = soup.find("header")
         assert header is not None
         assert "site-header" in header.get("class", [])
+
+    def test_homepage_has_theme_select(self, site_dir):
+        soup = _load_homepage(site_dir)
+        select = soup.find("select", id="theme-select")
+        assert select is not None, "Homepage missing #theme-select"
+
+    def test_homepage_has_theme_manifest(self, site_dir):
+        soup = _load_homepage(site_dir)
+        script = soup.find("script", id="theme-manifest")
+        assert script is not None, "Homepage missing #theme-manifest"
+
+    def test_homepage_has_switcher_script(self, site_dir):
+        soup = _load_homepage(site_dir)
+        scripts = [s.get("src", "") for s in soup.find_all("script")]
+        assert any("theme-switcher.js" in s for s in scripts), (
+            "Homepage missing theme-switcher.js script"
+        )
+
+    def test_presentation_has_theme_select(self, site_dir):
+        soup = _load_presentation(site_dir, "01-fix-messaging")
+        select = soup.find("select", id="theme-select")
+        assert select is not None, "Presentation page missing #theme-select"
+
+    def test_presentation_has_theme_manifest(self, site_dir):
+        soup = _load_presentation(site_dir, "01-fix-messaging")
+        script = soup.find("script", id="theme-manifest")
+        assert script is not None, "Presentation page missing #theme-manifest"

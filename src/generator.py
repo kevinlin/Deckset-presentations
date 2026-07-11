@@ -192,6 +192,10 @@ class WebPageGenerator:
                 default_theme = self.template_manager.resolve_theme(
                     self.config.theme
                 )
+                theme_manifest_json = json.dumps([
+                    {"slug": t.slug, "name": t.name, "swatches": list(t.swatches)}
+                    for t in self.theme_manifest
+                ])
                 html_content = self.template_manager.render_homepage(
                     sorted_presentations,
                     {
@@ -199,6 +203,7 @@ class WebPageGenerator:
                         "analytics_measurement_id": analytics_measurement_id,
                         "do_not_track": do_not_track,
                         "default_theme": default_theme,
+                        "theme_manifest_json": theme_manifest_json,
                     },
                 )
             except Exception as e:
@@ -422,6 +427,10 @@ class WebPageGenerator:
             if custom_css.exists():
                 theme_links.append('<link rel="stylesheet" href="custom.css">')
 
+            theme_manifest_json = json.dumps([
+                {"slug": t.slug, "name": t.name, "swatches": list(t.swatches)}
+                for t in self.theme_manifest
+            ])
             template_context = {
                 'presentation': presentation,
                 'slides_html': "".join(slides_html),
@@ -430,6 +439,7 @@ class WebPageGenerator:
                 'mathjax_config': self._get_mathjax_config(),
                 'anchor_index': anchor_index,
                 'theme_links': theme_links,
+                'theme_manifest_json': theme_manifest_json,
             }
 
             # Analytics context for presentation pages

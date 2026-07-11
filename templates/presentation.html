@@ -44,6 +44,7 @@
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <select id="theme-select" class="site-nav-link" aria-label="Theme"></select>
                     <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
                        class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
                     <a href="{{ asset_path_prefix }}index.html" 
@@ -77,5 +78,7 @@
     <script>
         {{ mathjax_config | safe }}
     </script>
+    <script type="application/json" id="theme-manifest">{{ theme_manifest_json | safe }}</script>
+    <script src="{{ asset_path_prefix }}assets/js/theme-switcher.js"></script>
 </body>
 </html> 

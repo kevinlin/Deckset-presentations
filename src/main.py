@@ -440,6 +440,7 @@ class DecksetWebsiteGenerator:
             "assets/css/themes/light.css",
             "assets/css/themes/dark.css",
             "assets/css/themes/minimal.css",
+            "assets/js/theme-switcher.js",
             "assets/vendor/highlight/highlight.min.js",
         ]
 

@@ -102,6 +102,7 @@
                 </div>
 
                 <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                    <select id="theme-select" class="site-nav-link" aria-label="Theme"></select>
                     <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
                         class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
                     <a href="/"
@@ -216,6 +217,8 @@
         </div>
     </footer>
 
+    <script type="application/json" id="theme-manifest">{{ theme_manifest_json | safe }}</script>
     <script src="assets/js/homepage.js"></script>
+    <script src="assets/js/theme-switcher.js"></script>
 </body>
 </html> 
