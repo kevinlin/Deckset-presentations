@@ -41,17 +41,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
     select.addEventListener('change', function () {
         var val = select.value;
-        if (val === '') {
-            localStorage.removeItem('deckset-site-theme');
-            link.href = link.dataset.defaultHref;
-        } else {
-            localStorage.setItem('deckset-site-theme', val);
-            _swapHref(link, val);
-        }
+        _withHouseLights(function () {
+            if (val === '') {
+                localStorage.removeItem('deckset-site-theme');
+                link.href = link.dataset.defaultHref;
+            } else {
+                localStorage.setItem('deckset-site-theme', val);
+                _swapHref(link, val);
+            }
+        });
     });
 
     function _swapHref(linkEl, slug) {
         var base = linkEl.dataset.defaultHref;
         linkEl.href = base.replace(/[^/]+\.css$/, slug + '.css');
+    }
+
+    // Cross-fade surfaces while the theme stylesheet swaps, like house
+    // lights coming up between shows. The class arms a transition on every
+    // color property; it is removed once the new sheet has settled.
+    function _withHouseLights(applyFn) {
+        var reduce = window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) {
+            applyFn();
+            return;
+        }
+
+        var root = document.documentElement;
+        root.classList.add('theme-fading');
+        applyFn();
+
+        var clear = function () {
+            setTimeout(function () { root.classList.remove('theme-fading'); }, 400);
+        };
+        link.addEventListener('load', clear, { once: true });
+        setTimeout(clear, 1000);
     }
 });

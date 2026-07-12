@@ -527,6 +527,10 @@ html {
     background: var(--color-accent-hover, #2563eb);
 }
 
+.nav-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
 .nav-button:disabled {
     background: #9ca3af;
     cursor: not-allowed;
@@ -536,7 +540,132 @@ html {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
     color: var(--color-ink, #374151);
+}
+
+@keyframes counter-tick {
+    from { opacity: 0.35; transform: translateY(2px); }
+    to { opacity: 1; transform: none; }
+}
+
+#slide-counter.tick {
+    animation: counter-tick 0.2s ease-out;
+}
+
+/* Booth machinery: the projectionist's shutter (B) and controls card (?).
+   Z-order above the progress bar (1000): backdrop 1000, card 1010, shutter 1100. */
+.booth-blackout {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: var(--color-blackout, rgba(0, 0, 0, 1));
+    opacity: 0;
+    visibility: hidden;
+    cursor: pointer;
+    transition: opacity 0.35s ease-out, visibility 0.35s;
+}
+
+.booth-blackout.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.booth-help-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease-out, visibility 0.25s;
+}
+
+.booth-help-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* The card rises from the nav pill it documents */
+.booth-help {
+    position: fixed;
+    left: 50%;
+    bottom: 6.5rem;
+    z-index: 1010;
+    width: min(22rem, calc(100vw - 2rem));
+    padding: 1.25rem 1.5rem 1.5rem;
+    background: var(--color-canvas, #fff);
+    color: var(--color-ink, #1f2937);
+    border-radius: var(--radius-lg, 0.75rem);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 0.75rem);
+    transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+                visibility 0.25s;
+}
+
+.booth-help.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.booth-help:focus-visible {
+    outline: 2px solid var(--color-accent, #3b82f6);
+    outline-offset: 2px;
+}
+
+.booth-help-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.booth-help-title {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink, #1f2937);
+}
+
+.booth-help-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.625rem 1.25rem;
+    margin: 0;
+}
+
+.booth-help-list dt {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--color-ink-subtle, #6b7280);
+    font-size: 0.8125rem;
+}
+
+.booth-help-list dd {
+    margin: 0;
+    align-self: center;
+    font-size: 0.875rem;
+    color: var(--color-ink-muted, #4b5563);
+}
+
+.booth-help kbd {
+    font-family: var(--font-mono, Monaco, Menlo, monospace);
+    font-size: 0.6875rem;
+    line-height: 1;
+    padding: 0.25rem 0.375rem;
+    background: var(--color-surface-2, #f3f4f6);
+    border: 1px solid var(--color-hairline-strong, #d1d5db);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm, 0.375rem);
+    color: var(--color-ink, #1f2937);
 }
 
 /* Autoscale content */
@@ -835,7 +964,16 @@ html {
 @media (prefers-reduced-motion: reduce) {
     .slide-fade-in, .slide-fade-out,
     .slide-push-in-right, .slide-push-in-left,
-    .slide-push-out-left, .slide-push-out-right {
+    .slide-push-out-left, .slide-push-out-right,
+    .slide,
+    #slide-counter.tick {
         animation: none !important;
+    }
+
+    .booth-blackout,
+    .booth-help,
+    .booth-help-backdrop,
+    .nav-button {
+        transition: none !important;
     }
 }

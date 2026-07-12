@@ -29,6 +29,16 @@ body { background: var(--color-canvas, #f9fafb); color: var(--color-ink, #374151
     display: none;
 }
 
+/* House lights: while the theme stylesheet swaps, every surface cross-fades
+   instead of snapping. The class is set briefly by theme-switcher.js. */
+@media (prefers-reduced-motion: no-preference) {
+    html.theme-fading body,
+    html.theme-fading body * {
+        transition: background-color 0.35s ease, color 0.35s ease,
+                    border-color 0.35s ease, fill 0.35s ease !important;
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* 2. Homepage ("The Projection Booth": booth-gray room, canvas stage) */
 /* ------------------------------------------------------------------ */
@@ -253,6 +263,21 @@ body.hp {
     background: var(--color-surface-2, #f3f4f6);
     border-bottom: 1px solid var(--color-hairline, #e5e7eb);
     container-type: inline-size;
+    overflow: hidden;
+}
+
+/* Projector light: attention pushes the projected frame gently closer */
+@media (prefers-reduced-motion: no-preference) {
+    .hp-preview img,
+    .hp-titleslide {
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .presentation-card:hover .hp-preview img,
+    .presentation-card:focus-within .hp-preview img,
+    .presentation-card:hover .hp-titleslide,
+    .presentation-card:focus-within .hp-titleslide {
+        transform: scale(1.03);
+    }
 }
 
 .hp-preview img {

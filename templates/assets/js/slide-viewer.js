@@ -9,7 +9,9 @@ class EnhancedSlideViewer {
         this.currentSlide = 0;
         this.totalSlides = this.slides.length;
         this.notesVisible = false;
-        
+        this.blackoutActive = false;
+        this.helpVisible = false;
+
         this.init();
     }
     
@@ -24,6 +26,7 @@ class EnhancedSlideViewer {
         this.setupKeyboardShortcuts();
         this.setupSlideCounter();
         this.setupNotesToggle();
+        this.setupBoothControls();
         this.setupInternalAnchorNavigation();
         this.setupAutoplay();
         this.setupResponsiveFeatures();
@@ -84,6 +87,26 @@ class EnhancedSlideViewer {
     
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
+            // Blackout: like a projector shutter, any key brings the show back
+            if (this.blackoutActive) {
+                e.preventDefault();
+                this.toggleBlackout();
+                return;
+            }
+
+            // The booth-controls card is modal: only ?, Escape, and Tab act
+            if (this.helpVisible) {
+                if (e.key === '?' || e.key === 'Escape') {
+                    e.preventDefault();
+                    this.toggleHelp();
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const close = this.helpCard && this.helpCard.querySelector('.booth-help-close');
+                    if (close) close.focus();
+                }
+                return;
+            }
+
             switch (e.key) {
                 case 'ArrowRight':
                 case ' ':
@@ -119,7 +142,18 @@ class EnhancedSlideViewer {
                     e.preventDefault();
                     this.toggleFullscreen();
                     break;
-                    
+
+                case 'b':
+                case 'B':
+                    e.preventDefault();
+                    this.toggleBlackout();
+                    break;
+
+                case '?':
+                    e.preventDefault();
+                    this.toggleHelp();
+                    break;
+
                 case 'Escape':
                     if (document.fullscreenElement) {
                         document.exitFullscreen();
@@ -159,6 +193,93 @@ class EnhancedSlideViewer {
         notes.forEach(note => {
             note.style.display = 'none';
         });
+    }
+
+    setupBoothControls() {
+        // The projectionist's shutter: a full-screen blackout toggled with B
+        this.blackout = document.createElement('div');
+        this.blackout.className = 'booth-blackout';
+        this.blackout.setAttribute('aria-hidden', 'true');
+        this.blackout.addEventListener('click', () => {
+            if (this.blackoutActive) this.toggleBlackout();
+        });
+        document.body.appendChild(this.blackout);
+
+        // The booth-controls card is built lazily on first open
+        this.helpCard = null;
+        this.helpBackdrop = null;
+        this._helpReturnFocus = null;
+
+        const helpButton = document.getElementById('show-help');
+        if (helpButton) {
+            helpButton.addEventListener('click', () => this.toggleHelp());
+        }
+    }
+
+    toggleBlackout() {
+        this.blackoutActive = !this.blackoutActive;
+        this.blackout.classList.toggle('is-active', this.blackoutActive);
+        if (this.blackoutActive) {
+            this._announce('Screen blacked out. Press any key to resume.');
+        } else {
+            this._announce('Blackout off.');
+        }
+    }
+
+    _ensureHelpCard() {
+        if (this.helpCard) return;
+
+        this.helpBackdrop = document.createElement('div');
+        this.helpBackdrop.className = 'booth-help-backdrop';
+        this.helpBackdrop.addEventListener('click', () => this.toggleHelp());
+
+        this.helpCard = document.createElement('div');
+        this.helpCard.className = 'booth-help';
+        this.helpCard.setAttribute('role', 'dialog');
+        this.helpCard.setAttribute('aria-modal', 'true');
+        this.helpCard.setAttribute('aria-label', 'Booth controls: keyboard shortcuts');
+        this.helpCard.setAttribute('tabindex', '-1');
+        this.helpCard.innerHTML = `
+            <div class="booth-help-head">
+                <h2 class="booth-help-title">Booth controls</h2>
+                <button type="button" class="booth-help-close nav-button">Close</button>
+            </div>
+            <dl class="booth-help-list">
+                <dt><kbd>&rarr;</kbd> <kbd>Space</kbd></dt><dd>Next slide</dd>
+                <dt><kbd>&larr;</kbd></dt><dd>Previous slide</dd>
+                <dt><kbd>1</kbd>&ndash;<kbd>9</kbd></dt><dd>Jump to slide</dd>
+                <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>First, last slide</dd>
+                <dt><kbd>N</kbd></dt><dd>Speaker notes</dd>
+                <dt><kbd>F</kbd></dt><dd>Fullscreen</dd>
+                <dt><kbd>B</kbd></dt><dd>Blackout</dd>
+                <dt><kbd>?</kbd></dt><dd>This card</dd>
+            </dl>
+        `;
+        this.helpCard.querySelector('.booth-help-close')
+            .addEventListener('click', () => this.toggleHelp());
+
+        document.body.appendChild(this.helpBackdrop);
+        document.body.appendChild(this.helpCard);
+    }
+
+    toggleHelp() {
+        this._ensureHelpCard();
+        this.helpVisible = !this.helpVisible;
+        this.helpCard.classList.toggle('is-open', this.helpVisible);
+        this.helpBackdrop.classList.toggle('is-open', this.helpVisible);
+
+        const helpButton = document.getElementById('show-help');
+        if (helpButton) {
+            helpButton.setAttribute('aria-expanded', String(this.helpVisible));
+        }
+
+        if (this.helpVisible) {
+            this._helpReturnFocus = document.activeElement;
+            this.helpCard.focus();
+        } else if (this._helpReturnFocus && typeof this._helpReturnFocus.focus === 'function') {
+            this._helpReturnFocus.focus();
+            this._helpReturnFocus = null;
+        }
     }
 
     setupInternalAnchorNavigation() {
@@ -303,8 +424,9 @@ class EnhancedSlideViewer {
     }
     
     initializeMathJax() {
-        // Initialize MathJax if available
-        if (typeof MathJax !== 'undefined') {
+        // Initialize MathJax if fully loaded; before then window.MathJax is
+        // only the config object and MathJax typesets on its own startup
+        if (typeof MathJax !== 'undefined' && typeof MathJax.typesetPromise === 'function') {
             MathJax.typesetPromise().then(() => {
                 console.log('MathJax rendering completed');
             }).catch((err) => {
@@ -418,7 +540,16 @@ class EnhancedSlideViewer {
     updateSlideCounter() {
         const counter = document.getElementById('slide-counter');
         if (counter) {
-            counter.textContent = `${this.currentSlide + 1} / ${this.totalSlides}`;
+            const text = `${this.currentSlide + 1} / ${this.totalSlides}`;
+            if (counter.textContent !== text) {
+                counter.textContent = text;
+                if (counter.classList) {
+                    // Restart the tick animation on every change
+                    counter.classList.remove('tick');
+                    void counter.offsetWidth;
+                    counter.classList.add('tick');
+                }
+            }
         }
     }
     
@@ -693,6 +824,13 @@ class EnhancedSlideViewer {
     }
     
     announceSlideChange() {
+        const slideTitle = this.slides[this.currentSlide].querySelector('h1, h2, h3, h4, h5, h6');
+        const title = slideTitle ? slideTitle.textContent : `Slide ${this.currentSlide + 1}`;
+
+        this._announce(`${title}, slide ${this.currentSlide + 1} of ${this.totalSlides}`);
+    }
+
+    _announce(message) {
         // Create or update live region for screen readers
         let liveRegion = document.getElementById('slide-announcer');
         if (!liveRegion) {
@@ -707,11 +845,8 @@ class EnhancedSlideViewer {
             liveRegion.style.overflow = 'hidden';
             document.body.appendChild(liveRegion);
         }
-        
-        const slideTitle = this.slides[this.currentSlide].querySelector('h1, h2, h3, h4, h5, h6');
-        const title = slideTitle ? slideTitle.textContent : `Slide ${this.currentSlide + 1}`;
-        
-        liveRegion.textContent = `${title}, slide ${this.currentSlide + 1} of ${this.totalSlides}`;
+
+        liveRegion.textContent = message;
     }
     
     // Initialize from URL hash
@@ -741,7 +876,7 @@ class SlideUtils {
             left: 0;
             width: 0%;
             height: 3px;
-            background: #3b82f6;
+            background: var(--color-accent, #3b82f6);
             transition: width 0.3s ease;
             z-index: 1000;
         `;
