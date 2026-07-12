@@ -4,24 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse a collection of Deckset presentations with {{ presentations|length }} available presentations">
+    <meta name="description" content="An archive of {{ presentations|length }} technical talk{{ 's' if presentations|length != 1 else '' }}, written in Deckset Markdown and rendered for the browser">
     <title>Deckset Presentations</title>
     <!-- Favicon and Apple Touch Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/favicon.png">
-    <link rel="shortcut icon" href="assets/favicon.png">    
-    <!-- Additional meta tags for favicon support -->
+    <link rel="shortcut icon" href="assets/favicon.png">
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="theme-color" content="#2563eb">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/homepage.css">
     <link id="theme-css" rel="stylesheet" href="assets/css/themes/{{ default_theme }}.css" data-default-href="assets/css/themes/{{ default_theme }}.css">
     {% if analytics_enabled %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_measurement_id }}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);} 
+      function gtag(){dataLayer.push(arguments);}
       {% if do_not_track %}
       gtag('consent','default',{'analytics_storage':'denied'});
       {% endif %}
@@ -29,191 +27,93 @@
       gtag('config', '{{ analytics_measurement_id }}');
     </script>
     {% endif %}
-    <style>
-        /* Custom styles for presentation content */
-        .slide-content {
-            @apply prose prose-lg max-w-none;
-        }
-
-        .slide-notes {
-            @apply text-gray-600 bg-gray-50 p-4 rounded-lg mt-4;
-        }
-
-        /* Responsive improvements */
-        @media (max-width: 640px) {
-            .slide-content {
-                @apply prose-sm;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            .no-print {
-                display: none;
-            }
-
-            .page-break {
-                page-break-after: always;
-            }
-        }
-
-        /* Accessibility improvements */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-
-        /* Enhanced presentation features indicator */
-        .enhanced-indicator {
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            color: white;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-        }
-    </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
-    <a href="#main-content"
-        class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-blue-500 focus:text-white focus:z-50">
-        Skip to main content
-    </a>
+<body class="hp">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <header class="site-header shadow-sm sticky top-0 z-10">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/" class="site-title text-xl font-semibold flex items-center">
-                        <img src="assets/deckset-icon.png" alt="Deckset" class="h-8 w-8 mr-2">
-                        <span>Deckset Presentations</span>
-                        <span class="ml-2 text-xs card-cta px-2 py-1 rounded-full">Enhanced</span>
-                    </a>
-                </div>
-
-                <div class="hidden sm:flex sm:items-center sm:space-x-4">
-                    <select id="theme-select" class="site-nav-link" aria-label="Theme"></select>
-                    <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
-                        class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Deckset</a>
-                    <a href="/"
-                        class="site-nav-link px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                </div>
+    <header class="site-header hp-header">
+        <nav class="hp-shell hp-nav" aria-label="Main navigation">
+            <a href="/" class="site-title hp-brand">
+                <img src="assets/deckset-icon.png" alt="" width="28" height="28">
+                <span>Deckset Presentations</span>
+            </a>
+            <div class="hp-nav-controls">
+                <select id="theme-select" aria-label="Theme"></select>
+                <a href="https://www.deckset.com/" target="_blank" rel="noopener noreferrer"
+                   class="site-nav-link">Deckset</a>
             </div>
         </nav>
     </header>
 
-    <main id="main-content" class="flex-grow max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Deckset Presentations</h1>
-                    <p class="text-gray-600">
-                        Found {{ presentations|length }} presentation{{ 's' if presentations|length != 1 else '' }} with enhanced Deckset features
-                    </p>
-                </div>
-                
-                <div class="mt-4 md:mt-0">
-                    <div class="relative">
-                        <input type="text" id="search-input" placeholder="Search presentations..." 
-                               class="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+    <main id="main-content" class="hp-shell hp-main">
+        <section class="hp-masthead" aria-labelledby="hp-heading">
+            <p class="hp-counter">{{ presentations|length }} deck{{ 's' if presentations|length != 1 else '' }} · {{ presentations | sum(attribute='slide_count') }} slides</p>
+            <h1 id="hp-heading">A working archive of technical talks.</h1>
+            <p class="hp-lede">Every deck here is written in Deckset Markdown and staged for the browser by this site's own generator. The rendering is part of the work: open a deck and judge both.</p>
+        </section>
+
+        <div class="hp-toolbar">
+            <label for="search-input" class="sr-only">Search presentations by title</label>
+            <div class="hp-search">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="search" id="search-input" placeholder="Search decks…" autocomplete="off">
             </div>
         </div>
 
-        <div id="presentations-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% if presentations %}
+        <div id="presentations-grid" class="hp-grid">
             {% for presentation in presentations %}
-                {% set preview_image = presentation.preview_image %}
-                {% set last_modified_str = "" %}
-                {% if presentation.last_modified %}
-                    {% set last_modified_str = "<p>Updated: " + presentation.last_modified.strftime('%Y-%m-%d') + "</p>" %}
-                {% endif %}
-
-                <div class="presentation-card shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-                    <a href="{{ presentation.slug }}/" class="block">
-                        {% if preview_image %}
-                            <div class="aspect-w-16 aspect-h-9">
-                                <img src="{{ preview_image }}" 
-                                     alt="Preview of {{ presentation.title | escape_html }}"
-                                     class="w-full h-48 object-cover"
-                                     loading="lazy">
-                            </div>
+            <article class="presentation-card{% if loop.first %} presentation-card--featured{% endif %}">
+                <a href="{{ presentation.slug }}/" class="hp-card-link">
+                    <div class="hp-preview">
+                        {% if presentation.preview_image %}
+                        <img src="{{ presentation.preview_image }}"
+                             alt="First slide of {{ presentation.title | escape_html }}"
+                             loading="{{ 'eager' if loop.first else 'lazy' }}">
                         {% else %}
-                            <div class="bg-gray-200 h-48 flex items-center justify-center">
-                                <div class="text-center text-gray-500">
-                                    <svg class="mx-auto h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <p>No Preview</p>
-                                </div>
-                            </div>
+                        <div class="hp-titleslide" aria-hidden="true">
+                            <span class="hp-titleslide-title">{{ presentation.title | escape_html }}</span>
+                            <span class="hp-titleslide-counter">1 / {{ presentation.slide_count }}</span>
+                        </div>
                         {% endif %}
-                    </a>
-                    
-                    <div class="p-6">
-                        <h3 class="card-title text-xl font-semibold mb-2 presentation-title">
-                            <a href="{{ presentation.slug }}/" 
-                               class="transition-colors">
-                                {{ presentation.title | escape_html }}
-                            </a>
-                        </h3>
-                        
-                        <div class="card-meta text-sm space-y-1">
-                            <p>{{ presentation.slide_count }} slide{{ 's' if presentation.slide_count != 1 else '' }}</p>
-                            {% if last_modified_str %}
-                                {{ last_modified_str | safe }}
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mt-4 flex justify-end">
-                            <a href="{{ presentation.slug }}/" 
-                               class="card-cta inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                View Presentation
-                                <svg class="ml-1 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-                        </div>
                     </div>
-                </div>
+                    <div class="hp-card-body">
+                        {% if loop.first %}<p class="hp-flag">Latest</p>{% endif %}
+                        <h2 class="presentation-title hp-card-title">{{ presentation.title | escape_html }}</h2>
+                        <p class="hp-card-meta">
+                            <span class="hp-slides">{{ presentation.slide_count }} slide{{ 's' if presentation.slide_count != 1 else '' }}</span>
+                            {% if presentation.last_modified %}
+                            <span>Updated {{ presentation.last_modified.strftime('%b %Y') }}</span>
+                            {% endif %}
+                        </p>
+                        {% if loop.first %}
+                        <p class="hp-open">Open the deck <span class="hp-arrow" aria-hidden="true">&rarr;</span></p>
+                        {% endif %}
+                    </div>
+                </a>
+            </article>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="hp-empty">
+            <h2 class="hp-state-title">The shelf is empty</h2>
+            <p>Add a folder with a Markdown deck and rerun the generator.</p>
+        </div>
+        {% endif %}
 
-        <div id="no-results" class="hidden text-center py-12">
-            <div class="text-gray-500">
-                <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No matching presentations</h3>
-                <p class="text-gray-600">Try adjusting your search criteria.</p>
-            </div>
+        <div id="no-results" class="hidden hp-noresults">
+            <p class="hp-state-title">Nothing matches</p>
+            <p>Try a shorter search term.</p>
         </div>
     </main>
 
-    <footer class="site-footer mt-12 no-print">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row justify-between items-center">
-                <p class="text-center text-sm mb-2 sm:mb-0">
-                    Generated by Enhanced Deckset Website Generator
-                </p>
-            </div>
+    <footer class="site-footer hp-footer">
+        <div class="hp-shell hp-footer-inner">
+            <p>Generated by the <a href="https://github.com/kevinlin/Deckset-presentations">Deckset Website Generator</a>.</p>
+            <p>Slides written in <a href="https://www.deckset.com/" rel="noopener noreferrer">Deckset</a> Markdown.</p>
         </div>
     </footer>
 
@@ -221,4 +121,4 @@
     <script src="assets/js/homepage.js"></script>
     <script src="assets/js/theme-switcher.js"></script>
 </body>
-</html> 
+</html>

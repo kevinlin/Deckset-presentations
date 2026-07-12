@@ -6,13 +6,13 @@
   --color-surface-3: #e5e7eb;
   --color-ink: #333333;
   --color-ink-muted: #666666;
-  --color-ink-subtle: #aaaaaa;
+  --color-ink-subtle: #737373;
   --color-accent: #3b82f6;
-  --color-on-accent: #1d4ed8;
+  --color-on-accent: #ffffff;
   --color-accent-hover: #2563eb;
   --color-hairline: #cccccc;
   --color-hairline-strong: #999999;
-  --color-link: #3b82f6;
+  --color-link: #2563eb;
   --color-code-bg: #f3f4f6;
   --color-table-header-bg: #f9fafb;
   --color-blockquote-border: #cccccc;

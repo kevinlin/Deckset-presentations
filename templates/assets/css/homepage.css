@@ -1,20 +1,20 @@
-/* Supplementary styles: var-driven classes for themed chrome */
+/* Site chrome + homepage styles, driven entirely by theme tokens (var(--…)).
+   Section 1 is shared with presentation pages (presentation.html links this
+   file); section 2 styles the homepage only, scoped under body.hp. */
+
+/* ------------------------------------------------------------------ */
+/* 1. Shared chrome (also consumed by presentation.html)               */
+/* ------------------------------------------------------------------ */
 
 body { background: var(--color-canvas, #f9fafb); color: var(--color-ink, #374151); }
-.site-header { background: var(--color-surface-1, #fff); border-bottom: 1px solid var(--color-hairline, #e5e7eb); }
+.site-header { background: var(--color-canvas, #fff); border-bottom: 1px solid var(--color-hairline, #e5e7eb); }
 .site-header a, .site-title { color: var(--color-ink, #111827); font-family: var(--font-display, inherit); }
 .site-nav-link { color: var(--color-ink-muted, #4b5563); }
 .site-nav-link:hover { color: var(--color-ink, #111827); }
-.site-footer { background: var(--color-surface-1, #fff); border-top: 1px solid var(--color-hairline, #e5e7eb); color: var(--color-ink-subtle, #6b7280); }
-.presentation-card { background: var(--color-surface-1, #fff); border-radius: var(--radius-lg, 0.5rem); }
-.card-title a { color: var(--color-ink, #111827); }
-.card-title a:hover { color: var(--color-link, #2563eb); }
-.card-meta { color: var(--color-ink-muted, #4b5563); }
-.card-cta { background: var(--color-accent, #dbeafe); color: var(--color-on-accent, #1d4ed8); border-radius: var(--radius-sm, 0.375rem); }
-.card-cta:hover { background: var(--color-accent-hover, #bfdbfe); }
+.site-footer { background: var(--color-surface-1, #f8fafc); border-top: 1px solid var(--color-hairline, #e5e7eb); color: var(--color-ink-subtle, #6b7280); }
 
 #theme-select {
-    background: var(--color-surface-1, #fff);
+    background: var(--color-canvas, #fff);
     color: var(--color-ink, #374151);
     border: 1px solid var(--color-hairline, #e5e7eb);
     border-radius: var(--radius-sm, 0.375rem);
@@ -23,15 +23,435 @@ body { background: var(--color-canvas, #f9fafb); color: var(--color-ink, #374151
     cursor: pointer;
 }
 
+#no-results.hidden,
+#presentations-grid.hidden,
+.presentation-card.hidden {
+    display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Homepage ("The Projection Booth": booth-gray room, canvas stage) */
+/* ------------------------------------------------------------------ */
+
+.hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
+
+body.hp {
+    margin: 0;
+    background: var(--color-surface-1, #f8fafc);
+    color: var(--color-ink, #1f2937);
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+.hp h1, .hp h2, .hp p { margin: 0; }
+.hp img { display: block; max-width: 100%; }
+
+.hp .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.hp .skip-link {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-canvas, #fff);
+    color: var(--color-ink, #1f2937);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--radius-sm, 0.375rem);
+    outline: 2px solid var(--color-accent, #3b82f6);
+    outline-offset: 2px;
+    transform: translateY(calc(-100% - 2rem));
+}
+.hp .skip-link:focus { transform: none; }
+
+.hp-shell {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+/* Header: quiet machinery, flat with a hairline */
+.hp-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.hp-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    min-height: 4rem;
+    padding-block: 0.625rem;
+}
+
+.hp-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+}
+.hp-brand img { width: 1.75rem; height: 1.75rem; }
+
+.hp-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.hp .site-nav-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.hp-main { flex-grow: 1; }
+
+/* Masthead: the shelf's label, not a pitch */
+.hp-masthead {
+    padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2.25rem, 5vw, 3.25rem);
+}
+
+.hp-counter {
+    font-family: var(--font-mono, Monaco, Menlo, monospace);
+    font-size: 0.8125rem;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-subtle, #6b7280);
+}
+
+.hp-masthead h1 {
+    margin-top: 1.125rem;
+    max-width: 24ch;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(2.125rem, 1.25rem + 3.6vw, 3.375rem);
+    font-weight: var(--h1-weight, 700);
+    line-height: 1.08;
+    letter-spacing: var(--h1-tracking, -0.02em);
+    text-wrap: balance;
+    color: var(--color-ink, #1f2937);
+}
+
+.hp-lede {
+    margin-top: 1.25rem;
+    max-width: 58ch;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted, #4b5563);
+    text-wrap: pretty;
+}
+
+/* Toolbar: one machinery line between the label and the shelf */
+.hp-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-hairline, #e5e7eb);
+}
+
+.hp-search {
+    position: relative;
+    width: min(22rem, 100%);
+}
+
+.hp-search svg {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    width: 1rem;
+    height: 1rem;
+    translate: 0 -50%;
+    color: var(--color-ink-subtle, #6b7280);
+    pointer-events: none;
+}
+
+.hp-search input {
+    width: 100%;
+    font: inherit;
+    font-size: 0.9375rem;
+    padding: 0.5625rem 0.875rem 0.5625rem 2.375rem;
+    background: var(--color-canvas, #fff);
+    color: var(--color-ink, #1f2937);
+    border: 1px solid var(--color-hairline-strong, #d1d5db);
+    border-radius: var(--radius-sm, 0.375rem);
+}
+.hp-search input::placeholder { color: var(--color-ink-muted, #4b5563); }
+.hp-search input:focus-visible {
+    outline: 2px solid var(--color-accent, #3b82f6);
+    outline-offset: 2px;
+}
+
+/* The shelf */
+.hp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* The stage: canvas card lifted off the booth floor */
 .presentation-card {
-    transition: box-shadow 0.2s ease;
+    background: var(--color-canvas, #fff);
+    border: 1px solid var(--color-hairline, #e5e7eb);
+    border-radius: var(--radius-md, 0.5rem);
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .presentation-card:hover {
-    box-shadow: 0 4px 6px -1px var(--color-hairline, rgba(0, 0, 0, 0.1)), 0 2px 4px -2px var(--color-hairline, rgba(0, 0, 0, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 10px 20px -8px rgba(0, 0, 0, 0.12);
 }
 
-#no-results.hidden,
-.presentation-card.hidden {
-    display: none;
+.hp-card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+}
+
+.hp-card-link:focus-visible {
+    outline: 2px solid var(--color-accent, #3b82f6);
+    outline-offset: -2px;
+}
+@supports selector(:has(*)) {
+    .hp-card-link:focus-visible { outline: none; }
+    .presentation-card:has(:focus-visible) {
+        outline: 2px solid var(--color-accent, #3b82f6);
+        outline-offset: 2px;
+    }
+}
+
+/* Strict 16:9, always */
+.hp-preview {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--color-surface-2, #f3f4f6);
+    border-bottom: 1px solid var(--color-hairline, #e5e7eb);
+    container-type: inline-size;
+}
+
+.hp-preview img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Missing preview: project the title slide instead of an icon */
+.hp-titleslide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8% 10%;
+    background: var(--color-canvas, #fff);
+    text-align: center;
+}
+
+.hp-titleslide-title {
+    font-family: var(--font-display, inherit);
+    font-weight: var(--h1-weight, 700);
+    font-size: clamp(0.875rem, 6.5cqw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--color-ink, #1f2937);
+    text-wrap: balance;
+}
+
+.hp-titleslide-counter {
+    position: absolute;
+    right: 4%;
+    bottom: 5%;
+    font-family: var(--font-mono, Monaco, Menlo, monospace);
+    font-size: clamp(0.5625rem, 2.4cqw, 0.75rem);
+    color: var(--color-ink-subtle, #6b7280);
+}
+
+.hp-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    flex-grow: 1;
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.hp-card-title {
+    font-family: var(--font-display, inherit);
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-ink, #1f2937);
+    text-wrap: balance;
+    transition: color 0.2s ease;
+}
+
+.presentation-card:hover .hp-card-title { color: var(--color-link, #2563eb); }
+
+.hp-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.375rem 0.875rem;
+    margin-top: auto;
+    font-size: 0.8125rem;
+    color: var(--color-ink-subtle, #6b7280);
+}
+
+.hp-slides {
+    font-family: var(--font-mono, Monaco, Menlo, monospace);
+    letter-spacing: 0.02em;
+}
+
+/* Featured: the latest deck, staged front and wide */
+.presentation-card--featured { grid-column: 1 / -1; }
+
+.hp-flag {
+    font-family: var(--font-mono, Monaco, Menlo, monospace);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-ink-subtle, #6b7280);
+}
+
+.hp-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.375rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-link, #2563eb);
+}
+
+.hp-arrow { transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
+.presentation-card--featured:hover .hp-arrow { transform: translateX(4px); }
+
+@media (min-width: 45rem) {
+    .presentation-card--featured .hp-card-link {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+    .presentation-card--featured .hp-preview {
+        border-bottom: 0;
+        border-right: 1px solid var(--color-hairline, #e5e7eb);
+        height: 100%;
+    }
+    .presentation-card--featured .hp-card-body {
+        justify-content: center;
+        gap: 0.875rem;
+        padding: clamp(1.5rem, 3.5vw, 2.75rem);
+    }
+    .presentation-card--featured .hp-card-title {
+        font-size: clamp(1.5rem, 1rem + 1.6vw, 2.125rem);
+        letter-spacing: -0.015em;
+    }
+    .presentation-card--featured .hp-card-meta {
+        margin-top: 0;
+        font-size: 0.875rem;
+    }
+}
+
+/* Empty archive & empty search */
+.hp-empty, .hp-noresults {
+    padding: 4rem 1.5rem;
+    text-align: center;
+    color: var(--color-ink-muted, #4b5563);
+    border: 1px dashed var(--color-hairline-strong, #d1d5db);
+    border-radius: var(--radius-md, 0.5rem);
+}
+
+.hp-state-title {
+    margin-bottom: 0.5rem;
+    font-family: var(--font-display, inherit);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink, #1f2937);
+}
+
+/* Footer: flat machinery */
+.hp-footer { margin-top: clamp(3.5rem, 8vw, 5.5rem); }
+
+.hp-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    padding-block: 2rem;
+    font-size: 0.875rem;
+}
+
+.hp-footer a {
+    color: var(--color-link, #2563eb);
+    text-decoration: none;
+}
+.hp-footer a:hover { text-decoration: underline; }
+
+/* Motion: the booth lights up once, on entry */
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes hp-rise {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .hp-counter,
+    .hp-masthead h1,
+    .hp-lede,
+    .hp-toolbar,
+    .presentation-card {
+        animation: hp-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .hp-masthead h1 { animation-delay: 0.05s; }
+    .hp-lede { animation-delay: 0.1s; }
+    .hp-toolbar { animation-delay: 0.15s; }
+
+    .presentation-card:nth-child(1) { animation-delay: 0.18s; }
+    .presentation-card:nth-child(2) { animation-delay: 0.24s; }
+    .presentation-card:nth-child(3) { animation-delay: 0.28s; }
+    .presentation-card:nth-child(4) { animation-delay: 0.32s; }
+    .presentation-card:nth-child(5) { animation-delay: 0.36s; }
+    .presentation-card:nth-child(6) { animation-delay: 0.4s; }
+    .presentation-card:nth-child(7) { animation-delay: 0.44s; }
+    .presentation-card:nth-child(n+8) { animation-delay: 0.48s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hp *, .hp *::before, .hp *::after {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media print {
+    .hp-header, .hp-toolbar, .hp-footer { display: none; }
+    .presentation-card { box-shadow: none; }
 }
