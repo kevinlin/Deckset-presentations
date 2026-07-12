@@ -6,9 +6,36 @@ Related: `DESIGN.md` (The Projection Booth), `PRODUCT.md`, `docs/specs/04-theme-
 
 ## Scope
 
-Delight pass over the generated site (`/impeccable delight`). Adds personality to the viewer and homepage without breaking the two-world discipline: every touch is booth machinery made tangible. All styling stays on the D1 token contract, so the 16 themes restyle everything below without changes.
+Two passes over the generated site, in order. All styling stays on the D1 token contract, so the 16 themes restyle everything below without changes.
 
-## Changes
+1. **Homepage craft** (`/impeccable craft homepage`): restage the homepage as the Projection Booth's archive shelf.
+2. **Delight pass** (`/impeccable delight`): personality for the viewer and homepage without breaking the two-world discipline: every touch is booth machinery made tangible.
+
+## Part 1 — Homepage craft
+
+### Homepage rebuild
+
+- Two worlds staged correctly: page background is Booth Gray (`--color-surface-1`), cards are Canvas White on the stage-lift shadow, previews strictly 16:9. The old layout had this inverted (white page, gray cards).
+  - `templates/homepage.html` (rewritten), `templates/assets/css/homepage.css` (rewritten; shared chrome selectors for `presentation.html` kept)
+- Masthead replaces "Found N presentations with enhanced Deckset features": mono deck/slide counter echoing the viewer's counter, display headline, one supporting line.
+- The latest deck opens the shelf as a full-width featured card: "Latest" kicker, headline-scale title, "Open the deck →" line. Each card is a single link; the old three-link card and its "View Presentation" chip are gone.
+- Decks without a preview image render a typeset title slide (title plus `1 / n` counter) in the 16:9 frame instead of a document icon.
+- Removed from the homepage: Tailwind CDN, "Enhanced" badge, gradient `.enhanced-indicator`. Search, theme switcher, analytics, and skip link kept on the same JS hooks.
+- Entrance motion: masthead rises first, cards stagger in behind it; hover lifts the card. All of it off under `prefers-reduced-motion: reduce`.
+- States covered: empty archive, empty search, skip link, whole-card Cue Blue focus ring (`:has(:focus-visible)`, inset-outline fallback).
+
+### Theme token fixes (pre-existing)
+
+- `light.css` / `minimal.css`: `--color-on-accent` `#1d4ed8` → `#ffffff`. The viewer's nav pill rendered dark-blue-on-blue in production.
+- `light.css` / `minimal.css`: `--color-link` → `#2563eb` (Cue Blue Deep; at least 4.5:1 on canvas and surface-1).
+- `minimal.css`: `--color-ink-subtle` `#aaaaaa` → `#737373` (2.3:1 → 4.8:1 on white; card metadata uses this token).
+
+### Verification
+
+- pytest: 426 pass. Jest: 58 pass (pre-delight suite).
+- Browser (Chrome DevTools MCP): 1440 / 768 / 375 / 320 widths with no horizontal overflow; dark and linear-app themes; empty-search state; keyboard focus rings; no homepage console errors.
+
+## Part 2 — Delight pass
 
 ### Slide viewer
 
@@ -42,11 +69,11 @@ Delight pass over the generated site (`/impeccable delight`). Adds personality t
 - The pre-existing `slideIn` keyframe joined the reduce block (it had no fallback).
 - Help card: `role="dialog"`, `aria-modal`, labelled, `:focus-visible` ring only.
 
-## Bug fix (pre-existing)
+### Bug fix (pre-existing)
 
 `initializeMathJax()` called `MathJax.typesetPromise()` while `window.MathJax` was still only the config object (async script not yet loaded). The uncaught TypeError aborted `init()` before `showSlide(0)`, leaving a blank stage. Reproduced on the committed `site/` build, so it also affected production. Fixed with a `typeof MathJax.typesetPromise === 'function'` guard; MathJax typesets on its own startup, so the manual call is safely skipped.
 
-## Verification
+### Verification
 
 - Jest: 67 pass, including 9 new in `tests/test_booth_controls.js` (blackout toggle/exit/announce; card open/close/modality/aria).
 - pytest: 426 pass.
